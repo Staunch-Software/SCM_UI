@@ -1,0 +1,124 @@
+.message-bubble {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.message-content {
+  display: flex;
+  gap: 1rem;
+}
+
+.message-content.user {
+  flex-direction: row-reverse;
+}
+
+.message-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.message-avatar.user {
+  background-color: #dbeafe;
+  color: var(--primary-color);
+}
+
+.message-avatar.assistant {
+  background-color: var(--secondary-light);
+  color: var(--secondary-color);
+}
+
+.message-body {
+  flex: 1;
+  max-width: 100%;
+}
+
+.message-body.user {
+  text-align: right;
+}
+
+.message-text {
+  display: inline-block;
+  max-width: 100%;
+  padding: 0.75rem;
+  border-radius: var(--radius-2xl);
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+/* Only make assistant messages full width */
+.message-text.assistant {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.message-text.user {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.message-text.assistant {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  /* font-family: 'Courier New', Courier, monospace;  */
+}
+
+.message-timestamp {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Add this to the end of your MessageBubble.css file */
+
+.data-table-container {
+  margin-top: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden; /* Ensures the border-radius clips the table corners */
+  max-width: 100%;
+  overflow-x: auto; /* Allows horizontal scrolling on small screens */
+}
+
+.data-table-container table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+.data-table-container th,
+.data-table-container td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.data-table-container th {
+  background-color: #f7f7f7;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.data-table-container tr:last-child td {
+  border-bottom: none;
+}
+
+@media (max-width: 768px) {
+  .message-content {
+    gap: 0.75rem;
+  }
+  
+  .message-avatar {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+  
+  .message-text {
+    padding: 0.625rem;
+  }
+}
