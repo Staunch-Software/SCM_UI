@@ -1,0 +1,135 @@
+/* Main container with entrance animation */
+.chat-interface {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 40px);
+  width: 100%;
+
+  /* Ultra-light sandal premium gradient */
+  background: linear-gradient(180deg, #fffdf8, #fdf5e6, #f9e7d3);
+  background-size: 300% 300%;
+  animation: fadeSlideUp 1s ease-out forwards;
+
+  border-radius: 16px;
+  overflow: hidden;
+  padding: 20px;
+  box-sizing: border-box;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  position: relative;
+
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+/* Smooth fade + slide entrance */
+@keyframes fadeSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Sticky header */
+.chat-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 16px 24px;
+
+  /* Lighter sandal gradient */
+  background: linear-gradient(135deg, #fffdf8, #fdf5e6, #faecd8);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  border-radius: 12px 12px 0 0;
+}
+
+/* Premium title */
+.chat-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+
+  /* Soft golden gradient text */
+  background: linear-gradient(90deg, #a67c52, #cdaa7d, #d4af37);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 6px rgba(212, 175, 55, 0.2);
+}
+
+/* Premium New Conversation Button */
+.new-chat-btn {
+  padding: 10px 22px;
+  background: linear-gradient(135deg, #d4af37, #cdaa7d);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.25);
+  transition: all 0.25s ease-in-out;
+}
+
+.new-chat-btn:hover {
+  background: linear-gradient(135deg, #cdaa7d, #a67c52);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(198, 151, 73, 0.35);
+}
+
+.new-chat-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(198, 151, 73, 0.25);
+}
+
+/* Messages area */
+.chat-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+
+  /* Lighter sandal background */
+  background: linear-gradient(180deg, #fffdf8, #fdf5e6, #f9e7d3);
+  color: #3f2e1e;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Footer */
+.chat-footer {
+  padding: 16px;
+  background: linear-gradient(135deg, #fffdf8, #faecd8);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  color: #3f2e1e;
+}
+
+/* Premium centered title */
+.premium-text {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+
+  /* Champagne shimmer gradient */
+  background: linear-gradient(90deg, #d4af37, #e6c07b, #f5deb3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  text-shadow: 0 2px 6px rgba(198, 151, 73, 0.2);
+  margin: 1.5rem 0;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.chatbox{
+  background: linear-gradient(180deg, #fffdf8, #fdf5e6, #f9e7d3);
+  color: #3f2e1e;
+}

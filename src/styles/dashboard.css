@@ -1,0 +1,128 @@
+.dashboard {
+  padding: 2rem;
+  text-align: center;
+  min-height: 100vh;
+  font-family: "Poppins", "Inter", "Georgia", serif;
+
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+
+  /* Vendor page inspired gradient background */
+background: #f7ebeb;
+background: radial-gradient(circle, rgba(247, 235, 235, 1) 100%, rgba(245, 233, 233, 1) 100%);
+  background-size: 400% 400%;
+  animation: bgAnimation 20s ease infinite;
+
+  opacity: 0;
+  animation: pageFade 1.5s ease forwards;
+
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.08);
+}
+
+@keyframes bgAnimation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes pageFade {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dashboard-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  letter-spacing: 1.2px;
+  font-family: "Montserrat", sans-serif;
+
+  background: linear-gradient(90deg, #2b2d42, #4a90e2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dashboard-subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 3rem;
+  font-weight: 400;
+  font-family: "Roboto", sans-serif;
+  color: #374151;
+  opacity: 0.85;
+}
+
+.dashboard-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+  color: rgb(76, 74, 70);
+  margin: 0 auto 2.5rem auto;
+  max-width: 1200px;
+  justify-items: center;
+  align-items: stretch;
+}
+
+/* Button styles with gradient */
+.nav-btn {
+  font-size: 1.15rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.35s ease;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  font: arial;
+
+  width: 100%;
+  max-width: 260px;
+  padding: 1.5rem 2rem;
+  border-radius: 20px;
+  text-align: center;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  backdrop-filter: blur(12px);
+
+  /* Gradient button background from your 1st code */
+  background-image: linear-gradient(to right, #DE6262 0%, #FFB88C 51%, #DE6262 100%);
+  background-size: 200% auto;
+
+  border: 2px solid transparent;
+  box-shadow: 0 8px 28px rgba(74, 144, 226, 0.35);
+
+  animation: floatBtn 7s ease-in-out infinite;
+}
+
+@keyframes floatBtn {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+.nav-btn:hover {
+  transform: translateY(-6px) scale(1.07);
+  border-color: #2b2d42;
+  box-shadow: 0 14px 38px rgba(43, 45, 66, 0.35);
+  background-position: right center; /* smooth gradient shift on hover */
+}
+
+.nav-btn h2 {
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  background: linear-gradient(90deg, #ffffff, #dbeafe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.nav-btn p {
+  font-family: "Roboto", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #f3f4f6;
+  opacity: 0.95;
+}
