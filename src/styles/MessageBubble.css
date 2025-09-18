@@ -80,9 +80,11 @@
   margin-top: 12px;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
-  overflow: hidden; /* Ensures the border-radius clips the table corners */
+  overflow: hidden;
+  /* Ensures the border-radius clips the table corners */
   max-width: 100%;
-  overflow-x: auto; /* Allows horizontal scrolling on small screens */
+  overflow-x: auto;
+  /* Allows horizontal scrolling on small screens */
 }
 
 .data-table-container table {
@@ -108,16 +110,99 @@
   border-bottom: none;
 }
 
+.multiple-tables-container {
+  width: 100%;
+  margin: 12px 0;
+}
+
+.order-table-section {
+  margin-bottom: 24px;
+}
+
+.order-header {
+  background-color: var(--bg-primary, #ffffff);
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-bottom: none;
+  /* Connect to table */
+  padding: 12px;
+  margin: 12px 0 0 0;
+  border-radius: 8px 8px 0 0;
+  /* Only round top corners */
+  font-size: 14px;
+  color: var(--text-primary, #333);
+  font-weight: 600;
+}
+
+.table-separator {
+  height: 20px;
+  background: transparent;
+  margin: 0;
+}
+
+/* Override data-table-container for multiple tables to connect with headers */
+.order-table-section .data-table-container {
+  margin-top: 0;
+  border-radius: 0 0 8px 8px;
+  /* Only round bottom corners */
+  border-top: none;
+  /* Remove top border to connect with header */
+}
+
+/* Ensure first table section has proper spacing */
+.multiple-tables-container .order-table-section:first-child {
+  margin-top: 0;
+}
+
+/* Enhanced styles for supplier selection tables */
+.multiple-tables-container .data-table-container td:last-child {
+  font-weight: 600;
+}
+
+/* Style for recommended suppliers - using a more visible approach */
+.multiple-tables-container .data-table-container tbody tr:first-child {
+  background-color: #f0f9ff;
+  font-weight: 600;
+}
+
+.multiple-tables-container .data-table-container tbody tr:first-child td:last-child {
+  color: #2563eb;
+}
+
+/* Hover effects matching your existing style */
+.multiple-tables-container .data-table-container tr:hover {
+  background-color: #f9f9f9;
+}
+
+.multiple-tables-container .data-table-container tbody tr:first-child:hover {
+  background-color: #e0f2fe;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .order-header {
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  .order-table-section {
+    margin-bottom: 20px;
+  }
+
+  .multiple-tables-container {
+    margin: 10px 0;
+  }
+}
+
 @media (max-width: 768px) {
   .message-content {
     gap: 0.75rem;
   }
-  
+
   .message-avatar {
     width: 1.75rem;
     height: 1.75rem;
   }
-  
+
   .message-text {
     padding: 0.625rem;
   }
