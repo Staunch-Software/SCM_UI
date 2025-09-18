@@ -1,20 +1,20 @@
-import { useState } from 'react'
-import ChatInterface from './components/ChatInterface'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// import { useState } from 'react'
+// import ChatInterface from './components/ChatInterface'
+// import reactLogo from './assets/react.svg'
+// import viteLogo from '/vite.svg'
+// import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+// function App() {
+//   const [count, setCount] = useState(0)
 
-  return (
-    <div className="App">
-      <ChatInterface />
-    </div>
-  )
-}
+//   return (
+//     <div className="App">
+//       <ChatInterface />
+//     </div>
+//   )
+// }
 
-export default App
+// export default App
 import React, { useState } from "react";
 import "./App.css";
 import Dashboard from "./components/Dashboard";
