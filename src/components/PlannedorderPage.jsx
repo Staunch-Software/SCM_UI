@@ -1,32 +1,47 @@
 import React, { useState, useEffect } from "react";
 import "../styles/PlannedorderPage.css";
 
-const PlannedOrdersPage = () => {
+const PlannedOrdersPage = ({ setCurrentPage }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [sortField, setSortField] = useState("planned_order_id");
   const [sortOrder, setSortOrder] = useState("asc");
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/planned-orders")
-      .then((res) => res.json())
-      .then((data) => {
-        setOrders(data);
-        setLoading(false);
-      })
-      .catch((err) => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await fetch("http://127.0.0.1:8000/api/planned-orders");
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Fetched orders:', data); // Debug log
+        
+        setOrders(Array.isArray(data) ? data : []);
+      } catch (err) {
         console.error("Error fetching planned orders:", err);
+        setError(err.message);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchOrders();
   }, []);
 
   const filteredOrders = orders
     .filter((o) => {
       const matchesSearch =
-        o.planned_order_id.toLowerCase().includes(search.toLowerCase()) ||
-        o.item.toLowerCase().includes(search.toLowerCase());
+        (o.planned_order_id?.toString().toLowerCase().includes(search.toLowerCase()) ||
+        o.item?.toLowerCase().includes(search.toLowerCase())) ?? false;
 
       const matchesFilter =
         filterType === "all" ? true : o.item_type === filterType;
@@ -34,8 +49,8 @@ const PlannedOrdersPage = () => {
       return matchesSearch && matchesFilter;
     })
     .sort((a, b) => {
-      const valA = a[sortField].toString().toLowerCase();
-      const valB = b[sortField].toString().toLowerCase();
+      const valA = (a[sortField]?.toString().toLowerCase()) ?? '';
+      const valB = (b[sortField]?.toString().toLowerCase()) ?? '';
 
       if (valA < valB) return sortOrder === "asc" ? -1 : 1;
       if (valA > valB) return sortOrder === "asc" ? 1 : -1;
@@ -51,26 +66,68 @@ const PlannedOrdersPage = () => {
     }
   };
 
-  if (loading) return <p className="loading">Loading...</p>;
-  if (!orders.length) return <p className="empty">No planned orders found.</p>;
+  const handleBackToDashboard = () => {
+    if (setCurrentPage) {
+      setCurrentPage("dashboard");
+    } else {
+      // Fallback for direct navigation
+      window.location.href = "/dashboard";
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="planned-orders-page">
+        <p className="loading">Loading planned orders...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="planned-orders-page">
+        <button className="back-btn" onClick={handleBackToDashboard}>
+          ← Back to Dashboard
+        </button>
+        <div className="error-message">
+          <h2>Error Loading Orders</h2>
+          <p>Failed to fetch planned orders: {error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="retry-btn"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!orders.length) {
+    return (
+      <div className="planned-orders-page">
+        <button className="back-btn" onClick={handleBackToDashboard}>
+           Back to Dashboard
+        </button>
+        <h1 className="title"> Planned Orders</h1>
+        <p className="empty">No planned orders found.</p>
+      </div>
+    );
+  }
 
   return (
-    
     <div className="planned-orders-page">
-      <button
-          className="back-btn"
-          onClick={() => (window.location.href = "/dashboard")}
-        >
-          ⬅ Back to Dashboard
-        </button>
+      <button className="back-btn" onClick={handleBackToDashboard}>
+        ← Back to Dashboard
+      </button>
 
-      <h1 className="title">📝 Planned Orders</h1>
+      <h1 className="title"> Planned Orders</h1>
 
       {/* Controls */}
       <div className="controls">
         <input
           type="text"
-          placeholder="🔍 Search orders..."
+          placeholder=" Search orders..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="search-input"
@@ -86,6 +143,12 @@ const PlannedOrdersPage = () => {
           <option value="Manufacture">Manufacture</option>
         </select>
       </div>
+
+      {/* Results count */}
+      <div className="results-info">
+        Showing {filteredOrders.length} of {orders.length} orders
+      </div>
+
       {/* Table */}
       <div className="table-container">
         <table className="orders-table">
@@ -104,20 +167,21 @@ const PlannedOrdersPage = () => {
             </tr>
           </thead>
           <tbody>
-  {filteredOrders.map((o, idx) => (
-    <tr key={idx}>
-      <td>{idx + 1}</td>
-      <td>{o.planned_order_id}</td>
-      <td>{o.item}</td>
-      <td>{o.quantity}</td>
-      <td>{o.suggested_due_date}</td>
-      <td>
-        <span className={`badge ${o.item_type}`}>{o.item_type}</span>
-      </td>
-    </tr>
-  ))}
-</tbody>
-
+            {filteredOrders.map((o, idx) => (
+              <tr key={o.planned_order_id || idx}>
+                <td>{idx + 1}</td>
+                <td>{o.planned_order_id || 'N/A'}</td>
+                <td>{o.item || 'N/A'}</td>
+                <td>{o.quantity || 'N/A'}</td>
+                <td>{o.suggested_due_date || 'N/A'}</td>
+                <td>
+                  <span className={`badge ${o.item_type || 'default'}`}>
+                    {o.item_type || 'N/A'}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       </div>
     </div>

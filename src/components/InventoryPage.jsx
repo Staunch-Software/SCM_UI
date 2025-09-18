@@ -42,7 +42,7 @@ const InventoryPage = () => {
         >
           ⬅ Back to Dashboard
         </button>
-      <h1>📦 Inventory</h1>
+      <h1> Inventory</h1>
 
       {/* 🔍 Controls */}
       <div className="controls">

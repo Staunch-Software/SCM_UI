@@ -1,65 +1,42 @@
+/* Enhanced Professional CustomersPage.css - Matching PlannedOrdersPage Style */
+
+/* --- Page Layout --- */
 .customers-page {
   padding: 2rem;
-  background: #fdfdfd;
+  background: #fafbfc;
   min-height: 100vh;
-  font-family: "Segoe UI", sans-serif;
-  color: #333;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  color: #1a202c;
+  line-height: 1.5;
 }
 
-.customers-page h1 {
-  font-size: 2rem;
-  color: #5b7c99;
-  margin-bottom: 1.5rem;
-  text-align: center;
-  text-shadow: 0 1px 3px rgba(91, 124, 153, 0.15);
+/* --- Back Button --- */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 2rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #4a5568;
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* --- Vendor Style Table --- */
-.customers-page .table-container {
-  overflow-x: auto;
-  border-radius: 0.9rem;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+.back-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e0;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
-.customers-page table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.customers-page th,
-.customers-page td {
-  padding: 1rem;
-  text-align: center;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.customers-page th {
-  background: #4a90e2;
-  color: white;
-  font-size: 1rem;
-  text-transform: uppercase;
-}
-
-.customers-page tbody tr {
-  transition: background 0.25s, box-shadow 0.25s;
-}
-
-.customers-page tbody tr:hover {
-  background: #f9f9ff;
-  box-shadow: inset 0 0 0 9999px rgba(91, 124, 153, 0.05);
-}
-
-/* --- Sorting highlight --- */
-.customers-page th.sortable {
-  color: #5b7c99;
-}
-
-.customers-page th.sortable:hover {
-  color: #3b4d61;
+.back-btn:active {
+  transform: scale(0.98);
 }
 
 /* --- Page Header --- */
@@ -67,39 +44,158 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
-/* --- Back Button --- */
-.back-btn {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: #fff;
-  border: none;
-  padding: 0.7rem 1.5rem;
-  border-radius: 8px;
-  font-size: 0.95rem;
+/* --- Title --- */
+.customers-page h1 {
+  font-size: 2rem;
   font-weight: 600;
+  margin-bottom: 2rem;
+  color: #2d3748;
+  letter-spacing: -0.025em;
+  text-align: center;
+}
+
+/* --- Table Container --- */
+.table-container {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Table --- */
+.customers-page table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.customers-page th {
+  background: #f7fafc;
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #4a5568;
+  border-bottom: 1px solid #e2e8f0;
+  user-select: none;
+}
+
+.customers-page th.sortable {
   cursor: pointer;
-  transition: all 0.3s ease-in-out;
-  box-shadow: 0 4px 12px rgba(118, 75, 162, 0.2);
+  transition: color 0.2s ease;
 }
 
-.back-btn:hover {
-  background: linear-gradient(135deg, #5a67d8, #6b46c1);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(118, 75, 162, 0.3);
+.customers-page th.sortable:hover {
+  color: #2d3748;
 }
 
-.back-btn:active {
-  transform: scale(0.97);
+.customers-page td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.875rem;
+  color: #4a5568;
 }
-.customers-page {
-  padding: 2rem;
-  min-height: 100vh;
-  font-family: "Segoe UI", sans-serif;
-  color: #333;
 
-  /* Updated background with gradient */
-  background: #f7ebeb;
-  background: radial-gradient(circle, rgba(247, 235, 235, 1) 100%, rgba(245, 233, 233, 1) 100%);
+.customers-page tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.customers-page tbody tr:hover {
+  background: #f8fafc;
+}
+
+.customers-page tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* --- Loading & Empty States --- */
+.loading,
+.no-data {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #718096;
+  font-size: 1rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  margin-top: 2rem;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 1024px) {
+  .customers-page {
+    padding: 1.5rem;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .customers-page {
+    padding: 1rem;
+  }
+  
+  .customers-page h1 {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+  }
+  
+  .customers-page th,
+  .customers-page td {
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+  }
+  
+  .customers-page th {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .customers-page th:first-child,
+  .customers-page td:first-child {
+    display: none;
+  }
+}
+
+/* --- Focus States for Accessibility --- */
+.back-btn:focus {
+  outline: 2px solid #4299e1;
+  outline-offset: 2px;
+}
+
+/* --- Animation for smooth loading --- */
+.customers-page tbody tr {
+  opacity: 0;
+  animation: fadeInRow 0.3s ease forwards;
+}
+
+.customers-page tbody tr:nth-child(1) { animation-delay: 0.05s; }
+.customers-page tbody tr:nth-child(2) { animation-delay: 0.1s; }
+.customers-page tbody tr:nth-child(3) { animation-delay: 0.15s; }
+.customers-page tbody tr:nth-child(4) { animation-delay: 0.2s; }
+.customers-page tbody tr:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes fadeInRow {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

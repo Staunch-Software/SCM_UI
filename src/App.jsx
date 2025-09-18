@@ -1,86 +1,55 @@
-// import { useState } from 'react'
-// import ChatInterface from './components/ChatInterface'
-// import reactLogo from './assets/react.svg'
-// import viteLogo from '/vite.svg'
-// import './App.css'
+import React, { useState } from 'react';
+import Navbar from './components/NavBar';
+import Dashboard from './components/Dashboard';
+import ChatInterface from './components/ChatInterface';
+import PlannedOrdersPage from './components/PlannedorderPage';
+import InventoryPage from './components/InventoryPage';
+import CustomersPage from './components/CustomersPage';
+import VendorsPage from './components/VendorsPage';
+import './App.css';
 
-// function App() {
-//   const [count, setCount] = useState(0)
+const App = () => {
+  const [currentPage, setCurrentPage] = useState('dashboard');
 
-//   return (
-//     <div className="App">
-//       <ChatInterface />
-//     </div>
-//   )
-// }
+  const handleNavigation = (page) => {
+    setCurrentPage(page);
+  };
 
-// export default App
-import React, { useState } from "react";
-import "./App.css";
-import Dashboard from "./components/Dashboard";
-import PlannedOrdersPage from "./components/PlannedorderPage";
-import InventoryPage from "./components/InventoryPage";
-import CustomersPage from "./components/CustomersPage"; // ✅ import added
-import ChatInterface from "./components/ChatInterface";
-import VendorsPage from "./components/VendorsPage";
-import { FaHome, FaComments } from "react-icons/fa";
+  const handleNewChat = () => {
+    setCurrentPage('chatbox');
+  };
 
-function App() {
-  const [currentPage, setCurrentPage] = useState("dashboard");
+  const renderCurrentPage = () => {
+    switch (currentPage) {
+      case 'dashboard':
+        return <Dashboard setCurrentPage={setCurrentPage} />;
+      case 'chatbox':
+        return <ChatInterface />;
+      case 'orders':
+        return <PlannedOrdersPage />;
+      case 'inventory':
+        return <InventoryPage />;
+      case 'customers':
+        return <CustomersPage />;
+      case 'vendors':
+        return <VendorsPage setCurrentPage={setCurrentPage} />;
+      default:
+        return <Dashboard setCurrentPage={setCurrentPage} />;
+    }
+  };
 
   return (
-    <div className="app-container">
-      {/* Sidebar */}
-      <div className="sidebar">
-        <div
-          className={`sidebar-item ${currentPage === "dashboard" ? "active" : ""}`}
-          onClick={() => setCurrentPage("dashboard")}
-        >
-          <FaHome className="sidebar-icon" />
-          <span>Main Dashboard</span>
-        </div>
-
-        <div
-          className={`sidebar-item ${currentPage === "chatbox" ? "active" : ""}`}
-          onClick={() => setCurrentPage("chatbox")}
-        >
-          <FaComments className="sidebar-icon" />
-          <span>Chatbox</span>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="main-content">
-        {currentPage === "dashboard" && (
-          <Dashboard setCurrentPage={setCurrentPage} />
-        )}
-
-        {currentPage === "orders" && (
-          <PlannedOrdersPage setCurrentPage={setCurrentPage} />
-        )}
-
-        {currentPage === "inventory" && (
-          <InventoryPage setCurrentPage={setCurrentPage} />
-        )}
-
-        {currentPage === "customers" && (
-          <CustomersPage setCurrentPage={setCurrentPage} /> 
-        )}
-
-        {currentPage === "vendors" && (
-          <VendorsPage setCurrentPage={setCurrentPage} />
-          )}
-
-        {currentPage === "chatbox" && (
-          <div className="chatbox">
-            <div className="chatbox-body">
-              <ChatInterface />
-            </div>
-          </div>
-        )}
-      </div>
+    <div className="app">
+      <Navbar 
+        currentPage={currentPage}
+        onNavigate={handleNavigation}
+        onNewChat={handleNewChat}
+      />
+      <main className="main-content">
+        {renderCurrentPage()}
+      </main>
     </div>
   );
-}
+};
 
 export default App;
