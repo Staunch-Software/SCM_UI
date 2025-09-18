@@ -1,44 +1,23 @@
-import React from 'react';
-import { Plus, User } from 'lucide-react';
+import { Home, MessageSquare } from 'lucide-react';
 import '../styles/Sidebar.css';
 
-const Sidebar = ({ 
-  conversations, 
-  currentConversation, 
-  onNewChat, 
-  onSelectConversation,
-  isOpen = true 
-}) => {
+const Sidebar = ({ currentPage, onSelectDashboard, onSelectChatbox }) => {
   return (
-    <div className={`sidebar ${isOpen ? 'open' : ''}`}>
-      <div className="sidebar-header">
-        <button onClick={onNewChat} className="new-chat-btn">
-          <Plus size={16} />
-          New conversation
-        </button>
+    <div className="sidebar">
+      <div 
+        className={`sidebar-item ${currentPage === 'dashboard' ? 'active' : ''}`}
+        onClick={onSelectDashboard}
+      >
+        <Home size={16} />
+        <span>Main Dashboard</span>
       </div>
-      
-      <div className="conversations-list">
-        <div className="conversations">
-          {conversations.map((conversation, index) => (
-            <div
-              key={conversation.id || index}
-              onClick={() => onSelectConversation(conversation)}
-              className={`conversation-item ${
-                currentConversation === conversation.id ? 'active' : ''
-              }`}
-            >
-              {conversation.title || `Conversation ${index + 1}`}
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      <div className="sidebar-footer">
-        <div className="user-info">
-          <User size={16} />
-          <span>User Account</span>
-        </div>
+
+      <div 
+        className={`sidebar-item ${currentPage === 'chatbox' ? 'active' : ''}`}
+        onClick={onSelectChatbox}
+      >
+        <MessageSquare size={16} />
+        <span>Chatbox</span>
       </div>
     </div>
   );

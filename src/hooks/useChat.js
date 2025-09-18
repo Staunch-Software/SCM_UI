@@ -6,6 +6,7 @@ const API_BASE_URL =  'http://localhost:8000';
 export const useChat = (initialMessages = []) => {
   const [messages, setMessages] = useState(initialMessages);
   const [isTyping, setIsTyping] = useState(false);
+  const [sessionId, setSessionId] = useState(null);
 
   const addMessage = useCallback((message) => {
     setMessages(prev => [...prev, message]);
@@ -28,7 +29,7 @@ export const useChat = (initialMessages = []) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: content }),
+        body: JSON.stringify({ message: content, session_id: sessionId }),
       });
 
       if (!response.ok) {
@@ -36,7 +37,7 @@ export const useChat = (initialMessages = []) => {
       }
 
       const data = await response.json();
-      
+      setSessionId(data.session_id);
       // Create AI message with the response
       const aiMessage = createMessage(data.response, 'assistant');
       addMessage(aiMessage);
@@ -53,10 +54,11 @@ export const useChat = (initialMessages = []) => {
     } finally {
       setIsTyping(false);
     }
-  }, [addMessage]);
+  }, [addMessage, sessionId]);
 
   const clearMessages = useCallback(() => {
     setMessages([]);
+    setSessionId(null);
   }, []);
 
   return {

@@ -1,0 +1,198 @@
+/* --- Page Layout --- */
+.planned-orders-page {
+  padding: 2.5rem;
+  background: linear-gradient(135deg, #fafafa, #f3f1ff);
+  min-height: 100vh;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  color: #2d2d3a;
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+/* --- Title --- */
+.title {
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #4b0082;
+  text-align: center;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 3px rgba(75, 0, 130, 0.2);
+  animation: slideDown 0.7s ease;
+}
+
+/* --- Controls --- */
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.search-input,
+.filter-select {
+  padding: 0.7rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.6rem;
+  font-size: 0.95rem;
+  background: #fff;
+  transition: all 0.25s ease-in-out;
+  box-shadow: 0 2px 6px rgba(106, 90, 205, 0.08);
+}
+
+.search-input:focus,
+.filter-select:focus {
+  outline: none;
+  border-color: #6a5acd;
+  box-shadow: 0 0 8px rgba(106, 90, 205, 0.3);
+}
+
+/* --- Buttons --- */
+.button {
+  padding: 0.7rem 1.3rem;
+  border-radius: 0.6rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #6a5acd, #4f46e5);
+  color: white;
+  transition: all 0.25s ease-in-out;
+  box-shadow: 0 3px 10px rgba(106, 90, 205, 0.3);
+}
+
+.button:hover {
+  background: linear-gradient(135deg, #4f46e5, #6a5acd);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(106, 90, 205, 0.4);
+}
+
+/* --- Table Container --- */
+.table-container {
+  overflow-x: auto;
+  border-radius: 0.9rem;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  background: white;
+  animation: fadeInUp 1s ease;
+}
+
+/* --- Table --- */
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.orders-table th,
+.orders-table td {
+  padding: 1rem 1.2rem;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.orders-table th {
+  background: #eceaff;
+  color: #483d8b;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  cursor: pointer;
+  user-select: none;
+  letter-spacing: 0.5px;
+}
+
+.orders-table tr {
+  transition: background 0.25s, transform 0.2s;
+}
+
+.orders-table tr:hover {
+  background: #f6f4ff;
+  transform: scale(1.01);
+}
+
+/* --- Sorting Highlight --- */
+.sortable {
+  color: #6a5acd;
+}
+
+.orders-table th.sortable:hover {
+  color: #4f46e5;
+}
+
+/* --- Badges for Item Type --- */
+.badge {
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.badge.Purchase {
+  background: #e0f7fa;
+  color: #00796b;
+}
+
+.badge.Manufacture {
+  background: #f3e5f5;
+  color: #6a1b9a;
+}
+
+/* --- Loading & Empty States --- */
+.loading,
+.empty {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.1rem;
+  color: #666;
+  font-style: italic;
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+/* --- Animations --- */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .orders-table th,
+  .orders-table td {
+    padding: 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  .title {
+    font-size: 1.8rem;
+  }
+
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+/* --- Page Layout --- */
+.planned-orders-page {
+  padding: 2.5rem;
+  /* Updated background */
+  background: #f7ebeb;
+  background: radial-gradient(circle, rgba(247, 235, 235, 1) 100%, rgba(245, 233, 233, 1) 100%);
+  
+  min-height: 100vh;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  color: #2d2d3a;
+  animation: fadeIn 0.8s ease-in-out;
+}
+
