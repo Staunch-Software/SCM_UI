@@ -195,10 +195,10 @@ const VendorMetricsPage = ({ setCurrentPage }) => {
           <h2 className="vendor-name">{vendor.vendor_name}</h2>
 
           <div className="metrics-grid">
-            <div className="metric-box">
+            {/* <div className="metric-box">
               <h3>Rank</h3>
               <p>{vendor.rank !== undefined ? vendor.rank : "N/A"}</p>
-            </div>
+            </div> */}
             <div className="metric-box">
               <h3>On Time Delivery</h3>
               <p className={getScoreClass(vendor.on_time_delivery_pct)}>{formatPercent(vendor.on_time_delivery_pct)}</p>
