@@ -1,8 +1,6 @@
 import "../styles/dashboard.css";
 import React, { useState, useEffect } from "react";
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -13,8 +11,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  AreaChart,
-  Area,
 } from "recharts";
 import {
   TrendingUp,
@@ -35,31 +31,50 @@ const EnhancedDashboard = () => {
     newOrders: 0,
     supplierCount: 0,
   });
-  const [plannedOrders, setPlannedOrders] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [manufacturingData, setManufacturingData] = useState([]);
+  const [currentOrdersCount, setCurrentOrdersCount] = useState({
+    manufacture: 0,
+    purchase: 0,
+  });
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // Fetch metrics, planned orders, vendors
-        const [metricsRes, plannedOrdersRes, vendorsRes] = await Promise.all([
-          fetch("/api/metrics"),
-          fetch("/api/planned-orders"),
-          fetch("/api/vendors"),
+        const [
+          metricsRes,
+          vendorsRes,
+          manufacturingRes,
+          orderSummaryRes,
+        ] = await Promise.all([
+          fetch("http://127.0.0.1:8000/api/vendors_metrics"),
+          fetch("http://127.0.0.1:8000/api/odoo_vendors"),
+          fetch("http://127.0.0.1:8000/api/manufacturing-summary"),
+          fetch("http://127.0.0.1:8000/api/order-type-summary"),
         ]);
 
-        if (!metricsRes.ok || !plannedOrdersRes.ok || !vendorsRes.ok) {
+        if (
+          !metricsRes.ok ||
+          !vendorsRes.ok ||
+          !manufacturingRes.ok ||
+          !orderSummaryRes.ok
+        ) {
           throw new Error("Failed to fetch some API data");
         }
 
         const metricsData = await metricsRes.json();
-        const plannedOrdersData = await plannedOrdersRes.json();
         const vendorsData = await vendorsRes.json();
+        const manufacturingSummaryData = await manufacturingRes.json();
+        const orderSummaryData = await orderSummaryRes.json();
 
         setMetrics(metricsData);
-        setPlannedOrders(plannedOrdersData);
         setVendors(vendorsData);
+        processManufacturingData(manufacturingSummaryData);
+        setCurrentOrdersCount({
+          manufacture: orderSummaryData.manufacture_count,
+          purchase: orderSummaryData.purchase_count,
+        });
 
         setLoading(false);
       } catch (error) {
@@ -71,43 +86,63 @@ const EnhancedDashboard = () => {
     fetchDashboardData();
   }, []);
 
-  // Prepare data for charts from backend
-  const manufacturingData = plannedOrders
-    .filter((o) => o.item_type === "Manufacture")
-    .map((mo) => ({
-      month: new Date(mo.suggested_due_date).toLocaleString("default", {
-        month: "short",
-      }),
-      completed: 0, // You can fetch completed qty from Odoo if available
-      inProgress: 0, // Or calculate dynamically
-      planned: mo.quantity,
-    }));
+  const processManufacturingData = (orders) => {
+    const monthlyData = {};
 
-  const supplierPerformance = vendors.map((v) => ({
-    name: v.vendor_name,
-    performance: Math.round((v.delivery + v.quality + v.efficiency) / 3),
-    orders: v.totalOrders || 0,
-  }));
+    orders.forEach((order) => {
+      if (!order.date_start) return;
+      const date = new Date(order.date_start);
+      const monthKey = date.toLocaleString("default", { month: "short", year: "numeric" });
+
+      if (!monthlyData[monthKey]) {
+        monthlyData[monthKey] = {
+          month: date.toLocaleString("default", { month: "short" }),
+          fullDate: date,
+          completed: 0,
+          inProgress: 0,
+          planned: 0,
+        };
+      }
+
+      const qty = order.product_qty || 0;
+      switch (order.state) {
+        case "done":
+          monthlyData[monthKey].completed += qty;
+          break;
+        case "progress":
+        case "to_close":
+          monthlyData[monthKey].inProgress += qty;
+          break;
+        case "confirmed":
+        case "draft":
+          monthlyData[monthKey].planned += qty;
+          break;
+        default:
+          break;
+      }
+    });
+
+    const sortedData = Object.values(monthlyData).sort((a, b) => a.fullDate - b.fullDate);
+    setManufacturingData(sortedData);
+  };
+
+  const supplierPerformance = vendors.map((v) => {
+    const scores = [v.delivery, v.quality, v.efficiency].filter(
+      (score) => typeof score === "number"
+    );
+    const averageScore =
+      scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+    return {
+      name: v.vendor_name,
+      performance: Math.round(averageScore),
+      orders: v.totalOrders || 0,
+    };
+  });
 
   const currentManufacturing = [
-    { name: "Manufacture", value: plannedOrders.filter(o => o.item_type==="Manufacture").length, color: "#3B82F6" },
-    { name: "Purchase", value: plannedOrders.filter(o => o.item_type==="Purchase").length, color: "#10B981" },
+    { name: "Manufacture", value: currentOrdersCount.manufacture, color: "#3B82F6" },
+    { name: "Purchase", value: currentOrdersCount.purchase, color: "#10B981" },
   ];
-
-  const kpiTrends = [
-    {
-      period: "W1",
-      efficiency: metrics.totalUnitsSold,
-      quality: metrics.totalRevenue,
-      delivery: metrics.totalComponentSpend,
-    },
-    {
-      period: "W2",
-      efficiency: metrics.totalUnitsSold,
-      quality: metrics.totalRevenue,
-      delivery: metrics.totalComponentSpend,
-    },
-  ]; // Replace with better backend KPI if available
 
   const formatNumber = (num) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
@@ -163,13 +198,11 @@ const EnhancedDashboard = () => {
 
   return (
     <div className="dashboard-container">
-      {/* Header */}
       <div className="dashboard-header">
         <h1 className="dashboard-title">Supply Chain Dashboard</h1>
         <p className="dashboard-subtitle">Overview of key metrics and performance indicators</p>
       </div>
 
-      {/* Metrics Cards */}
       <div className="metrics-grid">
         <MetricCard title="Total Revenue" value={metrics.totalRevenue} change={12.5} icon={DollarSign} color="#10b981" prefix="$" />
         <MetricCard title="Total Units Sold" value={metrics.totalUnitsSold} change={8.2} icon={Package} color="#3b82f6" />
@@ -178,9 +211,7 @@ const EnhancedDashboard = () => {
         <MetricCard title="Active Suppliers" value={metrics.supplierCount} change={2.3} icon={Users} color="#8b5cf6" />
       </div>
 
-      {/* Charts Grid */}
-      <div className="charts-grid">
-        {/* Manufacturing Overview */}
+      <div className="charts-grid-half">
         <div className="chart-container">
           <div className="chart-header">
             <Factory size={24} color="#3b82f6" className="chart-icon" />
@@ -192,14 +223,32 @@ const EnhancedDashboard = () => {
               <XAxis dataKey="month" stroke="#6b7280" fontSize={12} />
               <YAxis stroke="#6b7280" fontSize={12} />
               <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="completed" fill="#10b981" name="Completed" />
-              <Bar dataKey="inProgress" fill="#f59e0b" name="In Progress" />
-              <Bar dataKey="planned" fill="#3b82f6" name="Planned" />
+              <Bar dataKey="completed" fill="#10b981" name="Completed" stackId="a" />
+              <Bar dataKey="inProgress" fill="#f59e0b" name="In Progress" stackId="a" />
+              <Bar dataKey="planned" fill="#3b82f6" name="Planned" stackId="a" />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Supplier Performance */}
+        <div className="chart-container">
+          <div className="chart-header">
+            <Package size={24} color="#8b5cf6" className="chart-icon" />
+            <h3 className="chart-title">Current Manufacturing</h3>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie data={currentManufacturing} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value">
+                {currentManufacturing.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div className="charts-grid-full">
         <div className="chart-container">
           <div className="chart-header">
             <Users size={24} color="#10b981" className="chart-icon" />
@@ -224,46 +273,6 @@ const EnhancedDashboard = () => {
               </div>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* Bottom Row Charts */}
-      <div className="bottom-charts-grid">
-        {/* Current Manufacturing */}
-        <div className="chart-container">
-          <div className="chart-header">
-            <Package size={24} color="#8b5cf6" className="chart-icon" />
-            <h3 className="chart-title">Current Manufacturing</h3>
-          </div>
-          <ResponsiveContainer width="100%" height={250}>
-            <PieChart>
-              <Pie data={currentManufacturing} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value">
-                {currentManufacturing.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* KPI Analytics Overview */}
-        <div className="chart-container">
-          <div className="chart-header">
-            <TrendingUp size={24} color="#f59e0b" className="chart-icon" />
-            <h3 className="chart-title">Key KPI Analytics</h3>
-          </div>
-          <ResponsiveContainer width="100%" height={250}>
-            <AreaChart data={kpiTrends}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-              <XAxis dataKey="period" stroke="#6b7280" fontSize={12} />
-              <YAxis stroke="#6b7280" fontSize={12} />
-              <Tooltip content={<CustomTooltip />} />
-              <Area type="monotone" dataKey="efficiency" stackId="1" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} name="Efficiency" />
-              <Area type="monotone" dataKey="quality" stackId="1" stroke="#10b981" fill="#10b981" fillOpacity={0.6} name="Quality" />
-              <Area type="monotone" dataKey="delivery" stackId="1" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.6} name="Delivery" />
-            </AreaChart>
-          </ResponsiveContainer>
         </div>
       </div>
     </div>
