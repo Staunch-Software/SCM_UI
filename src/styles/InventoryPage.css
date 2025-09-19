@@ -90,18 +90,68 @@
 
 .sort-btn {
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
   min-width: auto;
   white-space: nowrap;
   background-color: #2d3748;
   color: #ffffff;
+  border: 2px solid #2d3748;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
 }
 
 .sort-btn:hover {
-  background: #f8fafc;
-  border-color: #cbd5e0;
+  background: #4a5568;
+  border-color: #4a5568;
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 12px rgba(45, 55, 72, 0.15);
+}
+
+/* --- Filter Section (if needed) --- */
+.filter-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filter-btn {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #2d3748;
+  background: transparent;
+  color: #2d3748;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.filter-btn:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+.filter-btn:last-child {
+  border-radius: 0 6px 6px 0;
+  border-left: none;
+}
+
+.filter-btn.active {
+  background: #2d3748;
+  color: #ffffff;
+}
+
+.filter-btn:hover:not(.active) {
+  background: #f8fafc;
+  border-color: #4a5568;
 }
 
 /* --- Table Container --- */
@@ -128,7 +178,7 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #4a5568;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 2px solid #e2e8f0;
   user-select: none;
 }
 
@@ -146,6 +196,7 @@
   border-bottom: 1px solid #f1f5f9;
   font-size: 0.875rem;
   color: #4a5568;
+  vertical-align: middle;
 }
 
 .inventory-page tbody tr {
@@ -158,6 +209,59 @@
 
 .inventory-page tbody tr:last-child td {
   border-bottom: none;
+}
+
+/* --- Status Badges --- */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.status-badge.in-stock {
+  background: #e6fffa;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.status-badge.low-stock {
+  background: #fef3e2;
+  color: #b45309;
+  border: 1px solid #fcd34d;
+}
+
+.status-badge.out-of-stock {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
+
+/* --- Product Name Link --- */
+.product-name-link {
+  background: none;
+  border: none;
+  color: #2d3748;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s ease;
+  padding: 0;
+}
+
+.product-name-link:hover {
+  color: #4299e1;
+}
+
+.product-name-link:focus {
+  outline: 2px solid #4299e1;
+  outline-offset: 2px;
 }
 
 /* --- Loading & Empty States --- */
@@ -195,6 +299,16 @@
     flex: 1;
     max-width: 300px;
   }
+
+  .filter-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .filter-buttons {
+    justify-content: center;
+  }
 }
 
 @media (max-width: 768px) {
@@ -231,13 +345,29 @@
   .inventory-page th {
     font-size: 0.7rem;
   }
+
+  .filter-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
 }
 
 @media (max-width: 480px) {
-  .inventory-page th:first-child,
-  .inventory-page td:first-child {
+  .inventory-page th:nth-child(3),
+  .inventory-page td:nth-child(3),
+  .inventory-page th:nth-child(4),
+  .inventory-page td:nth-child(4) {
     display: none;
   }
+}
+
+/* --- Focus States for Accessibility --- */
+.back-arrow:focus,
+.filter-btn:focus,
+.sort-btn:focus,
+.product-name-link:focus {
+  outline: 2px solid #4299e1;
+  outline-offset: 2px;
 }
 
 /* --- Animation for smooth loading --- */

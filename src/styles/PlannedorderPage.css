@@ -1,4 +1,4 @@
-/* Enhanced Professional PlannedOrdersPage.css */
+/* Enhanced Professional PlannedOrdersPage.css - Matching VendorsPage Style */
 
 /* --- Page Layout --- */
 .planned-orders-page {
@@ -45,11 +45,71 @@
   color: #2d3748;
 }
 
+.back-arrow:focus {
+  outline: 2px solid #4299e1;
+  outline-offset: 2px;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #2d3748;
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+
 .orders-header .controls {
   display: flex;
   gap: 1rem;
   align-items: center;
   flex-wrap: nowrap;
+}
+
+/* --- Filter Section --- */
+.filter-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filter-btn {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #2d3748;
+  background: transparent;
+  color: #2d3748;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.filter-btn:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+.filter-btn:last-child {
+  border-radius: 0 6px 6px 0;
+  border-left: none;
+}
+
+.filter-btn.active {
+  background: #2d3748;
+  color: #ffffff;
+}
+
+.filter-btn:hover:not(.active) {
+  background: #f8fafc;
+  border-color: #4a5568;
 }
 
 /* --- Results Info --- */
@@ -83,6 +143,28 @@
   color: #a0aec0;
 }
 
+/* --- Action Buttons --- */
+.add-order-btn {
+  padding: 0.75rem 1.5rem;
+  background: #2d3748;
+  color: #ffffff;
+  border: 2px solid #2d3748;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.add-order-btn:hover {
+  background: #4a5568;
+  border-color: #4a5568;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(45, 55, 72, 0.15);
+}
+
 /* --- Table Container --- */
 .table-container {
   background: #ffffff;
@@ -107,7 +189,7 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #4a5568;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 2px solid #e2e8f0;
   user-select: none;
 }
 
@@ -125,6 +207,7 @@
   border-bottom: 1px solid #f1f5f9;
   font-size: 0.875rem;
   color: #4a5568;
+  vertical-align: middle;
 }
 
 .orders-table tbody tr {
@@ -137,6 +220,29 @@
 
 .orders-table tbody tr:last-child td {
   border-bottom: none;
+}
+
+/* --- Order Name Link --- */
+.order-name-link {
+  background: none;
+  border: none;
+  color: #2d3748;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s ease;
+  padding: 0;
+}
+
+.order-name-link:hover {
+  color: #4299e1;
+}
+
+.order-name-link:focus {
+  outline: 2px solid #4299e1;
+  outline-offset: 2px;
 }
 
 /* --- Badges for Item Type --- */
@@ -161,6 +267,30 @@
   background: #fef3e2;
   color: #b45309;
   border: 1px solid #fcd34d;
+}
+
+.badge.pending {
+  background: #fef3e2;
+  color: #b45309;
+  border: 1px solid #fcd34d;
+}
+
+.badge.approved {
+  background: #e6fffa;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.badge.completed {
+  background: #f0f9ff;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
+
+.badge.cancelled {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
 }
 
 .badge.default {
@@ -208,18 +338,22 @@
   display: inline-flex;
   align-items: center;
   padding: 0.75rem 1.5rem;
-  background: #e53e3e;
+  background: #2d3748;
   color: #ffffff;
-  border: none;
+  border: 2px solid #2d3748;
   border-radius: 8px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
 }
 
 .retry-btn:hover {
-  background: #c53030;
+  background: #4a5568;
+  border-color: #4a5568;
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(45, 55, 72, 0.15);
 }
 
 /* --- Sort Indicators --- */
@@ -235,6 +369,12 @@
     padding: 1.5rem;
   }
   
+  .orders-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
   .controls {
     flex-direction: column;
     align-items: stretch;
@@ -245,6 +385,16 @@
     min-width: auto;
     width: 100%;
   }
+
+  .filter-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .filter-buttons {
+    justify-content: center;
+  }
 }
 
 @media (max-width: 768px) {
@@ -254,7 +404,6 @@
   
   .title {
     font-size: 1.5rem;
-    text-align: center;
   }
   
   .table-container {
@@ -270,6 +419,12 @@
   .orders-table th {
     font-size: 0.7rem;
   }
+
+  .filter-btn,
+  .add-order-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
   
   /* Hide less important columns on mobile */
   .orders-table th:nth-child(5),
@@ -280,7 +435,9 @@
 
 @media (max-width: 480px) {
   .orders-table th:nth-child(4),
-  .orders-table td:nth-child(4) {
+  .orders-table td:nth-child(4),
+  .orders-table th:nth-child(3),
+  .orders-table td:nth-child(3) {
     display: none;
   }
   
@@ -291,7 +448,10 @@
 }
 
 /* --- Focus States for Accessibility --- */
-.back-btn:focus,
+.back-arrow:focus,
+.filter-btn:focus,
+.add-order-btn:focus,
+.order-name-link:focus,
 .search-input:focus,
 .filter-select:focus,
 .retry-btn:focus {
