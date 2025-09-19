@@ -58,9 +58,9 @@ const InputArea = ({ onSendMessage, isTyping }) => {
             <Send size={18} />
           </button>
         </div>
-        <div className="input-disclaimer">
+        {/* <div className="input-disclaimer">
           SCM can make mistakes. Please verify important information.
-        </div>
+        </div> */}
       </div>
     </div>
   );

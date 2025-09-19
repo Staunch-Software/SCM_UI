@@ -2,122 +2,358 @@ import React, { useState, useEffect } from "react";
 import "../styles/VendorsPage.css";
 
 const VendorsPage = ({ setCurrentPage }) => {
-  const [vendors, setVendors] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
+  const [vendors, setVendors] = useState([]); // For metrics
   const [loading, setLoading] = useState(true);
-  const [selectedVendor, setSelectedVendor] = useState("");
+  const [filter, setFilter] = useState("all"); // "all" or "approved"
+  const [showModal, setShowModal] = useState(false);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    street: "",
+    street2: "",
+    city: "",
+    state_id: "",
+    zip: "",
+    country_id: "",
+    x_studio_supplier_since: ""
+  });
 
-  // Fetch all vendors with all metrics
+  // Fetch suppliers list for table
+  const fetchSuppliers = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/vendors/suppliers-list");
+      const data = await response.json();
+      setSuppliers(data);
+    } catch (error) {
+      console.error("Error fetching suppliers:", error);
+    }
+  };
+
+  // Fetch vendors for metrics (keep existing functionality)
+  const fetchVendors = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/vendors/all-metrics");
+      const data = await response.json();
+      setVendors(data);
+    } catch (error) {
+      console.error("Error fetching vendors:", error);
+    }
+  };
+
   useEffect(() => {
-    setLoading(true);
-    fetch("http://127.0.0.1:8000/api/vendors/all-metrics")
-      .then((res) => res.json())
-      .then((data) => {
-        setVendors(data);
-        if (data.length > 0) setSelectedVendor(data[0].vendor_name); // default first vendor
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching vendors:", err);
-        setLoading(false);
-      });
+    const fetchData = async () => {
+      setLoading(true);
+      await Promise.all([fetchSuppliers(), fetchVendors()]);
+      setLoading(false);
+    };
+    fetchData();
   }, []);
 
-  if (loading) return <p className="loading">⏳ Loading vendors...</p>;
-  if (!vendors.length) return <p className="no-data">⚠️ No vendor records found.</p>;
+  // Filter suppliers based on approval status
+  const filteredSuppliers = suppliers.filter(supplier => {
+    if (filter === "approved") {
+      return supplier.approved === true;
+    }
+    return true; // "all" shows everything
+  });
 
-  const vendor = vendors.find((v) => v.vendor_name === selectedVendor);
-
-  // 🔹 Helper for color-coding scores
-  const getScoreClass = (value) => {
-    if (value === undefined || value === null || value === "N/A") return "";
-    const num = parseFloat(value * 100); // convert 0.75 → 75
-    if (isNaN(num)) return "";
-    if (num >= 80) return "score-high";   // Safe
-    if (num >= 50) return "score-medium"; // Medium
-    return "score-low";                   // Danger
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
-  // 🔹 Format value as percentage
-  const formatPercent = (value) => {
-    if (value === undefined || value === null) return "N/A";
-    return (parseFloat(value) * 100).toFixed(1) + "%";
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/vendors/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        setShowSuccessPopup(true);
+        
+        // Reset form
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          street: "",
+          street2: "",
+          city: "",
+          state_id: "",
+          zip: "",
+          country_id: "",
+          x_studio_supplier_since: ""
+        });
+
+        // Refresh suppliers list
+        await fetchSuppliers();
+
+        // Hide success popup after 3 seconds
+        setTimeout(() => setShowSuccessPopup(false), 3000);
+      } else {
+        alert("Failed to create supplier");
+      }
+    } catch (error) {
+      console.error("Error creating supplier:", error);
+      alert("Error creating supplier");
+    }
   };
+
+  // Navigate to metrics page with pre-selected vendor
+  const handleSupplierClick = (supplierName) => {
+    // Find the vendor in the metrics list
+    const vendor = vendors.find(v => v.vendor_name === supplierName);
+    if (vendor) {
+      // Store the selected vendor in sessionStorage or pass it as a prop
+      sessionStorage.setItem('selectedVendor', supplierName);
+      setCurrentPage("vendor-metrics");
+    }
+  };
+
+  // Format date
+  const formatDate = (dateString) => {
+    if (!dateString || dateString === 'Never') return 'Never';
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  if (loading) {
+    return (
+      <div className="vendors-page">
+        <p className="loading">Loading suppliers...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="vendors-page">
-      {/* Back Button */}
-      <button className="back-btn" onClick={() => setCurrentPage("dashboard")}>
-        ⬅ Back to Dashboard
-      </button>
-
       {/* Header */}
       <div className="vendors-header">
-        <h1 className="title">🏭 Vendor Metrics</h1>
-
-        <div className="vendor-selector">
-          <label htmlFor="vendors" className="vendor-label">
-            Choose Vendor:
-          </label>
-          <select
-            id="vendors"
-            className="vendor-select"
-            value={selectedVendor}
-            onChange={(e) => setSelectedVendor(e.target.value)}
-          >
-            {vendors.map((v, idx) => (
-              <option key={idx} value={v.vendor_name}>
-                {v.vendor_name}
-              </option>
-            ))}
-          </select>
+        <div className="title-with-back">
+          <button className="back-arrow" onClick={() => setCurrentPage("dashboard")}>
+            ←
+          </button>
+          <h1 className="title">Suppliers</h1>
         </div>
       </div>
 
-      {/* Score Legend */}
-      <div style={{ marginBottom: "20px", display: "flex", gap: "20px", flexWrap: "wrap" }}>
-        <span><span className="score-high status-dot"></span> Safe (&ge; 80%)</span>
-        <span><span className="score-medium status-dot"></span> Medium (50–79%)</span>
-        <span><span className="score-low status-dot"></span> Danger (&lt; 50%)</span>
+      {/* Filter Buttons */}
+      <div className="filter-section">
+        <div className="filter-buttons">
+          <button 
+            className={`filter-btn ${filter === "all" ? "active" : ""}`}
+            onClick={() => setFilter("all")}
+          >
+            ALL
+          </button>
+          <button 
+            className={`filter-btn ${filter === "approved" ? "active" : ""}`}
+            onClick={() => setFilter("approved")}
+          >
+            APPROVED
+          </button>
+        </div>
+        <button 
+          className="add-supplier-btn"
+          onClick={() => setShowModal(true)}
+        >
+          ADD SUPPLIER
+        </button>
       </div>
 
-      {/* Metrics Display */}
-      {vendor && (
-        <div className="vendor-card">
-          <h2 className="vendor-name">{vendor.vendor_name}</h2>
+      {/* Suppliers Table */}
+      <div className="table-container">
+        <table className="suppliers-table">
+          <thead>
+            <tr>
+              <th>SUPPLIER NAME</th>
+              <th>STATUS</th>
+              <th>LAST ORDER</th>
+              <th>IN PROGRESS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredSuppliers.map((supplier) => (
+              <tr key={supplier.id}>
+                <td>
+                  <button 
+                    className="supplier-name-link"
+                    onClick={() => handleSupplierClick(supplier.name)}
+                  >
+                    {supplier.name}
+                  </button>
+                </td>
+                <td>
+                  <span className={`status-badge ${supplier.approved ? 'approved' : 'pending'}`}>
+                    {supplier.approved ? 'Approved' : 'Pending'}
+                  </span>
+                </td>
+                <td>{formatDate(supplier.last_order)}</td>
+                <td>{supplier.in_progress}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-          <div className="metrics-grid">
-            <div className="metric-box">
-              <h3>📊 Rank</h3>
-              <p>{vendor.rank !== undefined ? vendor.rank : "N/A"}</p>
+      {/* Add Supplier Modal */}
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Add New Supplier</h2>
+              <button 
+                className="modal-close"
+                onClick={() => setShowModal(false)}
+              >
+                ×
+              </button>
             </div>
-            <div className="metric-box">
-              <h3>🚚 Delivery Accuracy</h3>
-              <p className={getScoreClass(vendor.delivery)}>{formatPercent(vendor.delivery)}</p>
-            </div>
-            <div className="metric-box">
-              <h3>✅ Quality</h3>
-              <p className={getScoreClass(vendor.quality)}>{formatPercent(vendor.quality)}</p>
-            </div>
-            <div className="metric-box">
-              <h3>⚡ Efficiency</h3>
-              <p className={getScoreClass(vendor.efficiency)}>{formatPercent(vendor.efficiency)}</p>
-            </div>
-            <div className="metric-box">
-              <h3>💰 Cost</h3>
-              <p className={getScoreClass(vendor.cost)}>{formatPercent(vendor.cost)}</p>
-            </div>
-            <div className="metric-box">
-              <h3>⚠️ Risk</h3>
-              <p className={getScoreClass(vendor.risk)}>{formatPercent(vendor.risk)}</p>
-            </div>
-            <div className="metric-box">
-              <h3>🤝 Relationship</h3>
-              <p className={getScoreClass(vendor.relationship)}>{formatPercent(vendor.relationship)}</p>
-            </div>
-            <div className="metric-box">
-              <h3>🌱 Sustainability</h3>
-              <p className={getScoreClass(vendor.sustainability)}>{formatPercent(vendor.sustainability)}</p>
-            </div>
+            <form onSubmit={handleSubmit} className="supplier-form">
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Name *</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Phone</label>
+                  <input
+                    type="text"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Supplier Since</label>
+                  <input
+                    type="date"
+                    name="x_studio_supplier_since"
+                    value={formData.x_studio_supplier_since}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group full-width">
+                  <label>Street Address</label>
+                  <input
+                    type="text"
+                    name="street"
+                    value={formData.street}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group full-width">
+                  <label>Street Address 2</label>
+                  <input
+                    type="text"
+                    name="street2"
+                    value={formData.street2}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>City</label>
+                  <input
+                    type="text"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>State</label>
+                  <input
+                    type="text"
+                    name="state_id"
+                    value={formData.state_id}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>ZIP Code</label>
+                  <input
+                    type="text"
+                    name="zip"
+                    value={formData.zip}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Country</label>
+                  <input
+                    type="text"
+                    name="country_id"
+                    value={formData.country_id}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+
+              <div className="form-actions">
+                <button 
+                  type="button" 
+                  className="cancel-btn"
+                  onClick={() => setShowModal(false)}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="submit-btn">
+                  Create Supplier
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Success Popup */}
+      {showSuccessPopup && (
+        <div className="success-popup">
+          <div className="success-content">
+            <span className="success-icon">✓</span>
+            Supplier added successfully!
           </div>
         </div>
       )}

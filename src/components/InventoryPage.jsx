@@ -36,32 +36,29 @@ const InventoryPage = () => {
 
   return (
     <div className="inventory-page">
-      <button
-          className="back-btn"
-          onClick={() => (window.location.href = "/dashboard")}
-        >
-          ⬅ Back to Dashboard
-        </button>
-      <h1> Inventory</h1>
+      <div className="inventory-header">
+        <div className="title-with-back">
+          <button className="back-arrow" onClick={() => window.location.href = "/dashboard"}>
+            ←
+          </button>
+          <h1 className="title">Inventory</h1>
+        </div>
 
-      {/* 🔍 Controls */}
-      <div className="controls">
-        <input
-          type="text"
-          placeholder="Search by product name..."
-          className="search-input"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-
-        <button
-          className="sort-btn"
-          onClick={() =>
-            setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
-          }
-        >
-          Sort by Quantity ({sortOrder === "asc" ? "Low → High" : "High → Low"})
-        </button>
+        <div className="controls">
+          <input
+            type="text"
+            placeholder="Search by product name..."
+            className="search-input"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <button
+            className="sort-btn"
+            onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}
+          >
+            Sort by Quantity ({sortOrder === "asc" ? "Low → High" : "High → Low"})
+          </button>
+        </div>
       </div>
 
       {/* 📋 Table */}

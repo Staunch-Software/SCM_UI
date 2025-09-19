@@ -15,16 +15,16 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
       try {
         setLoading(true);
         setError(null);
-        
+
         const response = await fetch("http://127.0.0.1:8000/api/planned-orders");
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const data = await response.json();
         console.log('Fetched orders:', data); // Debug log
-        
+
         setOrders(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Error fetching planned orders:", err);
@@ -41,7 +41,7 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
     .filter((o) => {
       const matchesSearch =
         (o.planned_order_id?.toString().toLowerCase().includes(search.toLowerCase()) ||
-        o.item?.toLowerCase().includes(search.toLowerCase())) ?? false;
+          o.item?.toLowerCase().includes(search.toLowerCase())) ?? false;
 
       const matchesFilter =
         filterType === "all" ? true : o.item_type === filterType;
@@ -78,7 +78,7 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
   if (loading) {
     return (
       <div className="planned-orders-page">
-        <p className="loading">Loading planned orders...</p>
+        <p className="loading">Loading orders...</p>
       </div>
     );
   }
@@ -91,9 +91,9 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
         </button>
         <div className="error-message">
           <h2>Error Loading Orders</h2>
-          <p>Failed to fetch planned orders: {error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <p>Failed to fetch orders: {error}</p>
+          <button
+            onClick={() => window.location.reload()}
             className="retry-btn"
           >
             Retry
@@ -107,41 +107,44 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
     return (
       <div className="planned-orders-page">
         <button className="back-btn" onClick={handleBackToDashboard}>
-           Back to Dashboard
+          Back to Dashboard
         </button>
-        <h1 className="title"> Planned Orders</h1>
-        <p className="empty">No planned orders found.</p>
+        <h1 className="title"> Orders</h1>
+        <p className="empty">No orders found.</p>
       </div>
     );
   }
 
   return (
     <div className="planned-orders-page">
-      <button className="back-btn" onClick={handleBackToDashboard}>
-        ← Back to Dashboard
-      </button>
+      <div className="orders-header">
+        <div className="title-with-back">
+          <button className="back-arrow" onClick={handleBackToDashboard}>
+            ←
+          </button>
+          <h1 className="title">Orders</h1>
+        </div>
 
-      <h1 className="title"> Planned Orders</h1>
+        {/* Move Controls inside header */}
+        <div className="controls">
+          <input
+            type="text"
+            placeholder="Search orders..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="search-input"
+          />
 
-      {/* Controls */}
-      <div className="controls">
-        <input
-          type="text"
-          placeholder=" Search orders..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="search-input"
-        />
-
-        <select
-          value={filterType}
-          onChange={(e) => setFilterType(e.target.value)}
-          className="filter-select"
-        >
-          <option value="all">All Types</option>
-          <option value="Purchase">Purchase</option>
-          <option value="Manufacture">Manufacture</option>
-        </select>
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="filter-select"
+          >
+            <option value="all">All Types</option>
+            <option value="Purchase">Purchase</option>
+            <option value="Manufacture">Manufacture</option>
+          </select>
+        </div>
       </div>
 
       {/* Results count */}

@@ -23,18 +23,15 @@ const CustomersPage = () => {
 
   return (
     <div className="customers-page">
-      <div className="page-header">
-        {/* ✅ Simple back button */}
-        <button
-          className="back-btn"
-          onClick={() => (window.location.href = "/dashboard")}
-        >
-          ⬅ Back to Dashboard
-        </button>
-
-        <h1>Customers</h1>
+      <div className="customers-header">
+        <div className="title-with-back">
+          <button className="back-arrow" onClick={() => window.location.href = "/dashboard"}>
+            ←
+          </button>
+          <h1 className="title">Customers</h1>
+        </div>
       </div>
-
+      <div className="table-container">
       <table>
         <thead>
           <tr>
@@ -53,6 +50,7 @@ const CustomersPage = () => {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 };
