@@ -1,4 +1,4 @@
-/* Enhanced Professional VendorsPage.css - Complete Redesign */
+/* Enhanced Professional VendorsPage.css - Single Line Header Layout */
 
 /* --- Page Layout --- */
 .vendors-page {
@@ -10,24 +10,40 @@
   line-height: 1.5;
 }
 
-/* --- Header --- */
+/* --- Header - Single Line Layout --- */
 .vendors-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
   margin-bottom: 2rem;
   background: #ffffff;
   padding: 1.5rem 2rem;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
-.title-with-back {
+.header-left {
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-shrink: 0;
+}
+
+.header-center {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  justify-content: center;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 10px;
 }
 
 .back-arrow {
@@ -54,19 +70,10 @@
   margin: 0;
 }
 
-/* --- Filter Section --- */
-.filter-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
+/* --- Filter Buttons --- */
 .filter-buttons {
   display: flex;
-  gap: 0.5rem;
+  gap: 0;
 }
 
 .filter-btn {
@@ -423,14 +430,18 @@
     gap: 1rem;
   }
   
-  .filter-section {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
+  .header-left,
+  .header-center,
+  .header-right {
+    justify-content: center;
   }
   
-  .filter-buttons {
-    justify-content: center;
+  .header-center {
+    order: 2;
+  }
+  
+  .header-right {
+    order: 3;
   }
 }
 
@@ -441,6 +452,15 @@
   
   .title {
     font-size: 1.5rem;
+  }
+  
+  .vendors-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .header-left {
+    justify-content: center;
   }
   
   .suppliers-table th,

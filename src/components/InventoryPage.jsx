@@ -68,7 +68,7 @@ const InventoryPage = () => {
             <th>Product ID</th>
             <th>Product Name</th>
             <th>
-              Quantity {sortOrder === "asc" ? "🔼" : "🔽"}
+              Quantity 
             </th>
           </tr>
         </thead>

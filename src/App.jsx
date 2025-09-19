@@ -6,6 +6,7 @@ import PlannedOrdersPage from './components/PlannedorderPage';
 import InventoryPage from './components/InventoryPage';
 import CustomersPage from './components/CustomersPage';
 import VendorsPage from './components/VendorsPage';
+import VendorMetricsPage from './components/VendorMetricsPage';
 import './App.css';
 
 const App = () => {
@@ -33,6 +34,8 @@ const App = () => {
         return <CustomersPage />;
       case 'vendors':
         return <VendorsPage setCurrentPage={setCurrentPage} />;
+      case "vendor-metrics":
+        return <VendorMetricsPage setCurrentPage={setCurrentPage} />;
       default:
         return <Dashboard setCurrentPage={setCurrentPage} />;
     }

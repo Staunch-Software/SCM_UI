@@ -32,7 +32,7 @@ const VendorsPage = ({ setCurrentPage }) => {
     }
   };
 
-  // Fetch vendors for metrics (keep existing functionality)
+  // Fetch vendors for metrics (for navigation purposes only)
   const fetchVendors = async () => {
     try {
       const response = await fetch("http://127.0.0.1:8000/api/vendors/all-metrics");
@@ -139,38 +139,37 @@ const VendorsPage = ({ setCurrentPage }) => {
 
   return (
     <div className="vendors-page">
-      {/* Header */}
+      {/* Header - Title Left, Buttons Right */}
       <div className="vendors-header">
-        <div className="title-with-back">
+        <div className="header-left">
           <button className="back-arrow" onClick={() => setCurrentPage("dashboard")}>
             ←
           </button>
           <h1 className="title">Suppliers</h1>
         </div>
-      </div>
-
-      {/* Filter Buttons */}
-      <div className="filter-section">
-        <div className="filter-buttons">
+        
+        <div className="header-right">
+          <div className="filter-buttons">
+            <button 
+              className={`filter-btn ${filter === "all" ? "active" : ""}`}
+              onClick={() => setFilter("all")}
+            >
+              ALL
+            </button>
+            <button 
+              className={`filter-btn ${filter === "approved" ? "active" : ""}`}
+              onClick={() => setFilter("approved")}
+            >
+              APPROVED
+            </button>
+          </div>
           <button 
-            className={`filter-btn ${filter === "all" ? "active" : ""}`}
-            onClick={() => setFilter("all")}
+            className="add-supplier-btn"
+            onClick={() => setShowModal(true)}
           >
-            ALL
-          </button>
-          <button 
-            className={`filter-btn ${filter === "approved" ? "active" : ""}`}
-            onClick={() => setFilter("approved")}
-          >
-            APPROVED
+            ADD SUPPLIER
           </button>
         </div>
-        <button 
-          className="add-supplier-btn"
-          onClick={() => setShowModal(true)}
-        >
-          ADD SUPPLIER
-        </button>
       </div>
 
       {/* Suppliers Table */}
