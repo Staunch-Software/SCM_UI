@@ -4,45 +4,78 @@ import "../styles/PlannedorderPage.css";
 const PlannedOrdersPage = ({ setCurrentPage }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [sortField, setSortField] = useState("planned_order_id");
   const [sortOrder, setSortOrder] = useState("asc");
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
+
+  const fetchOrders = async (pageNum = 1, reset = false) => {
+    try {
+      if (pageNum === 1 || reset) {
         setLoading(true);
-        setError(null);
-
-        const response = await fetch("https://odooerp.staunchtec.com/api/planned-orders");
-        //const response = await fetch("http://127.0.0.1:8000/api/planned-orders");
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log('Fetched orders:', data); // Debug log
-
-        setOrders(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error("Error fetching planned orders:", err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
+      } else {
+        setLoadingMore(true);
       }
-    };
+      setError(null);
 
-    fetchOrders();
+      // const response = await fetch(`http://127.0.0.1:8000/api/planned-orders?page=${pageNum}&limit=30`);
+      const response = await fetch(
+        `http://odooerp.staunchtec.com/api/planned-orders?page=${pageNum}&limit=30`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Fetched orders:", data);
+
+      const newOrders = Array.isArray(data.orders) ? data.orders : [];
+
+      if (pageNum === 1 || reset) {
+        setOrders(newOrders);
+      } else {
+        setOrders((prev) => [...prev, ...newOrders]);
+      }
+
+      setTotalOrders(data.total || 0);
+      setHasNextPage(data.has_next || false);
+      setPage(pageNum);
+    } catch (err) {
+      console.error("Error fetching planned orders:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders(1, true);
   }, []);
+
+  const loadMore = () => {
+    if (hasNextPage && !loadingMore) {
+      fetchOrders(page + 1, false);
+    }
+  };
 
   const filteredOrders = orders
     .filter((o) => {
       const matchesSearch =
-        (o.planned_order_id?.toString().toLowerCase().includes(search.toLowerCase()) ||
-          o.item?.toLowerCase().includes(search.toLowerCase())) ?? false;
+        (o.planned_order_id
+          ?.toString()
+          .toLowerCase()
+          .includes(search.toLowerCase()) ||
+          o.item?.toLowerCase().includes(search.toLowerCase())) ??
+        false;
 
       const matchesFilter =
         filterType === "all" ? true : o.item_type === filterType;
@@ -50,8 +83,8 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
       return matchesSearch && matchesFilter;
     })
     .sort((a, b) => {
-      const valA = (a[sortField]?.toString().toLowerCase()) ?? '';
-      const valB = (b[sortField]?.toString().toLowerCase()) ?? '';
+      const valA = a[sortField]?.toString().toLowerCase() ?? "";
+      const valB = b[sortField]?.toString().toLowerCase() ?? "";
 
       if (valA < valB) return sortOrder === "asc" ? -1 : 1;
       if (valA > valB) return sortOrder === "asc" ? 1 : -1;
@@ -71,7 +104,6 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
     if (setCurrentPage) {
       setCurrentPage("dashboard");
     } else {
-      // Fallback for direct navigation
       window.location.href = "/dashboard";
     }
   };
@@ -93,10 +125,7 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
         <div className="error-message">
           <h2>Error Loading Orders</h2>
           <p>Failed to fetch orders: {error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="retry-btn"
-          >
+          <button onClick={() => fetchOrders(1, true)} className="retry-btn">
             Retry
           </button>
         </div>
@@ -126,7 +155,6 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
           <h1 className="title">Orders</h1>
         </div>
 
-        {/* Move Controls inside header */}
         <div className="controls">
           <input
             type="text"
@@ -148,25 +176,29 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
         </div>
       </div>
 
-      {/* Results count */}
       <div className="results-info">
-        Showing {filteredOrders.length} of {orders.length} orders
+        Showing {orders.length} of {totalOrders} orders
       </div>
 
-      {/* Table */}
       <div className="table-container">
         <table className="orders-table">
           <thead>
             <tr>
               <th>#</th>
-              <th onClick={() => toggleSort("planned_order_id")} className="sortable">
-                Order ID {sortField === "planned_order_id" && (sortOrder === "asc" ? "↑" : "↓")}
+              <th
+                onClick={() => toggleSort("planned_order_id")}
+                className="sortable"
+              >
+                Order ID{" "}
+                {sortField === "planned_order_id" &&
+                  (sortOrder === "asc" ? "↑" : "↓")}
               </th>
               <th>Item</th>
               <th>Quantity</th>
               <th>Due Date</th>
               <th onClick={() => toggleSort("item_type")} className="sortable">
-                Type {sortField === "item_type" && (sortOrder === "asc" ? "↑" : "↓")}
+                Type{" "}
+                {sortField === "item_type" && (sortOrder === "asc" ? "↑" : "↓")}
               </th>
             </tr>
           </thead>
@@ -174,13 +206,13 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
             {filteredOrders.map((o, idx) => (
               <tr key={o.planned_order_id || idx}>
                 <td>{idx + 1}</td>
-                <td>{o.planned_order_id || 'N/A'}</td>
-                <td>{o.item || 'N/A'}</td>
-                <td>{o.quantity || 'N/A'}</td>
-                <td>{o.suggested_due_date || 'N/A'}</td>
+                <td>{o.planned_order_id || "N/A"}</td>
+                <td>{o.item || "N/A"}</td>
+                <td>{o.quantity || "N/A"}</td>
+                <td>{o.suggested_due_date || "N/A"}</td>
                 <td>
-                  <span className={`badge ${o.item_type || 'default'}`}>
-                    {o.item_type || 'N/A'}
+                  <span className={`badge ${o.item_type || "default"}`}>
+                    {o.item_type || "N/A"}
                   </span>
                 </td>
               </tr>
@@ -188,6 +220,18 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
           </tbody>
         </table>
       </div>
+
+      {hasNextPage && (
+        <div className="load-more-container">
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="load-more-btn"
+          >
+            {loadingMore ? "Loading..." : "Load More Orders"}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

@@ -363,121 +363,72 @@
   opacity: 0.5;
 }
 
-/* --- Responsive Design --- */
-@media (max-width: 1024px) {
-  .planned-orders-page {
-    padding: 1.5rem;
-  }
-  
-  .orders-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
-  
-  .controls {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .search-input,
-  .filter-select {
-    min-width: auto;
-    width: 100%;
-  }
 
-  .filter-section {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
-  
-  .filter-buttons {
-    justify-content: center;
-  }
+/* Load More Button Container */
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px 0;
+  margin-top: 20px;
 }
 
-@media (max-width: 768px) {
-  .planned-orders-page {
-    padding: 1rem;
-  }
-  
-  .title {
-    font-size: 1.5rem;
-  }
-  
-  .table-container {
-    overflow-x: auto;
-  }
-  
-  .orders-table th,
-  .orders-table td {
-    padding: 0.75rem 1rem;
-    font-size: 0.8rem;
-  }
-  
-  .orders-table th {
-    font-size: 0.7rem;
-  }
-
-  .filter-btn,
-  .add-order-btn {
-    padding: 0.5rem 1rem;
-    font-size: 0.8rem;
-  }
-  
-  /* Hide less important columns on mobile */
-  .orders-table th:nth-child(5),
-  .orders-table td:nth-child(5) {
-    display: none;
-  }
+/* Clean Rounded Load More Button */
+.load-more-btn {
+  background-color: #374151;
+  border: none;
+  color: white;
+  font-weight: 500;
+  font-size: 16px;
+  padding: 16px 48px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 160px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-@media (max-width: 480px) {
-  .orders-table th:nth-child(4),
-  .orders-table td:nth-child(4),
-  .orders-table th:nth-child(3),
-  .orders-table td:nth-child(3) {
-    display: none;
-  }
-  
-  .badge {
-    font-size: 0.65rem;
-    padding: 0.2rem 0.6rem;
-  }
+.load-more-btn:hover {
+  background-color: #4B5563;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* --- Focus States for Accessibility --- */
-.back-arrow:focus,
-.filter-btn:focus,
-.add-order-btn:focus,
-.order-name-link:focus,
-.search-input:focus,
-.filter-select:focus,
-.retry-btn:focus {
-  outline: 2px solid #4299e1;
-  outline-offset: 2px;
+.load-more-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* --- Animation for smooth loading --- */
-.orders-table tbody tr {
-  opacity: 0;
-  animation: fadeInRow 0.3s ease forwards;
+.load-more-btn:disabled {
+  background-color: #9CA3AF;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.orders-table tbody tr:nth-child(1) { animation-delay: 0.05s; }
-.orders-table tbody tr:nth-child(2) { animation-delay: 0.1s; }
-.orders-table tbody tr:nth-child(3) { animation-delay: 0.15s; }
-.orders-table tbody tr:nth-child(4) { animation-delay: 0.2s; }
-.orders-table tbody tr:nth-child(5) { animation-delay: 0.25s; }
-
-@keyframes fadeInRow {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Loading state - hide text when loading */
+.load-more-btn:disabled {
+  color: transparent;
+  position: relative;
 }
+
+.load-more-btn:disabled::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffffff40;
+  border-top: 2px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Keyframe for loading spinner */
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}  
