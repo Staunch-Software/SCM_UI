@@ -16,7 +16,7 @@ const Navbar = ({ currentPage, onNavigate, onNewChat }) => {
     <nav className="navbar">
       <div className="navbar-content">
         <div className="navbar-brand">
-          <h1>SCM AI</h1>
+          <h1>SCM</h1>
         </div>
         
         <div className="navbar-items">

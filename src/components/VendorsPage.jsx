@@ -24,7 +24,7 @@ const VendorsPage = ({ setCurrentPage }) => {
   // Fetch suppliers list for table
   const fetchSuppliers = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/vendors/suppliers-list");
+      const response = await fetch("https://odooerp.staunchtec.com/api/vendors/suppliers-list");
       const data = await response.json();
       setSuppliers(data);
     } catch (error) {

@@ -16,7 +16,7 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch("http://127.0.0.1:8000/api/planned-orders");
+        const response = await fetch("https://odooerp.staunchtec.com/api/planned-orders");
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
