@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { createMessage, getAIResponse } from '../utils/messageHelpers';
 
-const API_BASE_URL =  'https://odooerp.staunchtec.com/api/chat';
+const API_BASE_URL =  'https://odooerp.staunchtec.com';
 
 export const useChat = (initialMessages = []) => {
   const [messages, setMessages] = useState(initialMessages);
