@@ -48,15 +48,15 @@ const EnhancedDashboard = () => {
           manufacturingRes,
           orderSummaryRes,
         ] = await Promise.all([
-          // fetch("http://127.0.0.1:8000/api/vendors_metrics"),
-          // fetch("http://127.0.0.1:8000/api/odoo_vendors"),
-          // fetch("http://127.0.0.1:8000/api/manufacturing-summary"),
-          // fetch("http://127.0.0.1:8000/api/order-type-summary"),
+          fetch("http://127.0.0.1:8000/api/vendors_metrics"),
+          fetch("http://127.0.0.1:8000/api/odoo_vendors"),
+          fetch("http://127.0.0.1:8000/api/manufacturing-summary"),
+          fetch("http://127.0.0.1:8000/api/order-type-summary"),
 
-          fetch("https://odooerp.staunchtec.com/api/vendors_metrics"),
-          fetch("https://odooerp.staunchtec.com/api/odoo_vendors"),
-          fetch("https://odooerp.staunchtec.com/api/manufacturing-summary"),
-          fetch("https://odooerp.staunchtec.com/api/order-type-summary"),
+          // fetch("https://odooerp.staunchtec.com/api/vendors_metrics"),
+          // fetch("https://odooerp.staunchtec.com/api/odoo_vendors"),
+          // fetch("https://odooerp.staunchtec.com/api/manufacturing-summary"),
+          // fetch("https://odooerp.staunchtec.com/api/order-type-summary"),
         ]);
 
         if (
@@ -238,7 +238,7 @@ const EnhancedDashboard = () => {
         <div className="chart-container">
           <div className="chart-header">
             <Package size={24} color="#8b5cf6" className="chart-icon" />
-            <h3 className="chart-title">Current Manufacturing</h3>
+            <h3 className="chart-title">Current Orders</h3>
           </div>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>

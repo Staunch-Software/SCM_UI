@@ -1,21 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import MessageList from './MessageList';
 import InputArea from './InputArea';
-import { useChat } from '../hooks/useChat';
+// 1. Import the new store
+import { useChatStore } from '../stores/chatStore';
 import '../styles/ChatInterface.css';
 
 const ChatInterface = () => {
-  const initialMessages = [
-    {
-      id: 1,
-      type: 'assistant',
-      content: 'Hello! I\'m SCM, an AI assistant for supply chain management. How can I help you today?',
-      timestamp: new Date()
-    }
-  ];
+  // 2. Get state and actions directly from the global store
+  const { messages, isTyping, sendMessage } = useChatStore();
 
-  const { messages, isTyping, sendMessage, clearMessages } = useChat(initialMessages);
-
+  // 3. The component is now much simpler!
   return (
     <div className="chat-interface">
       <div className="chat-main">

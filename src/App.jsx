@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
-import Navbar from './components/NavBar';
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+
+import Layout from './components/Layout';
+// Import your page components
 import Dashboard from './components/Dashboard';
 import ChatInterface from './components/ChatInterface';
 import PlannedOrdersPage from './components/PlannedorderPage';
@@ -7,51 +10,27 @@ import InventoryPage from './components/InventoryPage';
 import CustomersPage from './components/CustomersPage';
 import VendorsPage from './components/VendorsPage';
 import VendorMetricsPage from './components/VendorMetricsPage';
+
 import './App.css';
 
 const App = () => {
-  const [currentPage, setCurrentPage] = useState('dashboard');
-
-  const handleNavigation = (page) => {
-    setCurrentPage(page);
-  };
-
-  const handleNewChat = () => {
-    setCurrentPage('chatbox');
-  };
-
-  const renderCurrentPage = () => {
-    switch (currentPage) {
-      case 'dashboard':
-        return <Dashboard setCurrentPage={setCurrentPage} />;
-      case 'chatbox':
-        return <ChatInterface />;
-      case 'orders':
-        return <PlannedOrdersPage />;
-      case 'inventory':
-        return <InventoryPage />;
-      case 'customers':
-        return <CustomersPage />;
-      case 'vendors':
-        return <VendorsPage setCurrentPage={setCurrentPage} />;
-      case "vendor-metrics":
-        return <VendorMetricsPage setCurrentPage={setCurrentPage} />;
-      default:
-        return <Dashboard setCurrentPage={setCurrentPage} />;
-    }
-  };
-
   return (
-    <div className="app">
-      <Navbar 
-        currentPage={currentPage}
-        onNavigate={handleNavigation}
-        onNewChat={handleNewChat}
-      />
-      <main className="main-content">
-        {renderCurrentPage()}
-      </main>
-    </div>
+    // Now that BrowserRouter is imported, this will work
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="chat" element={<ChatInterface />} />
+          <Route path="orders" element={<PlannedOrdersPage />} />
+          <Route path="inventory" element={<InventoryPage />} />
+          <Route path="customers" element={<CustomersPage />} />
+          <Route path="vendors" element={<VendorsPage />} />
+          <Route path="vendor-metrics" element={<VendorMetricsPage />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 };
 

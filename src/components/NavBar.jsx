@@ -1,16 +1,28 @@
 import React from 'react';
+// Import NavLink just ONCE from react-router-dom
+import { NavLink } from 'react-router-dom';
 import { Home, MessageSquare, Package, BarChart3, Users, Building2, Plus } from 'lucide-react';
 import '../styles/Navbar.css';
+// Import the store for the "New Chat" functionality
+import { useChatStore } from '../stores/chatStore';
 
-const Navbar = ({ currentPage, onNavigate, onNewChat }) => {
+const Navbar = () => {
+  // Get just the clearMessages function from the store
+  const clearMessages = useChatStore((state) => state.clearMessages);
+
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'chatbox', label: 'Chat', icon: MessageSquare },
-    { id: 'orders', label: 'Orders', icon: Package },
-    { id: 'inventory', label: 'Inventory', icon: BarChart3 },
-    { id: 'customers', label: 'Customers', icon: Users },
-    { id: 'vendors', label: 'Vendors', icon: Building2 }
+    { path: '/dashboard', label: 'Dashboard', icon: Home },
+    { path: '/chat', label: 'Chat', icon: MessageSquare },
+    { path: '/orders', label: 'Orders', icon: Package },
+    { path: '/inventory', label: 'Inventory', icon: BarChart3 },
+    { path: '/customers', label: 'Customers', icon: Users },
+    { path: '/vendors', label: 'Vendors', icon: Building2 }
   ];
+
+  const handleNewChat = () => {
+    // When the button is clicked, clear the global chat state
+    clearMessages();
+  };
 
   return (
     <nav className="navbar">
@@ -23,23 +35,23 @@ const Navbar = ({ currentPage, onNavigate, onNewChat }) => {
           {navItems.map(item => {
             const Icon = item.icon;
             return (
-              <button
-                key={item.id}
-                className={`navbar-item ${currentPage === item.id ? 'active' : ''}`}
-                onClick={() => onNavigate(item.id)}
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className="navbar-item" 
               >
                 <Icon size={16} />
                 <span>{item.label}</span>
-              </button>
+              </NavLink>
             );
           })}
         </div>
 
         <div className="navbar-actions">
-          <button className="new-chat-btn" onClick={onNewChat}>
+          <NavLink to="/chat" className="new-chat-btn" onClick={handleNewChat}>
             <Plus size={16} />
             <span>New Chat</span>
-          </button>
+          </NavLink>
         </div>
       </div>
     </nav>
