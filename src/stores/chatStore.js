@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createMessage } from '../utils/messageHelpers'; // Assuming you have this helper
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'https://odooerp.staunchtec.com';
 
 export const useChatStore = create((set, get) => ({
   // State
