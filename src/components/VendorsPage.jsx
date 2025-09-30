@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "../styles/VendorsPage.css";
+import { useNavigate } from "react-router-dom";
 
-const VendorsPage = ({ setCurrentPage }) => {
+const VendorsPage = () => {
+  const navigate = useNavigate();
   const [suppliers, setSuppliers] = useState([]);
   const [vendors, setVendors] = useState([]); // For metrics
   const [loading, setLoading] = useState(true);
@@ -123,7 +125,7 @@ const VendorsPage = ({ setCurrentPage }) => {
     if (vendor) {
       // Store the selected vendor in sessionStorage or pass it as a prop
       sessionStorage.setItem('selectedVendor', supplierName);
-      setCurrentPage("vendor-metrics");
+      navigate("/vendor-metrics");
     }
   };
 
@@ -146,7 +148,7 @@ const VendorsPage = ({ setCurrentPage }) => {
       {/* Header - Title Left, Buttons Right */}
       <div className="vendors-header">
         <div className="header-left">
-          <button className="back-arrow" onClick={() => setCurrentPage("dashboard")}>
+          <button className="back-arrow" onClick={() => navigate("/dashboard")}>
             ←
           </button>
           <h1 className="title">Suppliers</h1>

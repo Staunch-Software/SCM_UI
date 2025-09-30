@@ -2,21 +2,25 @@
 
 .chat-interface {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   height: 100vh;
-  width: 80%;
-  margin: 0 auto;
+  width: 100%;
+  margin: 0;
   background: #ffffff;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   color: #2d3748;
   line-height: 1.5;
+  overflow: hidden;
+  padding-top: 80px;
 }
 
 .chat-main {
   display: flex;
   flex-direction: column;
   height: 100%;
-  margin-top: 60px;
+  margin-top: 20px;
+  flex: 1;
+  overflow: hidden;
 }
 
 .chat-header {

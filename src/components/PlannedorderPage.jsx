@@ -8,13 +8,14 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
-  const [sortField, setSortField] = useState("planned_order_id");
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortField, setSortField] = useState("confirmation_date");
+  const [sortOrder, setSortOrder] = useState("desc");
 
- 
+
   const [page, setPage] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
   const [hasNextPage, setHasNextPage] = useState(false);
+  const [autoLoad, setAutoLoad] = useState(true);
 
   const fetchOrders = async (pageNum = 1, reset = false) => {
     try {
@@ -58,6 +59,18 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
   useEffect(() => {
     fetchOrders(1, true);
   }, []);
+
+  useEffect(() => {
+    if (!autoLoad || !hasNextPage || loadingMore) return;
+
+    const interval = setInterval(() => {
+      if (hasNextPage && !loadingMore) {
+        loadMore();
+      }
+    }, 2000); // 2 seconds - fast loading
+
+    return () => clearInterval(interval);
+  }, [hasNextPage, loadingMore, autoLoad, page]);
 
   const loadMore = () => {
     if (hasNextPage && !loadingMore) {
@@ -184,15 +197,16 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
             <tr>
               <th>#</th>
               <th
-                onClick={() => toggleSort("planned_order_id")}
+                onClick={() => toggleSort("confirmation_date")}
                 className="sortable"
               >
                 Order ID{" "}
-                {sortField === "planned_order_id" &&
+                {sortField === "confirmation_date" &&
                   (sortOrder === "asc" ? "↑" : "↓")}
               </th>
               <th>Item</th>
               <th>Quantity</th>
+              <th>Created Date</th>
               <th>Due Date</th>
               <th onClick={() => toggleSort("item_type")} className="sortable">
                 Type{" "}
@@ -207,6 +221,7 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
                 <td>{o.planned_order_id || "N/A"}</td>
                 <td>{o.item || "N/A"}</td>
                 <td>{o.quantity || "N/A"}</td>
+                <td>{o.confirmation_date || "N/A"}</td>
                 <td>{o.suggested_due_date || "N/A"}</td>
                 <td>
                   <span className={`badge ${o.item_type || "default"}`}>
@@ -219,7 +234,7 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
         </table>
       </div>
 
-      {hasNextPage && (
+      {/* {hasNextPage && (
         <div className="load-more-container">
           <button
             onClick={loadMore}
@@ -229,7 +244,7 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
             {loadingMore ? "Loading..." : "Load More Orders"}
           </button>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

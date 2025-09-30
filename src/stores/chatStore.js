@@ -42,7 +42,7 @@ export const useChatStore = create((set, get) => ({
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
       const data = await response.json();
-      
+
       // If this is the first real message, save the new session_id
       if (!get().sessionId) {
         set({ sessionId: data.session_id });
@@ -51,6 +51,9 @@ export const useChatStore = create((set, get) => ({
       // Add the agent's response
       const aiMessage = createMessage(data.response, 'assistant');
       get().addMessage(aiMessage);
+      if (window.refreshChatHistory) {
+        window.refreshChatHistory();
+      }
 
     } catch (error) {
       console.error('Error sending message:', error);
@@ -60,6 +63,53 @@ export const useChatStore = create((set, get) => ({
       set({ isTyping: false });
     }
   },
+
+  loadSession: async (sessionId) => {
+    try {
+      set({ isTyping: true });
+      const response = await fetch(`${API_BASE_URL}/api/chat-sessions/${sessionId}/messages`);
+
+      if (!response.ok) throw new Error('Failed to load session');
+
+      const data = await response.json();
+
+      // Convert conversation history to message format
+      const formattedMessages = data.messages.flatMap(conv => [
+        createMessage(conv.user, 'user', new Date(conv.timestamp)),
+        createMessage(conv.assistant, 'assistant', new Date(conv.timestamp))
+      ]);
+
+      set({
+        messages: formattedMessages,
+        sessionId: sessionId,
+        isTyping: false
+      });
+    } catch (error) {
+      console.error('Failed to load session:', error);
+      set({ isTyping: false });
+    }
+  },
+
+  createNewSession: () => {
+    set({
+      messages: [
+        {
+          id: Date.now(),
+          type: 'assistant',
+          content: "Hello! I'm SCM, an AI assistant for supply chain management. How can I help you today?",
+          timestamp: new Date()
+        }
+      ],
+      sessionId: null,
+      isTyping: false
+    });
+  },
+
+  //   // Keep existing clearMessages for compatibility
+  //   clearMessages: () => {
+  //     get().createNewSession();
+  //   },
+  // }));
 
   clearMessages: () => {
     set({
