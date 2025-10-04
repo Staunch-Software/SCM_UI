@@ -14,7 +14,7 @@ const Navbar = () => {
     { path: '/dashboard', label: 'Dashboard', icon: Home },
     { path: '/chat', label: 'Chat', icon: MessageSquare },
     { path: '/orders', label: 'Orders', icon: Package },
-    { path: '/inventory', label: 'Inventory', icon: BarChart3 },
+    { path: '/inventory-analysis', label: 'Inventory', icon: BarChart3 },
     { path: '/customers', label: 'Customers', icon: Users },
     { path: '/vendors', label: 'Vendors', icon: Building2 }
   ];
@@ -47,12 +47,12 @@ const Navbar = () => {
           })}
         </div>
 
-        <div className="navbar-actions">
+        {/* <div className="navbar-actions">
           <NavLink to="/chat" className="new-chat-btn" onClick={handleNewChat}>
             <Plus size={16} />
             <span>New Chat</span>
           </NavLink>
-        </div>
+        </div> */}
       </div>
     </nav>
   );
