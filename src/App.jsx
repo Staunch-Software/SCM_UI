@@ -23,7 +23,7 @@ const App = () => {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="chat" element={<ChatInterface />} />
           <Route path="orders" element={<PlannedOrdersPage />} />
-          <Route path="inventory" element={<InventoryPage />} />
+          <Route path="inventory-analysis" element={<InventoryPage />} />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="vendors" element={<VendorsPage />} />
           <Route path="vendor-metrics" element={<VendorMetricsPage />} />
