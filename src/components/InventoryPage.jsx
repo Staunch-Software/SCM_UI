@@ -12,14 +12,15 @@ import {
 } from "lucide-react";
 import "../styles/InventoryPage.css";
 
-const QuantityCell = ({ currentValue, previousValue }) => {
-  if (previousValue === undefined || previousValue === null) {
+const QuantityCell = ({ item, previousValue }) => {
+  const currentValue = item.onHand;
+  const lastQty = item.lastTransactionQty;
+  const lastType = item.lastTransactionType;
+
+  if (!lastQty || !lastType) {
     return <>{currentValue}</>;
   }
-  const delta = currentValue - previousValue;
-  if (delta === 0) {
-    return <>{currentValue}</>;
-  }
+
   const deltaStyle = {
     fontSize: "0.8em",
     marginLeft: "8px",
@@ -27,18 +28,15 @@ const QuantityCell = ({ currentValue, previousValue }) => {
     borderRadius: "10px",
     color: "white",
     fontWeight: "600",
-    backgroundColor: delta > 0 ? "#22c55e" : "#ef4444",
+    backgroundColor: lastType === 'in' ? "#22c55e" : "#ef4444",
   };
+
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "flex-start",
-      }}
-    >
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start" }}>
       <span>{currentValue}</span>
-      <span style={deltaStyle}>{delta > 0 ? `+${delta}` : delta}</span>
+      <span style={deltaStyle}>
+        {lastType === 'in' ? `+${lastQty}` : `-${lastQty}`}
+      </span>
     </div>
   );
 };
@@ -100,7 +98,7 @@ const InventoryPage = () => {
         setOpenDropdown(null);
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [openDropdown]);
@@ -565,10 +563,8 @@ const InventoryPage = () => {
                     {/* --- TASK 1: Moved On Hand cell here, it's now always visible --- */}
                     <td className="font-medium">
                       <QuantityCell
-                        currentValue={item.onHand}
-                        previousValue={previousInventoryMap.get(
-                          item.product_id
-                        )}
+                        item={item}
+                        previousValue={previousInventoryMap.get(item.product_id)}
                       />
                     </td>
 
