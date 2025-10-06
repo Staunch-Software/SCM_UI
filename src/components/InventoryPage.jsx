@@ -102,6 +102,62 @@ const InventoryPage = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [openDropdown]);
+
+  const handleExportToCSV = () => {
+    // Prepare headers
+    const headers = ['SKU', 'Product Name', 'Type', 'Buy/Make', 'Status', 'On Hand', 'Cost/Unit', 'Total Value', 'Location', 'Days in Stock'];
+
+    if (showDemand) {
+      headers.push('Avg Demand/Mo', 'Forecast', 'Safety Stock', 'Sales Order', 'Months Inventory');
+    }
+    if (showSupply) {
+      headers.push('WO/PO', 'In Transit');
+    }
+    if (showExcess) {
+      headers.push('Excess/Shortage');
+    }
+
+    // Prepare data rows
+    const rows = filteredData.map(item => {
+      const row = [
+        item.sku,
+        item.product_name,
+        item.itemType,
+        item.procurementType,
+        item.itemStatus,
+        item.onHand,
+        item.costPerUnit,
+        item.totalValue,
+        item.location,
+        item.daysInStock
+      ];
+
+      if (showDemand) {
+        row.push(item.avgMonthlyDemand, item.forecast, item.safetyStock, item.salesOrder, item.monthsOfInventory);
+      }
+      if (showSupply) {
+        row.push(item.procurementType === "Make" ? `WO: ${item.workOrders}` : `PO: ${item.purchaseOrders}`, item.inTransit);
+      }
+      if (showExcess) {
+        row.push(item.excessInventory);
+      }
+
+      return row;
+    });
+
+    // Create CSV content
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    // Download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Inventory_Report_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
   // --- TASK 4: Calculate totalValue on the frontend ---
   // This derived state will be used by all other calculations and the table.
   const processedInventory = useMemo(() => {
@@ -252,7 +308,7 @@ const InventoryPage = () => {
             {/* <button className="btn-secondary">
               <Upload size={16} /> Import
             </button> */}
-            <button className="btn-secondary">
+            <button className="btn-secondary" onClick={handleExportToCSV}>
               <Download size={16} /> Export Report
             </button>
           </div>
