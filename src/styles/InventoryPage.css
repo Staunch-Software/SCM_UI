@@ -1,7 +1,7 @@
 /* ====================================
    TABLE SECTION
    ==================================== */
-.table-container {
+/* .table-container {
   overflow-x: auto;
   overflow-y: visible;
   position: relative;
@@ -51,7 +51,9 @@
   font-size: 0.875rem;
   color: #111827;
   white-space: nowrap;
-}/* ====================================
+}
+
+/* ====================================
    INVENTORY PAGE STYLES - CLIENT ANALYSIS
    ==================================== */
 
@@ -336,16 +338,16 @@
   margin-right: 0.5rem;
 }
 
-.legend-color.blue { 
-  background-color: #3B82F6; 
+.legend-color.blue {
+  background-color: #3B82F6;
 }
 
-.legend-color.light-blue { 
-  background-color: #60A5FA; 
+.legend-color.light-blue {
+  background-color: #60A5FA;
 }
 
-.legend-color.gray { 
-  background-color: #9CA3AF; 
+.legend-color.gray {
+  background-color: #9CA3AF;
 }
 
 .legend-label {
@@ -478,32 +480,32 @@
   color: #111827;
 }
 
-.planning-value.blue { 
-  color: #2563eb; 
+.planning-value.blue {
+  color: #2563eb;
 }
 
-.planning-value.green { 
-  color: #059669; 
+.planning-value.green {
+  color: #059669;
 }
 
-.planning-value.purple { 
-  color: #9333ea; 
+.planning-value.purple {
+  color: #9333ea;
 }
 
-.planning-value.orange { 
-  color: #ea580c; 
+.planning-value.orange {
+  color: #ea580c;
 }
 
-.planning-value.yellow { 
-  color: #d97706; 
+.planning-value.yellow {
+  color: #d97706;
 }
 
-.planning-value.indigo { 
-  color: #4f46e5; 
+.planning-value.indigo {
+  color: #4f46e5;
 }
 
-.planning-value.cyan { 
-  color: #0891b2; 
+.planning-value.cyan {
+  color: #0891b2;
 }
 
 .planning-total {
@@ -558,7 +560,7 @@
   background-color: white;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
@@ -661,6 +663,9 @@
 .search-section {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid #e5e7eb;
+  overflow: visible;
+  position: relative;
+  z-index: 20;
 }
 
 .search-container {
@@ -692,20 +697,126 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
+.search-and-filters {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.filters-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.filter-dropdown {
+  position: relative;
+}
+
+.filter-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 120px;
+  justify-content: space-between;
+}
+
+.filter-button:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.filter-button.active {
+  background-color: #dbeafe;
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.filter-button svg {
+  transition: transform 0.2s;
+}
+
+.filter-button.open svg {
+  transform: rotate(180deg);
+}
+
+.filter-badge {
+  background-color: #2563eb;
+  color: white;
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 20px;
+  text-align: center;
+}
+
+.filter-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  z-index: 50;
+  padding: 0.5rem;
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.filter-option:hover {
+  background-color: #f9fafb;
+}
+
+.filter-option input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #2563eb;
+}
+
+.filter-option-label {
+  font-size: 0.875rem;
+  color: #374151;
+  cursor: pointer;
+}
+
 /* ====================================
    TABLE SECTION
    ==================================== */
-.table-container {
-  overflow-x: auto;
-  overflow-y: visible;
+.analysis-section .table-container {
+  overflow-x: auto !important;
+  overflow-y: auto;
+  max-height: 600px;
   position: relative;
-  max-width: 100%; /* Added for consistency, though it might be inherited */
-  border: 1px solid #e5e7eb; /* Added for consistency, though it might be inherited */
-  border-radius: 0 0 8px 8px; /* Added for consistency, though it might be inherited */
+  border: 1px solid #e5e7eb;
+  border-radius: 0 0 8px 8px;
+  margin-top: 1rem;
 }
 
 /* Custom Scrollbar */
 .table-container::-webkit-scrollbar {
+  width: 12px;
   height: 12px;
 }
 
@@ -728,8 +839,6 @@
   width: 100%;
   border-collapse: collapse;
   min-width: 1200px;
-  /* --- CHANGE: Applied the animation --- */
-  animation: scroll-pingpong 30s linear infinite;
 }
 
 .inventory-table thead {
@@ -750,6 +859,9 @@
   letter-spacing: 0.5px;
   white-space: nowrap;
   background-color: #f9fafb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .inventory-table tbody {
@@ -861,18 +973,6 @@
   color: #059669;
 }
 
-@keyframes scroll-pingpong {
-  0%   { transform: translateX(0); }
-  50%  { transform: translateX(-50%); }  /* adjust -50% depending on table width */
-  100% { transform: translateX(0); }
-}
-
-/* --- CHANGE: Added logic to pause animation on hover --- */
-.table-container:hover .inventory-table {
-  animation-play-state: paused;
-  cursor: grab; /* Optional: changes cursor to indicate it can be dragged */
-}
-
 /* ====================================
    RESPONSIVE DESIGN
    ==================================== */
@@ -940,6 +1040,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -957,6 +1058,7 @@
    PRINT STYLES
    ==================================== */
 @media print {
+
   .header-actions,
   .analysis-tabs,
   .search-section {

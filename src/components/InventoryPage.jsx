@@ -53,6 +53,10 @@ const InventoryPage = () => {
   const [showDemand, setShowDemand] = useState(false);
   const [showSupply, setShowSupply] = useState(true);
   const [showExcess, setShowExcess] = useState(false);
+  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [selectedProcurement, setSelectedProcurement] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState([]);
+  const [openDropdown, setOpenDropdown] = useState(null);
 
   const fetchInventoryFromAPI = useCallback(async () => {
     setLoading(true);
@@ -90,6 +94,16 @@ const InventoryPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openDropdown && !event.target.closest('.filter-dropdown')) {
+        setOpenDropdown(null);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [openDropdown]);
   // --- TASK 4: Calculate totalValue on the frontend ---
   // This derived state will be used by all other calculations and the table.
   const processedInventory = useMemo(() => {
@@ -100,15 +114,20 @@ const InventoryPage = () => {
   }, [inventory]);
 
   const filteredData = useMemo(() => {
-    if (!search) return processedInventory; // Use processed data
-    return processedInventory.filter(
-      (
-        item // Use processed data
-      ) =>
+    return processedInventory.filter((item) => {
+      const matchesSearch = !search ||
         item.product_name.toLowerCase().includes(search.toLowerCase()) ||
-        item.sku.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [processedInventory, search]); // Dependency changed
+        item.sku.toLowerCase().includes(search.toLowerCase());
+
+      const matchesType = selectedTypes.length === 0 || selectedTypes.some(type =>
+        item.itemType.toLowerCase() === type.toLowerCase()
+      );
+      const matchesProcurement = selectedProcurement.length === 0 || selectedProcurement.includes(item.procurementType);
+      const matchesStatus = selectedStatus.length === 0 || selectedStatus.includes(item.itemStatus);
+
+      return matchesSearch && matchesType && matchesProcurement && matchesStatus;
+    });
+  }, [processedInventory, search, selectedTypes, selectedProcurement, selectedStatus]);
 
   const summaryMetrics = useMemo(() => {
     if (!processedInventory.length)
@@ -151,13 +170,13 @@ const InventoryPage = () => {
     const totalItems = processedInventory.length;
     const inStock = Math.round(
       (processedInventory.filter((i) => i.onHand > 100).length / totalItems) *
-        100
+      100
     );
     const lowStock = Math.round(
       (processedInventory.filter((i) => i.onHand > 30 && i.onHand <= 100)
         .length /
         totalItems) *
-        100
+      100
     );
     const outOfStock = 100 - inStock - lowStock;
     return { inStock, lowStock, outOfStock };
@@ -231,10 +250,10 @@ const InventoryPage = () => {
             </div>
           </div>
           <div className="header-actions">
-            
-            <button className="btn-secondary">
+
+            {/* <button className="btn-secondary">
               <Upload size={16} /> Import
-            </button>
+            </button> */}
             <button className="btn-secondary">
               <Download size={16} /> Export Report
             </button>
@@ -337,7 +356,130 @@ const InventoryPage = () => {
               </button>
             </div>
           </div>
-          <div className="search-section">{/* Search remains the same */}</div>
+          <div className="search-section">
+            <div className="search-and-filters">
+              <div className="search-container">
+                <Search className="search-icon" size={18} />
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Search by product name or SKU..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+
+              <div className="filters-row">
+                {/* Type Filter */}
+                <div className="filter-dropdown">
+                  <button
+                    className={`filter-button ${selectedTypes.length > 0 ? 'active' : ''} ${openDropdown === 'type' ? 'open' : ''}`}
+                    onClick={() => setOpenDropdown(openDropdown === 'type' ? null : 'type')}
+                  >
+                    <span>Type</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      {selectedTypes.length > 0 && <span className="filter-badge">{selectedTypes.length}</span>}
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                        <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="2" fill="none" />
+                      </svg>
+                    </div>
+                  </button>
+                  {openDropdown === 'type' && (
+                    <div className="filter-dropdown-menu">
+                      {['Finished Goods', 'Raw Material', 'Sub Assembly'].map(type => (
+                        <label key={type} className="filter-option">
+                          <input
+                            type="checkbox"
+                            checked={selectedTypes.includes(type)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedTypes([...selectedTypes, type]);
+                              } else {
+                                setSelectedTypes(selectedTypes.filter(t => t !== type));
+                              }
+                            }}
+                          />
+                          <span className="filter-option-label">{type}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Buy/Make Filter */}
+                <div className="filter-dropdown">
+                  <button
+                    className={`filter-button ${selectedProcurement.length > 0 ? 'active' : ''} ${openDropdown === 'procurement' ? 'open' : ''}`}
+                    onClick={() => setOpenDropdown(openDropdown === 'procurement' ? null : 'procurement')}
+                  >
+                    <span>Buy/Make</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      {selectedProcurement.length > 0 && <span className="filter-badge">{selectedProcurement.length}</span>}
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                        <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="2" fill="none" />
+                      </svg>
+                    </div>
+                  </button>
+                  {openDropdown === 'procurement' && (
+                    <div className="filter-dropdown-menu">
+                      {['Buy', 'Make'].map(proc => (
+                        <label key={proc} className="filter-option">
+                          <input
+                            type="checkbox"
+                            checked={selectedProcurement.includes(proc)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedProcurement([...selectedProcurement, proc]);
+                              } else {
+                                setSelectedProcurement(selectedProcurement.filter(p => p !== proc));
+                              }
+                            }}
+                          />
+                          <span className="filter-option-label">{proc}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Status Filter */}
+                <div className="filter-dropdown">
+                  <button
+                    className={`filter-button ${selectedStatus.length > 0 ? 'active' : ''} ${openDropdown === 'status' ? 'open' : ''}`}
+                    onClick={() => setOpenDropdown(openDropdown === 'status' ? null : 'status')}
+                  >
+                    <span>Status</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      {selectedStatus.length > 0 && <span className="filter-badge">{selectedStatus.length}</span>}
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                        <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="2" fill="none" />
+                      </svg>
+                    </div>
+                  </button>
+                  {openDropdown === 'status' && (
+                    <div className="filter-dropdown-menu">
+                      {['Active', 'Inactive', 'Obsolete'].map(status => (
+                        <label key={status} className="filter-option">
+                          <input
+                            type="checkbox"
+                            checked={selectedStatus.includes(status)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedStatus([...selectedStatus, status]);
+                              } else {
+                                setSelectedStatus(selectedStatus.filter(s => s !== status));
+                              }
+                            }}
+                          />
+                          <span className="filter-option-label">{status}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* --- TASK 5: The container now controls the hover state for the animation --- */}
           <div className="table-container">
@@ -387,37 +529,34 @@ const InventoryPage = () => {
                     </td>
                     <td>
                       <span
-                        className={`badge badge-${
-                          item.itemType === "Finished Good"
-                            ? "purple"
-                            : item.itemType === "Sub Assembly"
+                        className={`badge badge-${item.itemType === "Finished Goods"
+                          ? "purple"
+                          : item.itemType === "Sub Assembly"
                             ? "blue"
                             : "green"
-                        }`}
+                          }`}
                       >
                         {item.itemType}
                       </span>
                     </td>
                     <td>
                       <span
-                        className={`badge badge-${
-                          item.procurementType === "Buy" ? "blue" : "orange"
-                        }`}
+                        className={`badge badge-${item.procurementType === "Buy" ? "blue" : "orange"
+                          }`}
                       >
                         {item.procurementType}
                       </span>
                     </td>
                     <td>
                       <span
-                        className={`badge badge-${
-                          item.itemStatus === "Active"
-                            ? "green"
-                            : item.itemStatus === "Non Current"
+                        className={`badge badge-${item.itemStatus === "Active"
+                          ? "green"
+                          : item.itemStatus === "Inactive"
                             ? "yellow"
                             : item.itemStatus === "Obsolete"
-                            ? "red"
-                            : "gray"
-                        }`}
+                              ? "red"
+                              : "gray"
+                          }`}
                       >
                         {item.itemStatus}
                       </span>
@@ -439,13 +578,12 @@ const InventoryPage = () => {
                     </td>
                     <td className="text-gray">{item.location}</td>
                     <td
-                      className={`days-stock ${
-                        item.daysInStock > 90
-                          ? "high"
-                          : item.daysInStock > 60
+                      className={`days-stock ${item.daysInStock > 90
+                        ? "high"
+                        : item.daysInStock > 60
                           ? "medium"
                           : "low"
-                      }`}
+                        }`}
                     >
                       {item.daysInStock}d
                     </td>
@@ -458,13 +596,12 @@ const InventoryPage = () => {
                         <td className="text-gray">{item.salesOrder}</td>
                         <td className="font-medium">{item.totalDemand}</td>
                         <td
-                          className={`font-medium ${
-                            item.monthsOfInventory > 6
-                              ? "text-red"
-                              : item.monthsOfInventory > 3
+                          className={`font-medium ${item.monthsOfInventory > 6
+                            ? "text-red"
+                            : item.monthsOfInventory > 3
                               ? "text-orange"
                               : "text-green"
-                          }`}
+                            }`}
                         >
                           {item.monthsOfInventory}M
                         </td>
@@ -484,9 +621,8 @@ const InventoryPage = () => {
 
                     {showExcess && (
                       <td
-                        className={`font-medium ${
-                          item.excessInventory > 0 ? "text-red" : "text-green"
-                        }`}
+                        className={`font-medium ${item.excessInventory > 0 ? "text-red" : "text-green"
+                          }`}
                       >
                         {item.excessInventory > 0 ? "+" : ""}
                         {item.excessInventory}
