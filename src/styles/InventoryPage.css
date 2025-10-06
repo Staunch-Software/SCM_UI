@@ -729,7 +729,7 @@
   border-collapse: collapse;
   min-width: 1200px;
   /* --- CHANGE: Applied the animation --- */
-  animation: scroll-pingpong 60s linear infinite;
+  animation: scroll-pingpong 30s linear infinite;
 }
 
 .inventory-table thead {
