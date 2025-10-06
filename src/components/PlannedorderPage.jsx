@@ -26,7 +26,7 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
       }
       setError(null);
 
-      const response = await fetch(`http://127.0.0.1:8000/api/planned-orders?page=${pageNum}&limit=30&search=${search}&sort=${sortField}&order=${sortOrder}`);
+      const response = await fetch(`http://127.0.0.1:8000/api/planned-orders?page=${pageNum}&limit=100&search=${search}&sort=${sortField}&order=${sortOrder}`);
       // const response = await fetch(`https://odooerp.staunchtec.com/api/planned-orders?page=${pageNum}&limit=30&search=${search}&sort=${sortField}&order=${sortOrder}`);
       //const response = await fetch(`http://odooerp.staunchtec.com/api/planned-orders?page=${pageNum}&limit=30&search=${search}&sort=${sortField}&order=${sortOrder}`);
 

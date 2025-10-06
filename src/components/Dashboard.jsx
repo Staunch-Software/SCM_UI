@@ -220,7 +220,7 @@ const EnhancedDashboard = () => {
         <MetricCard title="Total Revenue" value={metrics.totalRevenue} change={12.5} icon={DollarSign} color="#10b981" prefix="$" />
         <MetricCard title="Total Units Sold" value={metrics.totalUnitsSold} change={8.2} icon={Package} color="#3b82f6"  />
         <MetricCard title="Component Spend" value={metrics.totalComponentSpend} change={-3.1} icon={ShoppingCart} color="#f59e0b" prefix="$"  />
-        <MetricCard title="Work Orders (from past 10 days)" value={metrics.newOrders} change={15.7} icon={Truck} color="#ef4444" />
+        <MetricCard title="Sales Orders (from past 10 days)" value={metrics.newOrders} change={15.7} icon={Truck} color="#ef4444" />
         <MetricCard title="Active Suppliers" value={metrics.supplierCount} change={2.3} icon={Users} color="#8b5cf6" />
       </div>
 
