@@ -9,6 +9,8 @@ import {
   Factory,
   ShoppingBag,
   RefreshCw,
+  ChevronsDown,
+  ChevronsUp,
 } from "lucide-react";
 import "../styles/InventoryPage.css";
 
@@ -21,21 +23,19 @@ const QuantityCell = ({ item, previousValue }) => {
     return <>{currentValue}</>;
   }
 
-  const deltaStyle = {
-    fontSize: "0.8em",
-    marginLeft: "8px",
-    padding: "2px 6px",
-    borderRadius: "10px",
-    color: "white",
-    fontWeight: "600",
-    backgroundColor: lastType === 'in' ? "#22c55e" : "#ef4444",
-  };
+  const isPositive = lastType === 'in';
+  const DeltaIcon = isPositive ? ChevronsUp : ChevronsDown; // Use ChevronUp/Down as requested
+  const deltaClass = isPositive ? 'positive' : 'negative';
+  // Use the exact colors from the new CSS for the icon to ensure correct rendering
+  const iconColor = isPositive ? "#16a34a" : "#dc2626";
 
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start" }}>
       <span>{currentValue}</span>
-      <span style={deltaStyle}>
-        {lastType === 'in' ? `+${lastQty}` : `-${lastQty}`}
+      <span className={`quantity-delta ${deltaClass}`}>
+        <DeltaIcon size={14} color={iconColor} />
+        {/* Display magnitude only; the direction is shown by the icon and color */}
+        {lastQty}
       </span>
     </div>
   );
@@ -49,7 +49,7 @@ const InventoryPage = () => {
   const [search, setSearch] = useState("");
 
   const [showDemand, setShowDemand] = useState(false);
-  const [showSupply, setShowSupply] = useState(true);
+  const [showSupply, setShowSupply] = useState(false);
   const [showExcess, setShowExcess] = useState(false);
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [selectedProcurement, setSelectedProcurement] = useState([]);
@@ -502,7 +502,7 @@ const InventoryPage = () => {
                       <th>Forecast</th>
                       <th>Safety Stock</th>
                       <th>Sales Order</th>
-                      <th>Total Demand</th>
+                      {/* <th>Total Demand</th> */}
                       <th>Months Inventory</th>
                     </>
                   )}
@@ -590,7 +590,7 @@ const InventoryPage = () => {
                         <td className="text-gray">{item.forecast}</td>
                         <td className="text-gray">{item.safetyStock}</td>
                         <td className="text-gray">{item.salesOrder}</td>
-                        <td className="font-medium">{item.totalDemand}</td>
+                        {/* <td className="font-medium">{item.totalDemand}</td> */}
                         <td
                           className={`font-medium ${item.monthsOfInventory > 6
                             ? "text-red"
