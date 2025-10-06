@@ -857,6 +857,34 @@
   white-space: nowrap;
 }
 
+/* Sticky Columns */
+.sticky-col {
+  position: sticky;
+  background-color: white;
+  z-index: 5;
+}
+
+.sticky-col.first-col {
+  left: 0;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+}
+
+.sticky-col.second-col {
+  left: 100px; /* Adjust based on first column width */
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Sticky header cells */
+.inventory-table thead th.sticky-col {
+  background-color: #f9fafb;
+  z-index: 15;
+}
+
+/* Hover state for sticky columns */
+.inventory-table tbody tr:hover .sticky-col {
+  background-color: #f9fafb;
+}
+
 .font-medium {
   font-weight: 500;
   color: #111827;
