@@ -10,8 +10,8 @@ const InventoryPage = () => {
   const [sortOrder, setSortOrder] = useState("desc"); // default: high → low
 
   useEffect(() => {
-    //fetch("http://127.0.0.1:8000/api/inventory")
-      fetch("https://odooerp.staunchtec.com/api/inventory")
+    fetch("http://127.0.0.1:8000/api/inventory")
+      // fetch("https://odooerp.staunchtec.com/api/inventory")
       .then((res) => res.json())
       .then((data) => {
         setInventory(data);

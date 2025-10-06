@@ -49,15 +49,15 @@ const EnhancedDashboard = () => {
           manufacturingRes,
           orderSummaryRes,
         ] = await Promise.all([
-          // fetch("http://127.0.0.1:8000/api/vendors_metrics"),
-          // fetch("http://127.0.0.1:8000/api/odoo_vendors"),
-          // fetch("http://127.0.0.1:8000/api/manufacturing-summary"),
-          // fetch("http://127.0.0.1:8000/api/order-type-summary"),
+          fetch("http://127.0.0.1:8000/api/vendors_metrics"),
+          fetch("http://127.0.0.1:8000/api/odoo_vendors"),
+          fetch("http://127.0.0.1:8000/api/manufacturing-summary"),
+          fetch("http://127.0.0.1:8000/api/order-type-summary"),
 
-          fetch("https://odooerp.staunchtec.com/api/vendors_metrics"),
-          fetch("https://odooerp.staunchtec.com/api/odoo_vendors"),
-          fetch("https://odooerp.staunchtec.com/api/manufacturing-summary"),
-          fetch("https://odooerp.staunchtec.com/api/order-type-summary"),
+          // fetch("https://odooerp.staunchtec.com/api/vendors_metrics"),
+          // fetch("https://odooerp.staunchtec.com/api/odoo_vendors"),
+          // fetch("https://odooerp.staunchtec.com/api/manufacturing-summary"),
+          // fetch("https://odooerp.staunchtec.com/api/order-type-summary"),
         ]);
 
         if (
@@ -217,11 +217,11 @@ const EnhancedDashboard = () => {
       </div>
 
       <div className="metrics-grid">
-        <MetricCard title="Total Revenue" value={metrics.totalRevenue} change={12.5} icon={DollarSign} color="#10b981" prefix="$" tooltip="Total sales revenue generated" />
-        <MetricCard title="Total Units Sold" value={metrics.totalUnitsSold} change={8.2} icon={Package} color="#3b82f6" tooltip="Total number of units sold across all products" />
-        <MetricCard title="Component Spend" value={metrics.totalComponentSpend} change={-3.1} icon={ShoppingCart} color="#f59e0b" prefix="$" tooltip="Total spend on components" />
-        <MetricCard title="Work Orders" value={metrics.newOrders} change={15.7} icon={Truck} color="#ef4444" tooltip="Orders count from past 10 days" />
-        <MetricCard title="Active Suppliers" value={metrics.supplierCount} change={2.3} icon={Users} color="#8b5cf6" tooltip="Number of active suppliers" />
+        <MetricCard title="Total Revenue" value={metrics.totalRevenue} change={12.5} icon={DollarSign} color="#10b981" prefix="$" />
+        <MetricCard title="Total Units Sold" value={metrics.totalUnitsSold} change={8.2} icon={Package} color="#3b82f6"  />
+        <MetricCard title="Component Spend" value={metrics.totalComponentSpend} change={-3.1} icon={ShoppingCart} color="#f59e0b" prefix="$"  />
+        <MetricCard title="Work Orders (from past 10 days)" value={metrics.newOrders} change={15.7} icon={Truck} color="#ef4444" />
+        <MetricCard title="Active Suppliers" value={metrics.supplierCount} change={2.3} icon={Users} color="#8b5cf6" />
       </div>
 
       <div className="charts-grid-half">
