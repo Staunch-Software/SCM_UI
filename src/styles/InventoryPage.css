@@ -656,7 +656,7 @@
 }
 
 .search-input {
-  width: 100%;
+  width: 500px;
   padding: 0.625rem 0.625rem 0.625rem 2.5rem;
   border: 1px solid #d1d5db;
   border-radius: 8px;
@@ -672,7 +672,7 @@
 
 .search-and-filters {
   display: flex;
-  gap: 1rem;
+  gap: 5rem;
   align-items: flex-start;
   flex-wrap: wrap;
 }
