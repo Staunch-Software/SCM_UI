@@ -14,7 +14,7 @@ const Navbar = () => {
     { path: '/dashboard', label: 'Dashboard', icon: Home },
     { path: '/chat', label: 'Chat', icon: MessageSquare },
     { path: '/orders', label: 'Orders', icon: Package },
-    { path: '/inventory-analysis', label: 'Inventory', icon: BarChart3 },
+    { path: '/inventory-dashboard', label: 'Inventory', icon: BarChart3 },
     { path: '/customers', label: 'Customers', icon: Users },
     { path: '/vendors', label: 'Vendors', icon: Building2 }
   ];
