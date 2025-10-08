@@ -155,17 +155,18 @@ const InventoryPage = () => {
 
   const summaryMetrics = useMemo(() => {
     if (!processedInventory.length)
-      return { totalValue: 0, totalExcess: 0, excessItems: 0, totalMO: 0, totalPO: 0 };
+      return { totalValue: 0, totalExcess: 0, excessItems: 0, totalExcessValue: 0, totalMO: 0, totalPO: 0 };
 
     const totalValue = processedInventory.reduce((sum, item) => sum + item.totalValue, 0);
     const totalExcess = processedInventory.reduce((sum, item) => sum + (item.excessInventory > 0 ? item.excessInventory : 0), 0);
     const excessItems = processedInventory.filter((item) => item.excessInventory > 0).length;
+    const totalExcessValue = processedInventory.reduce((sum, item) => sum + (item.excessInventory > 0 ? item.excessInventory * item.costPerUnit : 0), 0);
 
     // --- FIX 1 of 3: Use the new COUNT fields for the summary cards ---
     const totalMO = processedInventory.reduce((sum, item) => sum + item.workOrderCount, 0);
     const totalPO = processedInventory.reduce((sum, item) => sum + item.purchaseOrderCount, 0);
 
-    return { totalValue, totalExcess, excessItems, totalMO, totalPO };
+    return { totalValue, totalExcess, excessItems, totalExcessValue, totalMO, totalPO };
   }, [processedInventory]);
 
   const distributionData = useMemo(() => {
@@ -230,7 +231,7 @@ const InventoryPage = () => {
         <div className="summary-grid">
           <div className="summary-card"><div className="summary-icon blue"><Package size={24} /></div><div className="summary-info"><p className="summary-label">Total Items</p><p className="summary-value">{inventory.length}</p></div></div>
           <div className="summary-card"><div className="summary-icon green"><TrendingUp size={24} /></div><div className="summary-info"><p className="summary-label">Total Inventory Value</p><p className="summary-value">${summaryMetrics.totalValue.toLocaleString()}</p></div></div>
-          <div className="summary-card"><div className="summary-icon orange"><AlertTriangle size={24} /></div><div className="summary-info"><p className="summary-label">Excess Items</p><p className="summary-value">{summaryMetrics.excessItems}</p><p className="summary-subtext">{summaryMetrics.totalExcess} units excess</p></div></div>
+          <div className="summary-card"><div className="summary-icon orange"><AlertTriangle size={24} /></div><div className="summary-info"><p className="summary-label">Excess Items</p><p className="summary-value">{summaryMetrics.excessItems}</p><p className="summary-subtext">{summaryMetrics.totalExcess} units excess</p><p className="summary-subtext" style={{ color: '#c2410c', fontWeight: '600', fontSize: '0.875rem' }}>${summaryMetrics.totalExcessValue.toLocaleString()} total value</p></div></div>
           <div className="summary-card split-card">
             <div className="split-section"><div className="split-icon manufacturing"><Factory size={20} /></div><div><p className="split-label">Manufacturing Orders</p><p className="split-value">{summaryMetrics.totalMO}</p></div></div>
             <div className="split-divider"></div>
@@ -375,7 +376,7 @@ const InventoryPage = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="table-container">
             <table className="inventory-table">
               <thead>
