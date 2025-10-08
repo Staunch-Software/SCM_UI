@@ -133,7 +133,7 @@ const InventoryPage = () => {
     link.download = `Inventory_Report_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
   };
-  
+
   const processedInventory = useMemo(() => {
     return inventory.map((item) => ({
       ...item,
@@ -155,17 +155,18 @@ const InventoryPage = () => {
 
   const summaryMetrics = useMemo(() => {
     if (!processedInventory.length)
-      return { totalValue: 0, totalExcess: 0, excessItems: 0, totalMO: 0, totalPO: 0 };
+      return { totalValue: 0, totalExcess: 0, excessItems: 0, totalExcessValue: 0, totalMO: 0, totalPO: 0 };
 
     const totalValue = processedInventory.reduce((sum, item) => sum + item.totalValue, 0);
     const totalExcess = processedInventory.reduce((sum, item) => sum + (item.excessInventory > 0 ? item.excessInventory : 0), 0);
     const excessItems = processedInventory.filter((item) => item.excessInventory > 0).length;
-    
+    const totalExcessValue = processedInventory.reduce((sum, item) => sum + (item.excessInventory > 0 ? item.excessInventory * item.costPerUnit : 0), 0);
+
     // --- FIX 1 of 3: Use the new COUNT fields for the summary cards ---
     const totalMO = processedInventory.reduce((sum, item) => sum + item.workOrderCount, 0);
     const totalPO = processedInventory.reduce((sum, item) => sum + item.purchaseOrderCount, 0);
 
-    return { totalValue, totalExcess, excessItems, totalMO, totalPO };
+    return { totalValue, totalExcess, excessItems, totalExcessValue, totalMO, totalPO };
   }, [processedInventory]);
 
   const distributionData = useMemo(() => {
@@ -230,7 +231,7 @@ const InventoryPage = () => {
         <div className="summary-grid">
           <div className="summary-card"><div className="summary-icon blue"><Package size={24} /></div><div className="summary-info"><p className="summary-label">Total Items</p><p className="summary-value">{inventory.length}</p></div></div>
           <div className="summary-card"><div className="summary-icon green"><TrendingUp size={24} /></div><div className="summary-info"><p className="summary-label">Total Inventory Value</p><p className="summary-value">${summaryMetrics.totalValue.toLocaleString()}</p></div></div>
-          <div className="summary-card"><div className="summary-icon orange"><AlertTriangle size={24} /></div><div className="summary-info"><p className="summary-label">Excess Items</p><p className="summary-value">{summaryMetrics.excessItems}</p><p className="summary-subtext">{summaryMetrics.totalExcess} units excess</p></div></div>
+          <div className="summary-card"><div className="summary-icon orange"><AlertTriangle size={24} /></div><div className="summary-info"><p className="summary-label">Excess Items</p><p className="summary-value">{summaryMetrics.excessItems}</p><p className="summary-subtext">{summaryMetrics.totalExcess} units excess</p><p className="summary-subtext" style={{ color: '#c2410c', fontWeight: '600', fontSize: '0.875rem' }}>${summaryMetrics.totalExcessValue.toLocaleString()} total value</p></div></div>
           <div className="summary-card split-card">
             <div className="split-section"><div className="split-icon manufacturing"><Factory size={20} /></div><div><p className="split-label">Manufacturing Orders</p><p className="split-value">{summaryMetrics.totalMO}</p></div></div>
             <div className="split-divider"></div>
@@ -251,7 +252,130 @@ const InventoryPage = () => {
               <button className="toggle-btn secondary" onClick={handleHideAll}>Hide All</button>
             </div>
           </div>
-          <div className="search-section">{/* Your filters are preserved */}</div>
+          <div className="search-section">
+            <div className="search-and-filters">
+              <div className="search-container">
+                <Search className="search-icon" size={18} />
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Search by product name or SKU..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+
+              <div className="filters-row">
+                {/* Type Filter */}
+                <div className="filter-dropdown">
+                  <button
+                    className={`filter-button ${selectedTypes.length > 0 ? 'active' : ''} ${openDropdown === 'type' ? 'open' : ''}`}
+                    onClick={() => setOpenDropdown(openDropdown === 'type' ? null : 'type')}
+                  >
+                    <span>Type</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      {selectedTypes.length > 0 && <span className="filter-badge">{selectedTypes.length}</span>}
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                        <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="2" fill="none" />
+                      </svg>
+                    </div>
+                  </button>
+                  {openDropdown === 'type' && (
+                    <div className="filter-dropdown-menu">
+                      {['Finished Goods', 'Raw Material', 'Sub Assembly'].map(type => (
+                        <label key={type} className="filter-option">
+                          <input
+                            type="checkbox"
+                            checked={selectedTypes.includes(type)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedTypes([...selectedTypes, type]);
+                              } else {
+                                setSelectedTypes(selectedTypes.filter(t => t !== type));
+                              }
+                            }}
+                          />
+                          <span className="filter-option-label">{type}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Buy/Make Filter */}
+                <div className="filter-dropdown">
+                  <button
+                    className={`filter-button ${selectedProcurement.length > 0 ? 'active' : ''} ${openDropdown === 'procurement' ? 'open' : ''}`}
+                    onClick={() => setOpenDropdown(openDropdown === 'procurement' ? null : 'procurement')}
+                  >
+                    <span>Buy/Make</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      {selectedProcurement.length > 0 && <span className="filter-badge">{selectedProcurement.length}</span>}
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                        <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="2" fill="none" />
+                      </svg>
+                    </div>
+                  </button>
+                  {openDropdown === 'procurement' && (
+                    <div className="filter-dropdown-menu">
+                      {['Buy', 'Make'].map(proc => (
+                        <label key={proc} className="filter-option">
+                          <input
+                            type="checkbox"
+                            checked={selectedProcurement.includes(proc)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedProcurement([...selectedProcurement, proc]);
+                              } else {
+                                setSelectedProcurement(selectedProcurement.filter(p => p !== proc));
+                              }
+                            }}
+                          />
+                          <span className="filter-option-label">{proc}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Status Filter */}
+                <div className="filter-dropdown">
+                  <button
+                    className={`filter-button ${selectedStatus.length > 0 ? 'active' : ''} ${openDropdown === 'status' ? 'open' : ''}`}
+                    onClick={() => setOpenDropdown(openDropdown === 'status' ? null : 'status')}
+                  >
+                    <span>Status</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      {selectedStatus.length > 0 && <span className="filter-badge">{selectedStatus.length}</span>}
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                        <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="2" fill="none" />
+                      </svg>
+                    </div>
+                  </button>
+                  {openDropdown === 'status' && (
+                    <div className="filter-dropdown-menu">
+                      {['Active', 'Inactive', 'Obsolete'].map(status => (
+                        <label key={status} className="filter-option">
+                          <input
+                            type="checkbox"
+                            checked={selectedStatus.includes(status)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedStatus([...selectedStatus, status]);
+                              } else {
+                                setSelectedStatus(selectedStatus.filter(s => s !== status));
+                              }
+                            }}
+                          />
+                          <span className="filter-option-label">{status}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div className="table-container">
             <table className="inventory-table">
