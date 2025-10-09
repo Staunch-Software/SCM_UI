@@ -60,8 +60,8 @@ const InventoryPage = () => {
     setLoading(true);
     setError(null);
     try {
-      // const response = await fetch("http://127.0.0.1:8000/api/inventory-analysis");
-      const response = await fetch("http://127.0.0.1:8000/api/inventory-dashboard");
+      //const response = await fetch("http://127.0.0.1:8000/api/inventory-dashboard");
+      const response = await fetch("https://odooerp.staunchtec.com/api/inventory-dashboard");
       if (!response.ok) {
         throw new Error(`API Error: ${response.status} ${response.statusText}`);
       }
