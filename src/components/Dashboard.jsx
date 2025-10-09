@@ -54,15 +54,15 @@ const EnhancedDashboard = () => {
           manufacturingRes,
           orderSummaryRes,
         ] = await Promise.all([
-          // fetch("http://127.0.0.1:8000/api/vendors_metrics"),
-          // fetch("http://127.0.0.1:8000/api/odoo_vendors"),
-          // fetch("http://127.0.0.1:8000/api/manufacturing-summary"),
-          // fetch("http://127.0.0.1:8000/api/order-type-summary"),
+          fetch("http://127.0.0.1:8000/api/vendors_metrics"),
+          fetch("http://127.0.0.1:8000/api/odoo_vendors"),
+          fetch("http://127.0.0.1:8000/api/manufacturing-summary"),
+          fetch("http://127.0.0.1:8000/api/order-type-summary"),
 
-          fetch("https://odooerp.staunchtec.com/api/vendors_metrics"),
-          fetch("https://odooerp.staunchtec.com/api/odoo_vendors"),
-          fetch("https://odooerp.staunchtec.com/api/manufacturing-summary"),
-          fetch("https://odooerp.staunchtec.com/api/order-type-summary"),
+          // fetch("https://odooerp.staunchtec.com/api/vendors_metrics"),
+          // fetch("https://odooerp.staunchtec.com/api/odoo_vendors"),
+          // fetch("https://odooerp.staunchtec.com/api/manufacturing-summary"),
+          // fetch("https://odooerp.staunchtec.com/api/order-type-summary"),
         ]);
 
         if (
