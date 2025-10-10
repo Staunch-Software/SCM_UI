@@ -34,11 +34,16 @@ const EnhancedDashboard = () => {
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [manufacturingData, setManufacturingData] = useState([]);
+  const [manufacturingDataRaw, setManufacturingDataRaw] = useState([]);
   const [currentOrdersCount, setCurrentOrdersCount] = useState({
     manufacture: 0,
     purchase: 0,
   });
   const [hoveredCard, setHoveredCard] = useState(null);
+  const [monthRange, setMonthRange] = useState(3);
+  const [filterType, setFilterType] = useState("preset"); // preset or custom
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -49,15 +54,15 @@ const EnhancedDashboard = () => {
           manufacturingRes,
           orderSummaryRes,
         ] = await Promise.all([
-          // fetch("http://127.0.0.1:8000/api/vendors_metrics"),
-          // fetch("http://127.0.0.1:8000/api/odoo_vendors"),
-          // fetch("http://127.0.0.1:8000/api/manufacturing-summary"),
-          // fetch("http://127.0.0.1:8000/api/order-type-summary"),
+          fetch("http://127.0.0.1:8000/api/vendors_metrics"),
+          fetch("http://127.0.0.1:8000/api/odoo_vendors"),
+          fetch("http://127.0.0.1:8000/api/manufacturing-summary"),
+          fetch("http://127.0.0.1:8000/api/order-type-summary"),
 
-          fetch("https://odooerp.staunchtec.com/api/vendors_metrics"),
-          fetch("https://odooerp.staunchtec.com/api/odoo_vendors"),
-          fetch("https://odooerp.staunchtec.com/api/manufacturing-summary"),
-          fetch("https://odooerp.staunchtec.com/api/order-type-summary"),
+          // fetch("https://odooerp.staunchtec.com/api/vendors_metrics"),
+          // fetch("https://odooerp.staunchtec.com/api/odoo_vendors"),
+          // fetch("https://odooerp.staunchtec.com/api/manufacturing-summary"),
+          // fetch("https://odooerp.staunchtec.com/api/order-type-summary"),
         ]);
 
         if (
@@ -76,7 +81,8 @@ const EnhancedDashboard = () => {
 
         setMetrics(metricsData);
         setVendors(vendorsData);
-        processManufacturingData(manufacturingSummaryData);
+        setManufacturingDataRaw(manufacturingSummaryData);
+        processManufacturingData(manufacturingSummaryData, 3);
         setCurrentOrdersCount({
           manufacture: orderSummaryData.manufacture_count,
           purchase: orderSummaryData.purchase_count,
@@ -92,39 +98,97 @@ const EnhancedDashboard = () => {
     fetchDashboardData();
   }, []);
 
-  const processManufacturingData = (orders) => {
+  useEffect(() => {
+    if (manufacturingDataRaw.length > 0) {
+      if (filterType === "preset") {
+        processManufacturingData(manufacturingDataRaw, monthRange);
+      } else if (filterType === "custom" && startDate && endDate) {
+        processManufacturingDataByDate(manufacturingDataRaw, startDate, endDate);
+      }
+    }
+  }, [monthRange, filterType, startDate, endDate]);
+
+  // ✅ PRESET FILTER (3, 6, 12 months)
+  const processManufacturingData = (orders, range) => {
     const monthlyData = {};
+    const now = new Date();
+
+    for (let i = range - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.toLocaleString("default", { month: "short" })} ${d.getFullYear()}`;
+      monthlyData[key] = {
+        month: key,
+        fullDate: d,
+        completed: 0,
+        inProgress: 0,
+        planned: 0,
+      };
+    }
 
     orders.forEach((order) => {
       if (!order.date_start) return;
       const date = new Date(order.date_start);
-      const monthKey = date.toLocaleString("default", { month: "short", year: "numeric" });
-
-      if (!monthlyData[monthKey]) {
-        monthlyData[monthKey] = {
-          month: date.toLocaleString("default", { month: "short" }),
-          fullDate: date,
-          completed: 0,
-          inProgress: 0,
-          planned: 0,
-        };
+      const key = `${date.toLocaleString("default", { month: "short" })} ${date.getFullYear()}`;
+      if (monthlyData[key]) {
+        const qty = order.product_qty || 0;
+        switch (order.state) {
+          case "done":
+            monthlyData[key].completed += qty;
+            break;
+          case "progress":
+          case "to_close":
+            monthlyData[key].inProgress += qty;
+            break;
+          case "confirmed":
+          case "draft":
+            monthlyData[key].planned += qty;
+            break;
+          default:
+            break;
+        }
       }
+    });
 
-      const qty = order.product_qty || 0;
-      switch (order.state) {
-        case "done":
-          monthlyData[monthKey].completed += qty;
-          break;
-        case "progress":
-        case "to_close":
-          monthlyData[monthKey].inProgress += qty;
-          break;
-        case "confirmed":
-        case "draft":
-          monthlyData[monthKey].planned += qty;
-          break;
-        default:
-          break;
+    const sortedData = Object.values(monthlyData).sort((a, b) => a.fullDate - b.fullDate);
+    setManufacturingData(sortedData);
+  };
+
+  // ✅ CUSTOM RANGE FILTER (Date picker)
+  const processManufacturingDataByDate = (orders, start, end) => {
+    const monthlyData = {};
+    const startD = new Date(start);
+    const endD = new Date(end);
+
+    orders.forEach((order) => {
+      if (!order.date_start) return;
+      const date = new Date(order.date_start);
+      if (date >= startD && date <= endD) {
+        const key = `${date.toLocaleString("default", { month: "short" })} ${date.getFullYear()}`;
+        if (!monthlyData[key]) {
+          monthlyData[key] = {
+            month: key,
+            fullDate: date,
+            completed: 0,
+            inProgress: 0,
+            planned: 0,
+          };
+        }
+        const qty = order.product_qty || 0;
+        switch (order.state) {
+          case "done":
+            monthlyData[key].completed += qty;
+            break;
+          case "progress":
+          case "to_close":
+            monthlyData[key].inProgress += qty;
+            break;
+          case "confirmed":
+          case "draft":
+            monthlyData[key].planned += qty;
+            break;
+          default:
+            break;
+        }
       }
     });
 
@@ -225,24 +289,87 @@ const EnhancedDashboard = () => {
       </div>
 
       <div className="charts-grid-half">
-        <div className="chart-container">
+        {/* 🔹 Combined Dropdown + Date Filter */}
+        <div style={{ marginBottom: "10px" }}>
+          <div className="dashboard-filter-container">
+  <label htmlFor="filterType">Filter:</label>
+  <select
+    id="filterType"
+    value={filterType}
+    onChange={(e) => setFilterType(e.target.value)}
+  >
+    <option value="preset">Preset Range</option>
+    <option value="custom">Custom Range</option>
+  </select>
+
+  {filterType === "preset" && (
+    <>
+      <label htmlFor="monthRange">Show last:</label>
+      <select
+        id="monthRange"
+        value={monthRange}
+        onChange={(e) => setMonthRange(Number(e.target.value))}
+      >
+        <option value={3}>3 months</option>
+        <option value={6}>6 months</option>
+        <option value={12}>12 months</option>
+      </select>
+    </>
+  )}
+
+  {filterType === "custom" && (
+  <div className="date-range-group">
+    <label>From:</label>
+    <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+    <label>To:</label>
+    <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+  </div>
+)}
+
+</div>
+
+        </div>
+        <br></br>
+
+        {/* 🧱 Manufacturing Bar Chart */}
+        <div className="chart-container" style={{ maxWidth: "100%", overflow: "hidden" }}>
           <div className="chart-header">
             <Factory size={24} color="#3b82f6" className="chart-icon" />
             <h3 className="chart-title">Manufacturing Products</h3>
           </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={manufacturingData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-              <XAxis dataKey="month" stroke="#6b7280" fontSize={12} />
-              <YAxis stroke="#6b7280" fontSize={12} />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="completed" fill="#10b981" name="Completed" stackId="a" />
-              <Bar dataKey="inProgress" fill="#f59e0b" name="In Progress" stackId="a" />
-              <Bar dataKey="planned" fill="#3b82f6" name="Planned" stackId="a" />
-            </BarChart>
-          </ResponsiveContainer>
+
+          {manufacturingData.length > 0 ? (
+            <div style={{ display: "flex", overflowX: "auto", paddingBottom: "10px" }}>
+              <div style={{ flex: "1 0 auto", minWidth: manufacturingData.length * 80 }}>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart
+                    data={manufacturingData}
+                    barSize={monthRange === 3 ? 80 : monthRange === 6 ? 60 : 40}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                    <XAxis
+                      dataKey="month"
+                      stroke="#6b7280"
+                      fontSize={12}
+                      angle={-30}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis stroke="#6b7280" fontSize={12} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="completed" fill="#10b981" name="Completed" stackId="a" radius={[6,6,0,0]} />
+                    <Bar dataKey="inProgress" fill="#f59e0b" name="In Progress" stackId="a" radius={[6,6,0,0]} />
+                    <Bar dataKey="planned" fill="#3b82f6" name="Planned" stackId="a" radius={[6,6,0,0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          ) : (
+            <div className="text-gray-500 text-center p-8">No data available for selected period 📭</div>
+          )}
         </div>
 
+        {/* 🥧 Current Orders Pie Chart */}
         <div className="chart-container">
           <div className="chart-header">
             <Package size={24} color="#8b5cf6" className="chart-icon" />
@@ -261,6 +388,7 @@ const EnhancedDashboard = () => {
         </div>
       </div>
 
+      {/* Supplier Performance */}
       <div className="charts-grid-full">
         <div className="chart-container">
           <div className="chart-header">
