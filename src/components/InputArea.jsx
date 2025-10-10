@@ -1,17 +1,17 @@
 import React, { useState, useRef } from 'react';
-import { Send } from 'lucide-react';
+import { Send, Square } from 'lucide-react';
 import '../styles/InputArea.css';
 
-const InputArea = ({ onSendMessage, isTyping }) => {
+const InputArea = ({ onSendMessage, isTyping, onStopGeneration }) => {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef(null);
 
   const handleSend = () => {
     if (!inputValue.trim() || isTyping) return;
-    
+
     onSendMessage(inputValue);
     setInputValue('');
-    
+
     // Reset textarea height
     if (inputRef.current) {
       inputRef.current.style.height = 'auto';
@@ -27,7 +27,7 @@ const InputArea = ({ onSendMessage, isTyping }) => {
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
-    
+
     // Auto-resize textarea
     e.target.style.height = 'auto';
     e.target.style.height = e.target.scrollHeight + 'px';
@@ -48,15 +48,27 @@ const InputArea = ({ onSendMessage, isTyping }) => {
               rows={1}
             />
           </div>
-          <button
-            onClick={handleSend}
-            disabled={!inputValue.trim() || isTyping}
-            className={`send-button ${
-              inputValue.trim() && !isTyping ? 'enabled' : 'disabled'
-            }`}
-          >
-            <Send size={18} />
-          </button>
+          {isTyping ? (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                onStopGeneration();
+              }}
+              className="send-button stop-button enabled"
+              type="button"
+            >
+              <Square size={18} fill="currentColor" />
+            </button>
+          ) : (
+            <button
+              onClick={handleSend}
+              disabled={!inputValue.trim()}
+              className={`send-button ${inputValue.trim() ? 'enabled' : 'disabled'
+                }`}
+            >
+              <Send size={18} />
+            </button>
+          )}
         </div>
         {/* <div className="input-disclaimer">
           SCM can make mistakes. Please verify important information.

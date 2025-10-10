@@ -23,27 +23,46 @@ export const useChatStore = create((set, get) => ({
     set((state) => ({ messages: [...state.messages, message] }));
   },
 
+  abortController: null,
+
   sendMessage: async (content) => {
     if (!content.trim()) return;
 
     // Add user message to the UI immediately
     const userMessage = createMessage(content, 'user');
     get().addMessage(userMessage);
-    set({ isTyping: true });
+    const controller = new AbortController();
+    set({ isTyping: true, abortController: controller });
 
+     const messageContent = content;
     try {
       const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: content,
+          message: messageContent,
           session_id: get().sessionId, // Use the session_id from the store
         }),
+         signal: controller.signal,
       });
+      
+       if (controller.signal.aborted) {
+        // throw new DOMException('Aborted', 'AbortError');
+        console.log('Aborted after fetch');
+        return; 
+      }
 
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
       const data = await response.json();
+
+      if (controller.signal.aborted) {
+         console.log('Aborted after JSON parse');
+        return; // Exit immediately
+      }
+       
+      const userMessage = createMessage(messageContent, 'user');
+      get().addMessage(userMessage);
 
       // If this is the first real message, save the new session_id
       if (!get().sessionId) {
@@ -71,11 +90,31 @@ export const useChatStore = create((set, get) => ({
       }
 
     } catch (error) {
-      console.error('Error sending message:', error);
-      const errorMessage = createMessage('Sorry, I encountered an error. Please try again.', 'assistant');
-      get().addMessage(errorMessage);
+      if (error.name === 'AbortError') {
+        // const userMessage = createMessage(messageContent, 'user');
+        // get().addMessage(userMessage);
+        const stopMessage = createMessage('User interrupted the generation process.', 'assistant');
+        get().addMessage(stopMessage);
+        console.log('Request aborted - stop message shown');
+      } else {
+        // On real error, add user message + error message
+        const userMessage = createMessage(messageContent, 'user');
+        get().addMessage(userMessage);
+        console.error('Error sending message:', error);
+        const errorMessage = createMessage('Sorry, I encountered an error. Please try again.', 'assistant');
+        get().addMessage(errorMessage);
+      }
     } finally {
-      set({ isTyping: false });
+      set({ isTyping: false, abortController: null });
+    }
+  },
+
+  stopGeneration: () => {
+    console.log('Stop clicked!'); 
+    const { abortController } = get();
+    console.log('Controller:', abortController); 
+    if (abortController) {
+      abortController.abort();
     }
   },
 

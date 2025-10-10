@@ -6,7 +6,7 @@ import { useChatStore } from '../stores/chatStore';
 import '../styles/ChatInterface.css';
 
 const ChatInterface = () => {
-  const { messages, isTyping, sendMessage, sessionId, loadSession, createNewSession, sessionTitle } = useChatStore();
+  const { messages, isTyping, sendMessage, stopGeneration, sessionId, loadSession, createNewSession, sessionTitle } = useChatStore();
 
   return (
     <div className="chat-interface">
@@ -22,7 +22,7 @@ const ChatInterface = () => {
           </div>
         </div>
         <MessageList messages={messages} isTyping={isTyping} />
-        <InputArea onSendMessage={sendMessage} isTyping={isTyping} />
+        <InputArea onSendMessage={sendMessage} isTyping={isTyping} onStopGeneration={stopGeneration}/>
       </div>
     </div>
   );
