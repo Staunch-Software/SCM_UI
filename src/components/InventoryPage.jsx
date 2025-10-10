@@ -60,8 +60,8 @@ const InventoryPage = () => {
     setLoading(true);
     setError(null);
     try {
-      //const response = await fetch("http://127.0.0.1:8000/api/inventory-dashboard");
-      const response = await fetch("https://odooerp.staunchtec.com/api/inventory-dashboard");
+      const response = await fetch("http://127.0.0.1:8000/api/inventory-dashboard");
+      //const response = await fetch("https://odooerp.staunchtec.com/api/inventory-dashboard");
       if (!response.ok) {
         throw new Error(`API Error: ${response.status} ${response.statusText}`);
       }
@@ -111,7 +111,8 @@ const InventoryPage = () => {
       headers.push('WO/PO', 'In Transit');
     }
     if (showExcess) {
-      headers.push('Excess/Shortage');
+      // --- FIX 1 of 4: Update CSV headers ---
+      headers.push('Excess', 'Shortage');
     }
     const rows = filteredData.map(item => {
       const row = [item.sku, item.product_name, item.itemType, item.procurementType, item.itemStatus, item.onHand, item.costPerUnit, item.totalValue, item.location, item.daysInStock];
@@ -122,7 +123,8 @@ const InventoryPage = () => {
         row.push(item.procurementType === "Make" ? `WO: ${item.workOrderCount} (${item.workOrderQty})` : `PO: ${item.purchaseOrderCount} (${item.purchaseOrderQty})`, item.inTransit);
       }
       if (showExcess) {
-        row.push(item.excessInventory);
+        // --- FIX 2 of 4: Update CSV data rows ---
+        row.push(item.excess, item.shortage);
       }
       return row;
     });
@@ -158,11 +160,12 @@ const InventoryPage = () => {
       return { totalValue: 0, totalExcess: 0, excessItems: 0, totalExcessValue: 0, totalMO: 0, totalPO: 0 };
 
     const totalValue = processedInventory.reduce((sum, item) => sum + item.totalValue, 0);
-    const totalExcess = processedInventory.reduce((sum, item) => sum + (item.excessInventory > 0 ? item.excessInventory : 0), 0);
-    const excessItems = processedInventory.filter((item) => item.excessInventory > 0).length;
-    const totalExcessValue = processedInventory.reduce((sum, item) => sum + (item.excessInventory > 0 ? item.excessInventory * item.costPerUnit : 0), 0);
+    
+    // --- FIX 3 of 4: Update summary metrics to use the new fields ---
+    const totalExcess = processedInventory.reduce((sum, item) => sum + item.excess, 0);
+    const excessItems = processedInventory.filter((item) => item.excess > 0).length;
+    const totalExcessValue = processedInventory.reduce((sum, item) => sum + (item.excess * item.costPerUnit), 0);
 
-    // --- FIX 1 of 3: Use the new COUNT fields for the summary cards ---
     const totalMO = processedInventory.reduce((sum, item) => sum + item.workOrderCount, 0);
     const totalPO = processedInventory.reduce((sum, item) => sum + item.purchaseOrderCount, 0);
 
@@ -404,7 +407,13 @@ const InventoryPage = () => {
                     </>
                   )}
                   {showSupply && (<><th>WO/PO</th><th>In Transit</th></>)}
-                  {showExcess && <th>Excess/Shortage</th>}
+                  {showExcess && (
+                    // --- FIX 4 of 4: Update table headers ---
+                    <>
+                      <th>Excess</th>
+                      <th>Shortage</th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -444,9 +453,11 @@ const InventoryPage = () => {
                       </>
                     )}
                     {showExcess && (
-                      <td className={`font-medium ${item.excessInventory > 0 ? "text-red" : "text-green"}`}>
-                        {item.excessInventory > 0 ? "+" : ""}{item.excessInventory}
-                      </td>
+                      // --- FIX 4 of 4: Update table data cells ---
+                      <>
+                        <td className="font-medium text-orange">{item.excess > 0 ? item.excess : ''}</td>
+                        <td className="font-medium text-red">{item.shortage > 0 ? item.shortage : ''}</td>
+                      </>
                     )}
                   </tr>
                 ))}
