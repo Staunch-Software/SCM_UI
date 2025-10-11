@@ -55,12 +55,15 @@ const InventoryPage = () => {
   const [selectedProcurement, setSelectedProcurement] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState([]);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [safetyStockPeriod, setSafetyStockPeriod] = useState("1 month");
+  const [showPeriodDropdown, setShowPeriodDropdown] = useState(false);
+  const [updatingPeriod, setUpdatingPeriod] = useState(false);
 
   const fetchInventoryFromAPI = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/inventory-dashboard");
+      const response = await fetch("http://127.0.0.1:8000/api/inventory-analysis");
       //const response = await fetch("https://odooerp.staunchtec.com/api/inventory-dashboard");
       if (!response.ok) {
         throw new Error(`API Error: ${response.status} ${response.statusText}`);
@@ -86,6 +89,38 @@ const InventoryPage = () => {
     }
   }, []);
 
+  const updateSafetyStockPeriod = async (period) => {
+  try {
+    setUpdatingPeriod(true);
+    setShowPeriodDropdown(false);
+
+    const response = await fetch("http://127.0.0.1:8000/api/update-safety-stock-period-all", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ period })
+    });
+
+    if (!response.ok) throw new Error("Failed to update period");
+
+    // Update period first
+    setSafetyStockPeriod(period);
+
+    // Fetch new data
+    const dataResponse = await fetch("http://127.0.0.1:8000/api/inventory-analysis");
+    if (dataResponse.ok) {
+      const data = await dataResponse.json();
+      setInventory(data);
+    }
+    
+    setUpdatingPeriod(false);
+
+  } catch (err) {
+    console.error("Error updating period:", err);
+    setError("Failed to update safety stock period");
+    setUpdatingPeriod(false);
+  }
+};
+
   useEffect(() => {
     fetchInventoryFromAPI();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -96,11 +131,14 @@ const InventoryPage = () => {
       if (openDropdown && !event.target.closest('.filter-dropdown')) {
         setOpenDropdown(null);
       }
+      if (showPeriodDropdown && !event.target.closest('.safety-stock-header') && !event.target.closest('.header-dropdown-menu')) {
+        setShowPeriodDropdown(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [openDropdown]);
+  }, [openDropdown, showPeriodDropdown]);
 
   const handleExportToCSV = () => {
     const headers = ['SKU', 'Product Name', 'Type', 'Buy/Make', 'Status', 'On Hand', 'Cost/Unit', 'Total Value', 'Location', 'Days in Stock'];
@@ -160,7 +198,7 @@ const InventoryPage = () => {
       return { totalValue: 0, totalExcess: 0, excessItems: 0, totalExcessValue: 0, totalMO: 0, totalPO: 0 };
 
     const totalValue = processedInventory.reduce((sum, item) => sum + item.totalValue, 0);
-    
+
     // --- FIX 3 of 4: Update summary metrics to use the new fields ---
     const totalExcess = processedInventory.reduce((sum, item) => sum + item.excess, 0);
     const excessItems = processedInventory.filter((item) => item.excess > 0).length;
@@ -398,7 +436,44 @@ const InventoryPage = () => {
                     <>
                       <th>Avg Demand/Mo</th>
                       <th>Forecast</th>
-                      <th>Safety Stock</th>
+                      <th style={{ position: 'relative' }}>
+                        <div
+                          className="safety-stock-header"
+                          onClick={() => !updatingPeriod && setShowPeriodDropdown(!showPeriodDropdown)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            cursor: updatingPeriod ? 'wait' : 'pointer',
+                            opacity: updatingPeriod ? 0.6 : 1
+                          }}
+                        >
+                          <span>Safety Stock ({safetyStockPeriod})</span>
+                          {updatingPeriod ? (
+                            <RefreshCw size={12} className="spin" />
+                          ) : (
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                              <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="2" fill="none" />
+                            </svg>
+                          )}
+                        </div>
+                        {showPeriodDropdown && !updatingPeriod && (
+                          <div className="header-dropdown-menu">
+                            {['1 day', '1 week', '1 month', '2 months', '3 months', '6 months', '12 months'].map(p => (
+                              <div
+                                key={p}
+                                className="filter-option"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  updateSafetyStockPeriod(p);
+                                }}
+                              >
+                                <span className="filter-option-label">{p}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </th>
                       <th>Sales Order</th>
                       {/* --- FIX: Added Dependent Demand column header --- */}
                       <th>Dependent Demand</th>

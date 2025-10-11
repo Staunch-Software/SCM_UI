@@ -40,6 +40,11 @@
   text-align: right;
 }
 
+.message-text.user {
+  background: #2d3748;
+  color: #ffffff;
+  text-align: left;  /* ADD THIS LINE */
+}
 .message-text {
   display: inline-block;
   max-width: 100%;
@@ -61,6 +66,13 @@
 .message-text.user {
   background: #2d3748;
   color: #ffffff;
+  text-align: left;
+  display: block;  /* ADD THIS */
+  width: fit-content;  /* ADD THIS */
+  max-width: 80%;  /* ADD THIS */
+  margin-left: auto;  /* ADD THIS - keeps it on right side */
+  word-spacing: normal;  /* ADD THIS */
+  text-align-last: left;  /* ADD THIS */
 }
 
 .message-timestamp {

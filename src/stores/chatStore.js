@@ -61,8 +61,8 @@ export const useChatStore = create((set, get) => ({
         return; // Exit immediately
       }
        
-      const userMessage = createMessage(messageContent, 'user');
-      get().addMessage(userMessage);
+      // const userMessage = createMessage(messageContent, 'user');
+      // get().addMessage(userMessage);
 
       // If this is the first real message, save the new session_id
       if (!get().sessionId) {
@@ -98,8 +98,8 @@ export const useChatStore = create((set, get) => ({
         console.log('Request aborted - stop message shown');
       } else {
         // On real error, add user message + error message
-        const userMessage = createMessage(messageContent, 'user');
-        get().addMessage(userMessage);
+        // const userMessage = createMessage(messageContent, 'user');
+        // get().addMessage(userMessage);
         console.error('Error sending message:', error);
         const errorMessage = createMessage('Sorry, I encountered an error. Please try again.', 'assistant');
         get().addMessage(errorMessage);
