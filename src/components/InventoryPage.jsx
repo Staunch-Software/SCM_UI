@@ -58,11 +58,37 @@ const InventoryPage = () => {
   const [safetyStockPeriod, setSafetyStockPeriod] = useState("1 month");
   const [showPeriodDropdown, setShowPeriodDropdown] = useState(false);
   const [updatingPeriod, setUpdatingPeriod] = useState(false);
+  const [forecastMonth, setForecastMonth] = useState("July");
+  const [showForecastMonthDropdown, setShowForecastMonthDropdown] = useState(false);
+  const [updatingForecast, setUpdatingForecast] = useState(false);
 
   const fetchInventoryFromAPI = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
+      // First check current period in backend
+      const periodResponse = await fetch("http://127.0.0.1:8000/api/current-safety-stock-period");
+      if (periodResponse.ok) {
+        const periodData = await periodResponse.json();
+        const currentPeriod = periodData.period || "1 month";
+
+        // If backend period is not "1 month", update it first
+        if (currentPeriod !== "1 month") {
+          await fetch("http://127.0.0.1:8000/api/update-safety-stock-period-all", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ period: "1 month" })
+          });
+        }
+        setSafetyStockPeriod("1 month");
+      }
+
+      const forecastResponse = await fetch("http://127.0.0.1:8000/api/current-forecast-settings");
+      if (forecastResponse.ok) {
+        const forecastData = await forecastResponse.json();
+        setForecastMonth(forecastData.month || "July");
+      }
+      
       const response = await fetch("http://127.0.0.1:8000/api/inventory-analysis");
       //const response = await fetch("https://odooerp.staunchtec.com/api/inventory-dashboard");
       if (!response.ok) {
@@ -90,36 +116,66 @@ const InventoryPage = () => {
   }, []);
 
   const updateSafetyStockPeriod = async (period) => {
-  try {
-    setUpdatingPeriod(true);
-    setShowPeriodDropdown(false);
+    try {
+      setUpdatingPeriod(true);
+      setShowPeriodDropdown(false);
 
-    const response = await fetch("http://127.0.0.1:8000/api/update-safety-stock-period-all", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ period })
-    });
+      const response = await fetch("http://127.0.0.1:8000/api/update-safety-stock-period-all", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ period })
+      });
 
-    if (!response.ok) throw new Error("Failed to update period");
+      if (!response.ok) throw new Error("Failed to update period");
 
-    // Update period first
-    setSafetyStockPeriod(period);
+      // Update period first
+      setSafetyStockPeriod(period);
 
-    // Fetch new data
-    const dataResponse = await fetch("http://127.0.0.1:8000/api/inventory-analysis");
-    if (dataResponse.ok) {
-      const data = await dataResponse.json();
-      setInventory(data);
+      // Fetch new data
+      const dataResponse = await fetch("http://127.0.0.1:8000/api/inventory-analysis");
+      if (dataResponse.ok) {
+        const data = await dataResponse.json();
+        setInventory(data);
+      }
+
+      setUpdatingPeriod(false);
+
+    } catch (err) {
+      console.error("Error updating period:", err);
+      setError("Failed to update safety stock period");
+      setUpdatingPeriod(false);
     }
-    
-    setUpdatingPeriod(false);
+  };
 
-  } catch (err) {
-    console.error("Error updating period:", err);
-    setError("Failed to update safety stock period");
-    setUpdatingPeriod(false);
-  }
-};
+  const updateForecastMonth = async (month) => {
+    try {
+      setUpdatingForecast(true);
+      setShowForecastMonthDropdown(false);
+
+      const response = await fetch(`http://127.0.0.1:8000/api/update-forecast-settings-all?month=${month}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" }
+      });
+
+      if (!response.ok) throw new Error("Failed to update forecast month");
+
+      setForecastMonth(month);
+
+      // Fetch new data
+      const dataResponse = await fetch("http://127.0.0.1:8000/api/inventory-analysis");
+      if (dataResponse.ok) {
+        const data = await dataResponse.json();
+        setInventory(data);
+      }
+
+      setUpdatingForecast(false);
+
+    } catch (err) {
+      console.error("Error updating forecast month:", err);
+      setError("Failed to update forecast month");
+      setUpdatingForecast(false);
+    }
+  };
 
   useEffect(() => {
     fetchInventoryFromAPI();
@@ -134,11 +190,14 @@ const InventoryPage = () => {
       if (showPeriodDropdown && !event.target.closest('.safety-stock-header') && !event.target.closest('.header-dropdown-menu')) {
         setShowPeriodDropdown(false);
       }
+      if (showForecastMonthDropdown && !event.target.closest('.forecast-month-header') && !event.target.closest('.header-dropdown-menu')) {
+        setShowForecastMonthDropdown(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [openDropdown, showPeriodDropdown]);
+  }, [openDropdown, showPeriodDropdown, showForecastMonthDropdown]);
 
   const handleExportToCSV = () => {
     const headers = ['SKU', 'Product Name', 'Type', 'Buy/Make', 'Status', 'On Hand', 'Cost/Unit', 'Total Value', 'Location', 'Days in Stock'];
@@ -200,7 +259,7 @@ const InventoryPage = () => {
     const totalValue = processedInventory.reduce((sum, item) => sum + item.totalValue, 0);
 
     // --- FIX 3 of 4: Update summary metrics to use the new fields ---
-    const totalExcess = processedInventory.reduce((sum, item) => sum + item.excess, 0);
+    const totalExcess = Math.round(processedInventory.reduce((sum, item) => sum + item.excess, 0));
     const excessItems = processedInventory.filter((item) => item.excess > 0).length;
     const totalExcessValue = processedInventory.reduce((sum, item) => sum + (item.excess * item.costPerUnit), 0);
 
@@ -435,7 +494,44 @@ const InventoryPage = () => {
                   {showDemand && (
                     <>
                       <th>Avg Demand/Mo</th>
-                      <th>Forecast</th>
+                      <th style={{ position: 'relative' }}>
+                        <div
+                          className="forecast-month-header"
+                          onClick={() => !updatingForecast && setShowForecastMonthDropdown(!showForecastMonthDropdown)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            cursor: updatingForecast ? 'wait' : 'pointer',
+                            opacity: updatingForecast ? 0.6 : 1
+                          }}
+                        >
+                          <span>Forecast ({forecastMonth})</span>
+                          {updatingForecast ? (
+                            <RefreshCw size={12} className="spin" />
+                          ) : (
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                              <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="2" fill="none" />
+                            </svg>
+                          )}
+                        </div>
+                        {showForecastMonthDropdown && !updatingForecast && (
+                          <div className="header-dropdown-menu">
+                            {['June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
+                              <div
+                                key={m}
+                                className="filter-option"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  updateForecastMonth(m);
+                                }}
+                              >
+                                <span className="filter-option-label">{m}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </th>
                       <th style={{ position: 'relative' }}>
                         <div
                           className="safety-stock-header"
