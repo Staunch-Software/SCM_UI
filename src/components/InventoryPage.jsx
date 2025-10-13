@@ -58,10 +58,14 @@ const InventoryPage = () => {
   const [safetyStockPeriod, setSafetyStockPeriod] = useState("1 month");
   const [showPeriodDropdown, setShowPeriodDropdown] = useState(false);
   const [updatingPeriod, setUpdatingPeriod] = useState(false);
-  const [forecastMonth, setForecastMonth] = useState("July");
+  const [showSafetyStockModal, setShowSafetyStockModal] = useState(false);
+  const [selectedSafetyYear, setSelectedSafetyYear] = useState("2025");
+  const [selectedSafetyMonth, setSelectedSafetyMonth] = useState("January"); const [forecastMonth, setForecastMonth] = useState("July");
   const [showForecastMonthDropdown, setShowForecastMonthDropdown] = useState(false);
   const [updatingForecast, setUpdatingForecast] = useState(false);
-
+  const [showForecastModal, setShowForecastModal] = useState(false);
+  const [selectedForecastYear, setSelectedForecastYear] = useState("2025");
+  const [selectedForecastMonth, setSelectedForecastMonth] = useState("January");
   const fetchInventoryFromAPI = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -88,7 +92,7 @@ const InventoryPage = () => {
         const forecastData = await forecastResponse.json();
         setForecastMonth(forecastData.month || "July");
       }
-      
+
       const response = await fetch("http://127.0.0.1:8000/api/inventory-analysis");
       //const response = await fetch("https://odooerp.staunchtec.com/api/inventory-dashboard");
       if (!response.ok) {
@@ -115,64 +119,58 @@ const InventoryPage = () => {
     }
   }, []);
 
-  const updateSafetyStockPeriod = async (period) => {
+  const updateSafetyStockPeriod = async (month, year) => {
     try {
       setUpdatingPeriod(true);
-      setShowPeriodDropdown(false);
 
-      const response = await fetch("http://127.0.0.1:8000/api/update-safety-stock-period-all", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ period })
-      });
+      // Fetch safety stock data from database
+      const response = await fetch(`http://127.0.0.1:8000/api/safety-stock-data/${year}/${month}`);
+      if (!response.ok) throw new Error("Failed to fetch safety stock data");
 
-      if (!response.ok) throw new Error("Failed to update period");
+      const safetyStockMap = await response.json();
 
-      // Update period first
-      setSafetyStockPeriod(period);
+      // Update inventory with new safety stock values
+      setInventory(prevInventory =>
+        prevInventory.map(item => ({
+          ...item,
+          safetyStock: safetyStockMap[item.product_id] || 0
+        }))
+      );
 
-      // Fetch new data
-      const dataResponse = await fetch("http://127.0.0.1:8000/api/inventory-analysis");
-      if (dataResponse.ok) {
-        const data = await dataResponse.json();
-        setInventory(data);
-      }
-
+      setSafetyStockPeriod(`${month} ${year}`);
       setUpdatingPeriod(false);
 
     } catch (err) {
-      console.error("Error updating period:", err);
-      setError("Failed to update safety stock period");
+      console.error("Error updating safety stock:", err);
+      setError("Failed to update safety stock");
       setUpdatingPeriod(false);
     }
   };
 
-  const updateForecastMonth = async (month) => {
+  const updateForecastMonth = async (month, year) => {
     try {
       setUpdatingForecast(true);
-      setShowForecastMonthDropdown(false);
 
-      const response = await fetch(`http://127.0.0.1:8000/api/update-forecast-settings-all?month=${month}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" }
-      });
+      // Fetch forecast data from database
+      const response = await fetch(`http://127.0.0.1:8000/api/forecast-data/${year}/${month}`);
+      if (!response.ok) throw new Error("Failed to fetch forecast data");
 
-      if (!response.ok) throw new Error("Failed to update forecast month");
+      const forecastMap = await response.json();
 
-      setForecastMonth(month);
+      // Update inventory with new forecast values
+      setInventory(prevInventory =>
+        prevInventory.map(item => ({
+          ...item,
+          forecast: forecastMap[item.product_id] || 0
+        }))
+      );
 
-      // Fetch new data
-      const dataResponse = await fetch("http://127.0.0.1:8000/api/inventory-analysis");
-      if (dataResponse.ok) {
-        const data = await dataResponse.json();
-        setInventory(data);
-      }
-
+      setForecastMonth(`${month} ${year}`);
       setUpdatingForecast(false);
 
     } catch (err) {
-      console.error("Error updating forecast month:", err);
-      setError("Failed to update forecast month");
+      console.error("Error updating forecast:", err);
+      setError("Failed to update forecast");
       setUpdatingForecast(false);
     }
   };
@@ -497,7 +495,7 @@ const InventoryPage = () => {
                       <th style={{ position: 'relative' }}>
                         <div
                           className="forecast-month-header"
-                          onClick={() => !updatingForecast && setShowForecastMonthDropdown(!showForecastMonthDropdown)}
+                          onClick={() => !updatingForecast && setShowForecastModal(true)}
                           style={{
                             display: 'flex',
                             alignItems: 'center',
@@ -515,27 +513,11 @@ const InventoryPage = () => {
                             </svg>
                           )}
                         </div>
-                        {showForecastMonthDropdown && !updatingForecast && (
-                          <div className="header-dropdown-menu">
-                            {['June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
-                              <div
-                                key={m}
-                                className="filter-option"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  updateForecastMonth(m);
-                                }}
-                              >
-                                <span className="filter-option-label">{m}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
                       </th>
                       <th style={{ position: 'relative' }}>
                         <div
                           className="safety-stock-header"
-                          onClick={() => !updatingPeriod && setShowPeriodDropdown(!showPeriodDropdown)}
+                          onClick={() => !updatingPeriod && setShowSafetyStockModal(true)}
                           style={{
                             display: 'flex',
                             alignItems: 'center',
@@ -553,22 +535,6 @@ const InventoryPage = () => {
                             </svg>
                           )}
                         </div>
-                        {showPeriodDropdown && !updatingPeriod && (
-                          <div className="header-dropdown-menu">
-                            {['1 day', '1 week', '1 month', '2 months', '3 months', '6 months', '12 months'].map(p => (
-                              <div
-                                key={p}
-                                className="filter-option"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  updateSafetyStockPeriod(p);
-                                }}
-                              >
-                                <span className="filter-option-label">{p}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
                       </th>
                       <th>Sales Order</th>
                       {/* --- FIX: Added Dependent Demand column header --- */}
@@ -638,6 +604,55 @@ const InventoryPage = () => {
         </div>
         <div className="demand-supply-section">{/* Demand/Supply overview remains the same */}</div>
       </div>
+      {/* Forecast Modal */}
+      {showForecastModal && (
+        <div className="modal-overlay" onClick={() => setShowForecastModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Select Forecast Period</h3>
+            <div className="modal-form">
+              <label>Year: <select value={selectedForecastYear} onChange={(e) => setSelectedForecastYear(e.target.value)}>
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+              </select></label>
+              <label>Month: <select value={selectedForecastMonth} onChange={(e) => setSelectedForecastMonth(e.target.value)}>
+                {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select></label>
+              <div className="modal-actions">
+                <button onClick={() => { updateForecastMonth(selectedForecastMonth, selectedForecastYear); setShowForecastModal(false); }}>Submit</button>
+                <button onClick={() => setShowForecastModal(false)}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Safety Stock Modal */}
+      {showSafetyStockModal && (
+        <div className="modal-overlay" onClick={() => setShowSafetyStockModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Select Safety Stock Period</h3>
+            <div className="modal-form">
+              <label>Year: <select value={selectedSafetyYear} onChange={(e) => setSelectedSafetyYear(e.target.value)}>
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+              </select></label>
+              <label>Month: <select value={selectedSafetyMonth} onChange={(e) => setSelectedSafetyMonth(e.target.value)}>
+                {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select></label>
+              <div className="modal-actions">
+                <button onClick={() => { updateSafetyStockPeriod(selectedSafetyMonth, selectedSafetyYear); setShowSafetyStockModal(false); }}>Submit</button>
+                <button onClick={() => setShowSafetyStockModal(false)}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
