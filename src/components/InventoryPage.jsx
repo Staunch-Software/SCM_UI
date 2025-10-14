@@ -56,16 +56,27 @@ const InventoryPage = () => {
   const [selectedStatus, setSelectedStatus] = useState([]);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [safetyStockPeriod, setSafetyStockPeriod] = useState("1 month");
+  const [safetyStockDetails, setSafetyStockDetails] = useState({});
   const [showPeriodDropdown, setShowPeriodDropdown] = useState(false);
   const [updatingPeriod, setUpdatingPeriod] = useState(false);
   const [showSafetyStockModal, setShowSafetyStockModal] = useState(false);
-  const [selectedSafetyYear, setSelectedSafetyYear] = useState("2025");
-  const [selectedSafetyMonth, setSelectedSafetyMonth] = useState("January"); const [forecastMonth, setForecastMonth] = useState("July");
   const [showForecastMonthDropdown, setShowForecastMonthDropdown] = useState(false);
   const [updatingForecast, setUpdatingForecast] = useState(false);
   const [showForecastModal, setShowForecastModal] = useState(false);
-  const [selectedForecastYear, setSelectedForecastYear] = useState("2025");
-  const [selectedForecastMonth, setSelectedForecastMonth] = useState("January");
+  const [forecastMonth, setForecastMonth] = useState("July");
+  const [forecastMonthDetails, setForecastMonthDetails] = useState({});
+  // Safety Stock Range
+  const [selectedSafetyFromYear, setSelectedSafetyFromYear] = useState("2025");
+  const [selectedSafetyFromMonth, setSelectedSafetyFromMonth] = useState("January");
+  const [selectedSafetyToYear, setSelectedSafetyToYear] = useState("2025");
+  const [selectedSafetyToMonth, setSelectedSafetyToMonth] = useState("January");
+
+  // Forecast Range
+  const [selectedForecastFromYear, setSelectedForecastFromYear] = useState("2025");
+  const [selectedForecastFromMonth, setSelectedForecastFromMonth] = useState("January");
+  const [selectedForecastToYear, setSelectedForecastToYear] = useState("2025");
+  const [selectedForecastToMonth, setSelectedForecastToMonth] = useState("January");
+
   const fetchInventoryFromAPI = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -119,17 +130,18 @@ const InventoryPage = () => {
     }
   }, []);
 
-  const updateSafetyStockPeriod = async (month, year) => {
+  const updateSafetyStockPeriod = async (fromMonth, fromYear, toMonth, toYear) => {
     try {
       setUpdatingPeriod(true);
-
-      // Fetch safety stock data from database
-      const response = await fetch(`http://127.0.0.1:8000/api/safety-stock-data/${year}/${month}`);
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/safety-stock-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`
+      );
       if (!response.ok) throw new Error("Failed to fetch safety stock data");
+      const data = await response.json();
 
-      const safetyStockMap = await response.json();
+      const safetyStockMap = data.averages;
+      const detailsMap = data.details;
 
-      // Update inventory with new safety stock values
       setInventory(prevInventory =>
         prevInventory.map(item => ({
           ...item,
@@ -137,9 +149,16 @@ const InventoryPage = () => {
         }))
       );
 
-      setSafetyStockPeriod(`${month} ${year}`);
-      setUpdatingPeriod(false);
+      // Store details for tooltip
+      setSafetyStockDetails(detailsMap);
 
+      const isSameMonth = fromMonth === toMonth && fromYear === toYear;
+      const displayPeriod = isSameMonth
+        ? `${fromMonth} ${fromYear}`
+        : `${fromMonth} ${fromYear} - ${toMonth} ${toYear}`;
+
+      setSafetyStockPeriod(displayPeriod);
+      setUpdatingPeriod(false);
     } catch (err) {
       console.error("Error updating safety stock:", err);
       setError("Failed to update safety stock");
@@ -147,17 +166,18 @@ const InventoryPage = () => {
     }
   };
 
-  const updateForecastMonth = async (month, year) => {
+  const updateForecastMonth = async (fromMonth, fromYear, toMonth, toYear) => {
     try {
       setUpdatingForecast(true);
-
-      // Fetch forecast data from database
-      const response = await fetch(`http://127.0.0.1:8000/api/forecast-data/${year}/${month}`);
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/forecast-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`
+      );
       if (!response.ok) throw new Error("Failed to fetch forecast data");
+      const data = await response.json();  // ✅ Get full data object
 
-      const forecastMap = await response.json();
+      const forecastMap = data.averages;  // ✅ Extract averages
+      const detailsMap = data.details;    // ✅ Extract details
 
-      // Update inventory with new forecast values
       setInventory(prevInventory =>
         prevInventory.map(item => ({
           ...item,
@@ -165,9 +185,16 @@ const InventoryPage = () => {
         }))
       );
 
-      setForecastMonth(`${month} ${year}`);
-      setUpdatingForecast(false);
+      // ✅ Store details for tooltip
+      setForecastMonthDetails(detailsMap);
 
+      const isSameMonth = fromMonth === toMonth && fromYear === toYear;
+      const displayPeriod = isSameMonth
+        ? `${fromMonth} ${fromYear}`
+        : `${fromMonth} ${fromYear} - ${toMonth} ${toYear}`;
+
+      setForecastMonth(displayPeriod);
+      setUpdatingForecast(false);
     } catch (err) {
       console.error("Error updating forecast:", err);
       setError("Failed to update forecast");
@@ -304,10 +331,33 @@ const InventoryPage = () => {
     setShowExcess(false);
   };
 
+  const handleCellHover = (e) => {
+  const rect = e.currentTarget.getBoundingClientRect();
+  document.documentElement.style.setProperty('--tooltip-x', `${rect.left + rect.width / 2}px`);
+  document.documentElement.style.setProperty('--tooltip-y', `${rect.top - 10}px`);
+};
+
   if (loading) return <div className="loading-screen"><p>Loading Inventory Data from Odoo...</p></div>;
   if (error) return <div className="no-data-screen"><p style={{ color: "red" }}>{error}</p></div>;
   if (!inventory.length) return <div className="no-data-screen"><p>No inventory records found.</p></div>;
 
+  const MonthBreakdownTooltip = ({ productId, details, type }) => {
+    if (!details || !details[productId]) return null;
+
+    const monthData = details[productId];
+
+    return (
+      <div className="month-breakdown-tooltip">
+        <div className="tooltip-header">{type} Breakdown:</div>
+        {Object.entries(monthData).map(([month, value]) => (
+          <div key={month} className="tooltip-row">
+            <span className="tooltip-month">{month}:</span>
+            <span className="tooltip-value">{value}</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
   return (
     <div className="inventory-page">
       <div className="inventory-header-main">
@@ -513,6 +563,12 @@ const InventoryPage = () => {
                             </svg>
                           )}
                         </div>
+                        <div className="info-icon-container" title={`Showing average for: ${forecastMonth}`}>
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ marginLeft: '4px', cursor: 'help' }}>
+                            <circle cx="7" cy="7" r="6" stroke="#6b7280" strokeWidth="1.5" />
+                            <text x="7" y="10" textAnchor="middle" fill="#6b7280" fontSize="10" fontWeight="600">i</text>
+                          </svg>
+                        </div>
                       </th>
                       <th style={{ position: 'relative' }}>
                         <div
@@ -534,6 +590,12 @@ const InventoryPage = () => {
                               <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="2" fill="none" />
                             </svg>
                           )}
+                        </div>
+                        <div className="info-icon-container" title={`Showing average for: ${safetyStockPeriod}`}>
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ marginLeft: '4px', cursor: 'help' }}>
+                            <circle cx="7" cy="7" r="6" stroke="#6b7280" strokeWidth="1.5" />
+                            <text x="7" y="10" textAnchor="middle" fill="#6b7280" fontSize="10" fontWeight="600">i</text>
+                          </svg>
                         </div>
                       </th>
                       <th>Sales Order</th>
@@ -569,8 +631,26 @@ const InventoryPage = () => {
                     {showDemand && (
                       <>
                         <td className="font-medium">{item.avgMonthlyDemand}</td>
-                        <td className="text-gray">{item.forecast}</td>
-                        <td className="text-gray">{item.safetyStock}</td>
+                        <td className="text-gray cell-with-breakdown" onMouseEnter={handleCellHover} style={{ position: 'relative' }}>
+                          {item.forecast}
+                          <div className="breakdown-tooltip-container">
+                            <MonthBreakdownTooltip
+                              productId={item.product_id}
+                              details={forecastMonthDetails}
+                              type="Forecast"
+                            />
+                          </div>
+                        </td>
+                        <td className="text-gray cell-with-breakdown" style={{ position: 'relative' }}>
+                          {item.safetyStock}
+                          <div className="breakdown-tooltip-container">
+                            <MonthBreakdownTooltip
+                              productId={item.product_id}
+                              details={safetyStockDetails}
+                              type="Safety Stock"
+                            />
+                          </div>
+                        </td>
                         <td className="text-gray">{item.salesOrder}</td>
                         {/* --- FIX: Added Dependent Demand data cell --- */}
                         <td className="text-gray">{item.dependentDemand}</td>
@@ -608,20 +688,54 @@ const InventoryPage = () => {
       {showForecastModal && (
         <div className="modal-overlay" onClick={() => setShowForecastModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Select Forecast Period</h3>
+            <h3>Select Forecast Period Range</h3>
             <div className="modal-form">
-              <label>Year: <select value={selectedForecastYear} onChange={(e) => setSelectedForecastYear(e.target.value)}>
-                <option value="2025">2025</option>
-                <option value="2026">2026</option>
-                <option value="2027">2027</option>
-              </select></label>
-              <label>Month: <select value={selectedForecastMonth} onChange={(e) => setSelectedForecastMonth(e.target.value)}>
-                {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
-              </select></label>
+              {/* FROM Section */}
+              <div style={{ marginBottom: '1rem', fontWeight: 600, color: '#111827', borderBottom: '2px solid #e5e7eb', paddingBottom: '0.5rem' }}>
+                From:
+              </div>
+              <label>Year:
+                <select value={selectedForecastFromYear} onChange={(e) => setSelectedForecastFromYear(e.target.value)}>
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                  <option value="2027">2027</option>
+                </select>
+              </label>
+              <label>Month:
+                <select value={selectedForecastFromMonth} onChange={(e) => setSelectedForecastFromMonth(e.target.value)}>
+                  {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </label>
+
+              {/* TO Section */}
+              <div style={{ marginTop: '1.5rem', marginBottom: '1rem', fontWeight: 600, color: '#111827', borderBottom: '2px solid #e5e7eb', paddingBottom: '0.5rem' }}>
+                To:
+              </div>
+              <label>Year:
+                <select value={selectedForecastToYear} onChange={(e) => setSelectedForecastToYear(e.target.value)}>
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                  <option value="2027">2027</option>
+                </select>
+              </label>
+              <label>Month:
+                <select value={selectedForecastToMonth} onChange={(e) => setSelectedForecastToMonth(e.target.value)}>
+                  {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </label>
+
               <div className="modal-actions">
-                <button onClick={() => { updateForecastMonth(selectedForecastMonth, selectedForecastYear); setShowForecastModal(false); }}>Submit</button>
+                <button onClick={() => {
+                  updateForecastMonth(
+                    selectedForecastFromMonth, selectedForecastFromYear,
+                    selectedForecastToMonth, selectedForecastToYear
+                  );
+                  setShowForecastModal(false);
+                }}>Submit</button>
                 <button onClick={() => setShowForecastModal(false)}>Cancel</button>
               </div>
             </div>
@@ -633,20 +747,54 @@ const InventoryPage = () => {
       {showSafetyStockModal && (
         <div className="modal-overlay" onClick={() => setShowSafetyStockModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Select Safety Stock Period</h3>
+            <h3>Select Safety Stock Period Range</h3>
             <div className="modal-form">
-              <label>Year: <select value={selectedSafetyYear} onChange={(e) => setSelectedSafetyYear(e.target.value)}>
-                <option value="2025">2025</option>
-                <option value="2026">2026</option>
-                <option value="2027">2027</option>
-              </select></label>
-              <label>Month: <select value={selectedSafetyMonth} onChange={(e) => setSelectedSafetyMonth(e.target.value)}>
-                {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
-              </select></label>
+              {/* FROM Section */}
+              <div style={{ marginBottom: '1rem', fontWeight: 600, color: '#111827', borderBottom: '2px solid #e5e7eb', paddingBottom: '0.5rem' }}>
+                From:
+              </div>
+              <label>Year:
+                <select value={selectedSafetyFromYear} onChange={(e) => setSelectedSafetyFromYear(e.target.value)}>
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                  <option value="2027">2027</option>
+                </select>
+              </label>
+              <label>Month:
+                <select value={selectedSafetyFromMonth} onChange={(e) => setSelectedSafetyFromMonth(e.target.value)}>
+                  {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </label>
+
+              {/* TO Section */}
+              <div style={{ marginTop: '1.5rem', marginBottom: '1rem', fontWeight: 600, color: '#111827', borderBottom: '2px solid #e5e7eb', paddingBottom: '0.5rem' }}>
+                To:
+              </div>
+              <label>Year:
+                <select value={selectedSafetyToYear} onChange={(e) => setSelectedSafetyToYear(e.target.value)}>
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                  <option value="2027">2027</option>
+                </select>
+              </label>
+              <label>Month:
+                <select value={selectedSafetyToMonth} onChange={(e) => setSelectedSafetyToMonth(e.target.value)}>
+                  {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </label>
+
               <div className="modal-actions">
-                <button onClick={() => { updateSafetyStockPeriod(selectedSafetyMonth, selectedSafetyYear); setShowSafetyStockModal(false); }}>Submit</button>
+                <button onClick={() => {
+                  updateSafetyStockPeriod(
+                    selectedSafetyFromMonth, selectedSafetyFromYear,
+                    selectedSafetyToMonth, selectedSafetyToYear
+                  );
+                  setShowSafetyStockModal(false);
+                }}>Submit</button>
                 <button onClick={() => setShowSafetyStockModal(false)}>Cancel</button>
               </div>
             </div>

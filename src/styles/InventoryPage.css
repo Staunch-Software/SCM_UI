@@ -1307,3 +1307,109 @@
     padding: 1.5rem;
   }
 }
+
+/* Info Icon Tooltip */
+.info-icon-container {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+}
+
+.info-icon-container:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1f2937;
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 1000;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.info-icon-container:hover::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #1f2937;
+  z-index: 1000;
+  margin-bottom: -6px;
+}
+
+/* Month Breakdown Tooltip on Cell Hover */
+.cell-with-breakdown {
+  cursor: help;
+  position: relative;
+}
+
+.breakdown-tooltip-container {
+  display: none;
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  margin-bottom: 8px;
+}
+
+.cell-with-breakdown:hover .breakdown-tooltip-container {
+  display: block;
+}
+
+.month-breakdown-tooltip {
+  background-color: #1f2937;
+  color: white;
+  padding: 0.75rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  white-space: nowrap;
+}
+
+.tooltip-header {
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  color: #60a5fa;
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+  font-size: 0.8rem;
+}
+
+.tooltip-month {
+  color: #d1d5db;
+  margin-right: 1rem;
+}
+
+.tooltip-value {
+  font-weight: 600;
+  color: white;
+}
+
+/* Tooltip Arrow */
+.breakdown-tooltip-container::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #1f2937;
+}
