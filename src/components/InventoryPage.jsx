@@ -55,7 +55,10 @@ const InventoryPage = () => {
   const [selectedProcurement, setSelectedProcurement] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState([]);
   const [openDropdown, setOpenDropdown] = useState(null);
-  const [safetyStockPeriod, setSafetyStockPeriod] = useState("1 month");
+  const [safetyStockPeriod, setSafetyStockPeriod] = useState(() => {
+    const now = new Date();
+    return `${now.toLocaleString('en-US', { month: 'long' })} ${now.getFullYear()}`;
+  });
   const [safetyStockDetails, setSafetyStockDetails] = useState({});
   const [showPeriodDropdown, setShowPeriodDropdown] = useState(false);
   const [updatingPeriod, setUpdatingPeriod] = useState(false);
@@ -63,46 +66,37 @@ const InventoryPage = () => {
   const [showForecastMonthDropdown, setShowForecastMonthDropdown] = useState(false);
   const [updatingForecast, setUpdatingForecast] = useState(false);
   const [showForecastModal, setShowForecastModal] = useState(false);
-  const [forecastMonth, setForecastMonth] = useState("July");
+  const [forecastMonth, setForecastMonth] = useState(() => {
+    const now = new Date();
+    return `${now.toLocaleString('en-US', { month: 'long' })} ${now.getFullYear()}`;
+  });
   const [forecastMonthDetails, setForecastMonthDetails] = useState({});
-  // Safety Stock Range
-  const [selectedSafetyFromYear, setSelectedSafetyFromYear] = useState("2025");
-  const [selectedSafetyFromMonth, setSelectedSafetyFromMonth] = useState("January");
-  const [selectedSafetyToYear, setSelectedSafetyToYear] = useState("2025");
-  const [selectedSafetyToMonth, setSelectedSafetyToMonth] = useState("January");
+  const now = new Date();
+  const currentMonth = now.toLocaleString('en-US', { month: 'long' });
+  const currentYear = now.getFullYear().toString();
 
-  // Forecast Range
-  const [selectedForecastFromYear, setSelectedForecastFromYear] = useState("2025");
-  const [selectedForecastFromMonth, setSelectedForecastFromMonth] = useState("January");
-  const [selectedForecastToYear, setSelectedForecastToYear] = useState("2025");
-  const [selectedForecastToMonth, setSelectedForecastToMonth] = useState("January");
+  const [selectedSafetyFromYear, setSelectedSafetyFromYear] = useState(currentYear);
+  const [selectedSafetyFromMonth, setSelectedSafetyFromMonth] = useState(currentMonth);
+  const [selectedSafetyToYear, setSelectedSafetyToYear] = useState(currentYear);
+  const [selectedSafetyToMonth, setSelectedSafetyToMonth] = useState(currentMonth);
+
+  const [selectedForecastFromYear, setSelectedForecastFromYear] = useState(currentYear);
+  const [selectedForecastFromMonth, setSelectedForecastFromMonth] = useState(currentMonth);
+  const [selectedForecastToYear, setSelectedForecastToYear] = useState(currentYear);
+  const [selectedForecastToMonth, setSelectedForecastToMonth] = useState(currentMonth);
 
   const fetchInventoryFromAPI = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       // First check current period in backend
-      const periodResponse = await fetch("http://127.0.0.1:8000/api/current-safety-stock-period");
-      if (periodResponse.ok) {
-        const periodData = await periodResponse.json();
-        const currentPeriod = periodData.period || "1 month";
+      const now = new Date();
+      const currentMonth = now.toLocaleString('en-US', { month: 'long' });
+      const currentYear = now.getFullYear().toString();
 
-        // If backend period is not "1 month", update it first
-        if (currentPeriod !== "1 month") {
-          await fetch("http://127.0.0.1:8000/api/update-safety-stock-period-all", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ period: "1 month" })
-          });
-        }
-        setSafetyStockPeriod("1 month");
-      }
-
-      const forecastResponse = await fetch("http://127.0.0.1:8000/api/current-forecast-settings");
-      if (forecastResponse.ok) {
-        const forecastData = await forecastResponse.json();
-        setForecastMonth(forecastData.month || "July");
-      }
+      // Fetch current month data directly
+      await updateSafetyStockPeriod(currentMonth, currentYear, currentMonth, currentYear);
+      await updateForecastMonth(currentMonth, currentYear, currentMonth, currentYear);
 
       const response = await fetch("http://127.0.0.1:8000/api/inventory-analysis");
       //const response = await fetch("https://odooerp.staunchtec.com/api/inventory-dashboard");
@@ -331,12 +325,6 @@ const InventoryPage = () => {
     setShowExcess(false);
   };
 
-  const handleCellHover = (e) => {
-  const rect = e.currentTarget.getBoundingClientRect();
-  document.documentElement.style.setProperty('--tooltip-x', `${rect.left + rect.width / 2}px`);
-  document.documentElement.style.setProperty('--tooltip-y', `${rect.top - 10}px`);
-};
-
   if (loading) return <div className="loading-screen"><p>Loading Inventory Data from Odoo...</p></div>;
   if (error) return <div className="no-data-screen"><p style={{ color: "red" }}>{error}</p></div>;
   if (!inventory.length) return <div className="no-data-screen"><p>No inventory records found.</p></div>;
@@ -563,12 +551,6 @@ const InventoryPage = () => {
                             </svg>
                           )}
                         </div>
-                        <div className="info-icon-container" title={`Showing average for: ${forecastMonth}`}>
-                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ marginLeft: '4px', cursor: 'help' }}>
-                            <circle cx="7" cy="7" r="6" stroke="#6b7280" strokeWidth="1.5" />
-                            <text x="7" y="10" textAnchor="middle" fill="#6b7280" fontSize="10" fontWeight="600">i</text>
-                          </svg>
-                        </div>
                       </th>
                       <th style={{ position: 'relative' }}>
                         <div
@@ -590,12 +572,6 @@ const InventoryPage = () => {
                               <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="2" fill="none" />
                             </svg>
                           )}
-                        </div>
-                        <div className="info-icon-container" title={`Showing average for: ${safetyStockPeriod}`}>
-                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ marginLeft: '4px', cursor: 'help' }}>
-                            <circle cx="7" cy="7" r="6" stroke="#6b7280" strokeWidth="1.5" />
-                            <text x="7" y="10" textAnchor="middle" fill="#6b7280" fontSize="10" fontWeight="600">i</text>
-                          </svg>
                         </div>
                       </th>
                       <th>Sales Order</th>
@@ -631,7 +607,7 @@ const InventoryPage = () => {
                     {showDemand && (
                       <>
                         <td className="font-medium">{item.avgMonthlyDemand}</td>
-                        <td className="text-gray cell-with-breakdown" onMouseEnter={handleCellHover} style={{ position: 'relative' }}>
+                        <td className="text-gray cell-with-breakdown" style={{ position: 'relative' }}>
                           {item.forecast}
                           <div className="breakdown-tooltip-container">
                             <MonthBreakdownTooltip
@@ -690,43 +666,32 @@ const InventoryPage = () => {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h3>Select Forecast Period Range</h3>
             <div className="modal-form">
-              {/* FROM Section */}
-              <div style={{ marginBottom: '1rem', fontWeight: 600, color: '#111827', borderBottom: '2px solid #e5e7eb', paddingBottom: '0.5rem' }}>
-                From:
-              </div>
-              <label>Year:
+              <div className="modal-row">
+                <span className="modal-row-label">From:</span>
                 <select value={selectedForecastFromYear} onChange={(e) => setSelectedForecastFromYear(e.target.value)}>
                   <option value="2025">2025</option>
                   <option value="2026">2026</option>
                   <option value="2027">2027</option>
                 </select>
-              </label>
-              <label>Month:
                 <select value={selectedForecastFromMonth} onChange={(e) => setSelectedForecastFromMonth(e.target.value)}>
                   {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
                     <option key={m} value={m}>{m}</option>
                   ))}
                 </select>
-              </label>
-
-              {/* TO Section */}
-              <div style={{ marginTop: '1.5rem', marginBottom: '1rem', fontWeight: 600, color: '#111827', borderBottom: '2px solid #e5e7eb', paddingBottom: '0.5rem' }}>
-                To:
               </div>
-              <label>Year:
+              <div className="modal-row">
+                <span className="modal-row-label">To:</span>
                 <select value={selectedForecastToYear} onChange={(e) => setSelectedForecastToYear(e.target.value)}>
                   <option value="2025">2025</option>
                   <option value="2026">2026</option>
                   <option value="2027">2027</option>
                 </select>
-              </label>
-              <label>Month:
                 <select value={selectedForecastToMonth} onChange={(e) => setSelectedForecastToMonth(e.target.value)}>
                   {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
                     <option key={m} value={m}>{m}</option>
                   ))}
                 </select>
-              </label>
+              </div>
 
               <div className="modal-actions">
                 <button onClick={() => {
@@ -749,44 +714,32 @@ const InventoryPage = () => {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h3>Select Safety Stock Period Range</h3>
             <div className="modal-form">
-              {/* FROM Section */}
-              <div style={{ marginBottom: '1rem', fontWeight: 600, color: '#111827', borderBottom: '2px solid #e5e7eb', paddingBottom: '0.5rem' }}>
-                From:
-              </div>
-              <label>Year:
+              <div className="modal-row">
+                <span className="modal-row-label">From:</span>
                 <select value={selectedSafetyFromYear} onChange={(e) => setSelectedSafetyFromYear(e.target.value)}>
                   <option value="2025">2025</option>
                   <option value="2026">2026</option>
                   <option value="2027">2027</option>
                 </select>
-              </label>
-              <label>Month:
                 <select value={selectedSafetyFromMonth} onChange={(e) => setSelectedSafetyFromMonth(e.target.value)}>
                   {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
                     <option key={m} value={m}>{m}</option>
                   ))}
                 </select>
-              </label>
-
-              {/* TO Section */}
-              <div style={{ marginTop: '1.5rem', marginBottom: '1rem', fontWeight: 600, color: '#111827', borderBottom: '2px solid #e5e7eb', paddingBottom: '0.5rem' }}>
-                To:
               </div>
-              <label>Year:
+              <div className="modal-row">
+                <span className="modal-row-label">To:</span>
                 <select value={selectedSafetyToYear} onChange={(e) => setSelectedSafetyToYear(e.target.value)}>
                   <option value="2025">2025</option>
                   <option value="2026">2026</option>
                   <option value="2027">2027</option>
                 </select>
-              </label>
-              <label>Month:
                 <select value={selectedSafetyToMonth} onChange={(e) => setSelectedSafetyToMonth(e.target.value)}>
                   {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
                     <option key={m} value={m}>{m}</option>
                   ))}
                 </select>
-              </label>
-
+              </div>
               <div className="modal-actions">
                 <button onClick={() => {
                   updateSafetyStockPeriod(

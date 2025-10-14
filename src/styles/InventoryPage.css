@@ -1206,8 +1206,8 @@
   background-color: white;
   border-radius: 12px;
   padding: 2rem;
-  min-width: 400px;
-  max-width: 500px;
+  min-width: 450px;
+  max-width: 450px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   animation: modalSlideIn 0.2s ease-out;
 }
@@ -1233,16 +1233,28 @@
 .modal-form {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 .modal-form label {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0.5rem;
   font-size: 0.875rem;
   font-weight: 500;
   color: #374151;
+  align-items: center;
+}
+
+.modal-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.modal-row-label {
+  min-width: 50px;
+  font-weight: 600;
 }
 
 .modal-form select {
@@ -1353,11 +1365,12 @@
 .breakdown-tooltip-container {
   display: none;
   position: absolute;
-  bottom: 100%;
+  top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 1000;
+  z-index: 9999;
   margin-bottom: 8px;
+  pointer-events: none;
 }
 
 .cell-with-breakdown:hover .breakdown-tooltip-container {
@@ -1407,7 +1420,7 @@
 .breakdown-tooltip-container::after {
   content: '';
   position: absolute;
-  top: 100%;
+  top: -6px;
   left: 50%;
   transform: translateX(-50%);
   border: 6px solid transparent;
