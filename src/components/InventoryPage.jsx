@@ -648,8 +648,8 @@ const InventoryPage = () => {
                     {showExcess && (
                       // --- FIX 4 of 4: Update table data cells ---
                       <>
-                        <td className="font-medium text-orange">{item.excess > 0 ? item.excess : ''}</td>
-                        <td className="font-medium text-red">{item.shortage > 0 ? item.shortage : ''}</td>
+                        <td className="font-medium text-orange">{item.excess > 0 ? item.excess : '-'}</td>
+                        <td className="font-medium text-red">{item.shortage > 0 ? item.shortage : '-'}</td>
                       </>
                     )}
                   </tr>

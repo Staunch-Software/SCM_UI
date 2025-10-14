@@ -212,6 +212,7 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
                 Type{" "}
                 {sortField === "item_type" && (sortOrder === "asc" ? "↑" : "↓")}
               </th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -228,6 +229,7 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
                     {o.item_type || "N/A"}
                   </span>
                 </td>
+                <td>{o.status || "N/A"}</td>
               </tr>
             ))}
           </tbody>
