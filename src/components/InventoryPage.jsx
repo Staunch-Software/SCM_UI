@@ -99,7 +99,7 @@ const InventoryPage = () => {
       await updateForecastMonth(currentMonth, currentYear, currentMonth, currentYear);
 
       //const response = await fetch("http://127.0.0.1:8000/api/inventory-analysis");
-      const response = await fetch("https://odooerp.staunchtec.com/api/inventory-dashboard");
+      const response = await fetch("https://odooerp.staunchtec.com/api/inventory-analysis");
       if (!response.ok) {
         throw new Error(`API Error: ${response.status} ${response.statusText}`);
       }
