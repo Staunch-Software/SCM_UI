@@ -57,7 +57,7 @@ const InventoryPage = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [safetyStockPeriod, setSafetyStockPeriod] = useState(() => {
     const now = new Date();
-    return `${now.toLocaleString('en-US', { month: 'long' })} ${now.getFullYear()}`;
+    return `${now.toLocaleString('en-US', { month: 'short' }).toUpperCase()} ${now.getFullYear()}`;
   });
   const [safetyStockDetails, setSafetyStockDetails] = useState({});
   const [showPeriodDropdown, setShowPeriodDropdown] = useState(false);
@@ -68,8 +68,9 @@ const InventoryPage = () => {
   const [showForecastModal, setShowForecastModal] = useState(false);
   const [forecastMonth, setForecastMonth] = useState(() => {
     const now = new Date();
-    return `${now.toLocaleString('en-US', { month: 'long' })} ${now.getFullYear()}`;
+    return `${now.toLocaleString('en-US', { month: 'short' }).toUpperCase()} ${now.getFullYear()}`;
   });
+  const [isForecastRange, setIsForecastRange] = useState(false);
   const [forecastMonthDetails, setForecastMonthDetails] = useState({});
   const now = new Date();
   const currentMonth = now.toLocaleString('en-US', { month: 'long' });
@@ -147,9 +148,12 @@ const InventoryPage = () => {
       setSafetyStockDetails(detailsMap);
 
       const isSameMonth = fromMonth === toMonth && fromYear === toYear;
+      setIsForecastRange(!isSameMonth);
+      const shortMonth = (m) => m.slice(0, 3).toUpperCase();
       const displayPeriod = isSameMonth
-        ? `${fromMonth} ${fromYear}`
-        : `${fromMonth} ${fromYear} - ${toMonth} ${toYear}`;
+        ? `${shortMonth(fromMonth)} ${fromYear}`
+        : `${shortMonth(fromMonth)} ${fromYear} - ${shortMonth(toMonth)} ${toYear}`;
+
 
       setSafetyStockPeriod(displayPeriod);
       setUpdatingPeriod(false);
@@ -183,9 +187,11 @@ const InventoryPage = () => {
       setForecastMonthDetails(detailsMap);
 
       const isSameMonth = fromMonth === toMonth && fromYear === toYear;
+      setIsForecastRange(!isSameMonth);
+      const shortMonth = (m) => m.slice(0, 3).toUpperCase();
       const displayPeriod = isSameMonth
-        ? `${fromMonth} ${fromYear}`
-        : `${fromMonth} ${fromYear} - ${toMonth} ${toYear}`;
+        ? `${shortMonth(fromMonth)} ${fromYear}`
+        : `${shortMonth(fromMonth)} ${fromYear} - ${shortMonth(toMonth)} ${toYear}`;
 
       setForecastMonth(displayPeriod);
       setUpdatingForecast(false);
@@ -222,9 +228,10 @@ const InventoryPage = () => {
     const headers = ['SKU', 'Product Name', 'Type', 'Buy/Make', 'Status', 'On Hand', 'Cost/Unit', 'Total Value', 'Location', 'Days in Stock'];
     if (showDemand) {
       headers.push('Avg Demand/Mo', 'Forecast', 'Safety Stock', 'Sales Order', 'Dependent Demand', 'Total Demand', 'Months Inventory');
+      if (isForecastRange) headers.push('Month Supply');
     }
     if (showSupply) {
-      headers.push('WO/PO', 'In Transit');
+      headers.push('WO/PO');
     }
     if (showExcess) {
       // --- FIX 1 of 4: Update CSV headers ---
@@ -234,9 +241,10 @@ const InventoryPage = () => {
       const row = [item.sku, item.product_name, item.itemType, item.procurementType, item.itemStatus, item.onHand, item.costPerUnit, item.totalValue, item.location, item.daysInStock];
       if (showDemand) {
         row.push(item.avgMonthlyDemand, item.forecast, item.safetyStock, item.salesOrder, item.dependentDemand, item.totalDemand, item.monthsOfInventory);
+        if (isForecastRange) row.push(item.monthSupply);
       }
       if (showSupply) {
-        row.push(item.procurementType === "Make" ? `WO: ${item.workOrderCount} (${item.workOrderQty})` : `PO: ${item.purchaseOrderCount} (${item.purchaseOrderQty})`, item.inTransit);
+        row.push(item.procurementType === "Make" ? `WO: ${item.workOrderCount} (${item.workOrderQty})` : `PO: ${item.purchaseOrderCount} (${item.purchaseOrderQty})`);
       }
       if (showExcess) {
         // --- FIX 2 of 4: Update CSV data rows ---
@@ -256,6 +264,7 @@ const InventoryPage = () => {
     return inventory.map((item) => ({
       ...item,
       totalValue: item.costPerUnit * item.onHand,
+      monthSupply: item.forecast > 0 ? (item.onHand / item.forecast).toFixed(1) : 0,
     }));
   }, [inventory]);
 
@@ -552,6 +561,7 @@ const InventoryPage = () => {
                           )}
                         </div>
                       </th>
+                      {isForecastRange && <th>Month Supply</th>}
                       <th style={{ position: 'relative' }}>
                         <div
                           className="safety-stock-header"
@@ -581,7 +591,7 @@ const InventoryPage = () => {
                       <th>Months Inventory</th>
                     </>
                   )}
-                  {showSupply && (<><th>WO/PO</th><th>In Transit</th></>)}
+                  {showSupply && (<><th>WO/PO</th></>)}
                   {showExcess && (
                     // --- FIX 4 of 4: Update table headers ---
                     <>
@@ -617,6 +627,11 @@ const InventoryPage = () => {
                             />
                           </div>
                         </td>
+                        {isForecastRange && (
+                          <td className={`font-medium ${item.monthSupply > 6 ? "text-red" : item.monthSupply > 3 ? "text-orange" : "text-green"}`}>
+                            {item.monthSupply}M
+                          </td>
+                        )}
                         <td className="text-gray cell-with-breakdown" style={{ position: 'relative' }}>
                           {item.safetyStock}
                           <div className="breakdown-tooltip-container">
@@ -642,7 +657,6 @@ const InventoryPage = () => {
                             ? `WO: ${item.workOrderCount} (${item.workOrderQty})`
                             : `PO: ${item.purchaseOrderCount} (${item.purchaseOrderQty})`}
                         </td>
-                        <td className="text-gray">{item.inTransit}</td>
                       </>
                     )}
                     {showExcess && (
