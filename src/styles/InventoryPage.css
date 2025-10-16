@@ -1426,3 +1426,83 @@
   border: 6px solid transparent;
   border-top-color: #1f2937;
 }
+
+/* Product Detail Modal Styles */
+.product-detail-modal {
+  max-width: 700px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #111827;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #6b7280;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+.product-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background-color: #f9fafb;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.detail-row span:first-child {
+  font-weight: 600;
+  color: #374151;
+}
+
+.detail-row span:last-child {
+  color: #111827;
+  text-align: right;
+}
+
+.modal-loading,
+.modal-error {
+  padding: 2rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.modal-error {
+  color: #dc2626;
+}

@@ -86,6 +86,11 @@ const InventoryPage = () => {
   const [selectedForecastToYear, setSelectedForecastToYear] = useState(currentYear);
   const [selectedForecastToMonth, setSelectedForecastToMonth] = useState(currentMonth);
 
+  // ADD these new states:
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [productDetails, setProductDetails] = useState(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
   const fetchInventoryFromAPI = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -99,8 +104,8 @@ const InventoryPage = () => {
       await updateSafetyStockPeriod(currentMonth, currentYear, currentMonth, currentYear);
       await updateForecastMonth(currentMonth, currentYear, currentMonth, currentYear);
 
-      //const response = await fetch("http://127.0.0.1:8000/api/inventory-analysis");
-      const response = await fetch("https://odooerp.staunchtec.com/api/inventory-analysis");
+      const response = await fetch("http://127.0.0.1:8000/api/inventory-analysis");
+      // const response = await fetch("https://odooerp.staunchtec.com/api/inventory-analysis");
       if (!response.ok) {
         throw new Error(`API Error: ${response.status} ${response.statusText}`);
       }
@@ -128,8 +133,8 @@ const InventoryPage = () => {
   const updateSafetyStockPeriod = async (fromMonth, fromYear, toMonth, toYear) => {
     try {
       setUpdatingPeriod(true);
-      //const response = await fetch(`http://127.0.0.1:8000/api/safety-stock-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`);
-      const response = await fetch(`https://odooerp.staunchtec.com/api/safety-stock-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`);
+      const response = await fetch(`http://127.0.0.1:8000/api/safety-stock-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`);
+      // const response = await fetch(`https://odooerp.staunchtec.com/api/safety-stock-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`);
 
       if (!response.ok) throw new Error("Failed to fetch safety stock data");
       const data = await response.json();
@@ -167,8 +172,8 @@ const InventoryPage = () => {
   const updateForecastMonth = async (fromMonth, fromYear, toMonth, toYear) => {
     try {
       setUpdatingForecast(true);
-      //const response = await fetch(`http://127.0.0.1:8000/api/forecast-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`);
-      const response = await fetch(`https://odooerp.staunchtec.com/api/forecast-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`);
+      const response = await fetch(`http://127.0.0.1:8000/api/forecast-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`);
+      // const response = await fetch(`https://odooerp.staunchtec.com/api/forecast-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`);
 
       if (!response.ok) throw new Error("Failed to fetch forecast data");
       const data = await response.json();  // ✅ Get full data object
@@ -199,6 +204,23 @@ const InventoryPage = () => {
       console.error("Error updating forecast:", err);
       setError("Failed to update forecast");
       setUpdatingForecast(false);
+    }
+  };
+
+  // ADD this new function:
+  const handleProductClick = async (product) => {
+    setSelectedProduct(product);
+    setShowProductModal(true);
+    setLoadingDetails(true);
+
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/api/product-details/${product.product_id}`);
+      const data = await response.json();
+      setProductDetails(data);
+    } catch (err) {
+      console.error("Error fetching product details:", err);
+    } finally {
+      setLoadingDetails(false);
     }
   };
 
@@ -605,7 +627,14 @@ const InventoryPage = () => {
                 {filteredData.map((item) => (
                   <tr key={item.product_id}>
                     <td className="sticky-col first-col text-gray">{item.sku}</td>
-                    <td className="sticky-col second-col font-medium">{item.product_name}</td>
+                    <td className="sticky-col second-col font-medium">
+                      <span
+                        onClick={() => handleProductClick(item)}
+                        style={{ cursor: 'pointer', color: '#2563eb', textDecoration: 'underline' }}
+                      >
+                        {item.product_name}
+                      </span>
+                    </td>
                     <td><span className={`badge badge-${item.itemType === "Finished Goods" ? "purple" : item.itemType === "Sub Assembly" ? "blue" : "green"}`}>{item.itemType}</span></td>
                     <td><span className={`badge badge-${item.procurementType === "Buy" ? "blue" : "orange"}`}>{item.procurementType}</span></td>
                     <td><span className={`badge badge-${item.itemStatus === "Active" ? "green" : item.itemStatus === "Inactive" ? "yellow" : item.itemStatus === "Obsolete" ? "red" : "gray"}`}>{item.itemStatus}</span></td>
@@ -765,6 +794,110 @@ const InventoryPage = () => {
                 <button onClick={() => setShowSafetyStockModal(false)}>Cancel</button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+      {showProductModal && selectedProduct && (
+        <div className="modal-overlay" onClick={() => setShowProductModal(false)}>
+          <div className="modal-content product-detail-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>{selectedProduct.product_name}</h3>
+              <button className="modal-close" onClick={() => setShowProductModal(false)}>×</button>
+            </div>
+
+            {loadingDetails ? (
+              <div className="modal-loading">Loading product details...</div>
+            ) : productDetails ? (
+              <div className="product-detail-content">
+
+                {/* Finished Goods Fields */}
+                {productDetails?.itemType === 'Finished goods' && (
+                  <>
+                    <div className="detail-row"><span>Planner Code:</span><span>{productDetails.plannerCode || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Org:</span><span>{productDetails.org || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Item Description:</span><span>{productDetails.itemDescription || 'N/A'}</span></div>
+                    <div className="detail-row"><span>UOM:</span><span>{productDetails.uom || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Work Order:</span><span>{productDetails.workOrder || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Sales Order Qty:</span><span>{productDetails.salesOrderQty || 0}</span></div>
+                    <div className="detail-row"><span>Sales Orders:</span><span>{productDetails.salesOrderList?.join(', ') || 'None'}</span></div>
+                    <div className="detail-row"><span>Required WO QTY:</span><span>{productDetails.requiredWoQty || 0}</span></div>
+                    <div className="detail-row"><span>Issued WO Qty:</span><span>{productDetails.issuedWoQty || 0}</span></div>
+                    <div className="detail-row"><span>Open WO QTY:</span><span>{productDetails.openWoQty || 0}</span></div>
+                    <div className="detail-row"><span>Consumption 3M Avg:</span><span>{productDetails.consumption3MAvg || 0}</span></div>
+                    <div className="detail-row"><span>Consumption 12M Avg:</span><span>{productDetails.consumption12MAvg || 0}</span></div>
+                    <div className="detail-row"><span>Variance 12M to 3M:</span><span>{productDetails.variance12MTo3M || 0}</span></div>
+                    <div className="detail-row"><span>On Hand Nettable:</span><span>{productDetails.onHandNettable || 0}</span></div>
+                    <div className="detail-row"><span>Months Supply (Nettable):</span><span>{productDetails.monthsSupplyNettable || 0}</span></div>
+                    <div className="detail-row"><span>On Hand Non-Nettable:</span><span>{productDetails.onHandNonNettable || 0}</span></div>
+                    <div className="detail-row"><span>Months Supply (Non-Nettable):</span><span>{productDetails.monthsSupplyNonNettable || 0}</span></div>
+                    <div className="detail-row"><span>On Hand to Safety Stock %:</span><span>{productDetails.onHandToSafetyStockPercent || 0}%</span></div>
+                    <div className="detail-row"><span>OH - Expiry:</span><span>{productDetails.ohExpiry || 'N/A'}</span></div>
+                    <div className="detail-row"><span>ATP:</span><span>{productDetails.atp || 0}</span></div>
+                  </>
+                )}
+
+                {/* Sub Assembly Fields */}
+                {productDetails?.itemType === 'Sub assembly' && (
+                  <>
+                    <div className="detail-row"><span>Planner Code:</span><span>{productDetails.plannerCode || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Org:</span><span>{productDetails.org || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Item Description:</span><span>{productDetails.itemDescription || 'N/A'}</span></div>
+                    <div className="detail-row"><span>UOM:</span><span>{productDetails.uom || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Work Order:</span><span>{productDetails.workOrder || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Required WO QTY:</span><span>{productDetails.requiredWoQty || 0}</span></div>
+                    <div className="detail-row"><span>Issued WO Qty:</span><span>{productDetails.issuedWoQty || 0}</span></div>
+                    <div className="detail-row"><span>Open WO QTY:</span><span>{productDetails.openWoQty || 0}</span></div>
+                    <div className="detail-row"><span>Internal Requisition:</span><span>{productDetails.internalRequisition || 0}</span></div>
+                    <div className="detail-row"><span>Intransit Shipment:</span><span>{productDetails.intransitShipment || 0}</span></div>
+                    <div className="detail-row"><span>Intransit Receipts:</span><span>{productDetails.intransitReceipts || 0}</span></div>
+                    <div className="detail-row"><span>Transfer Order:</span><span>{productDetails.transferOrder || 'N/A'}</span></div>
+                    <div className="detail-row"><span>ATP:</span><span>{productDetails.atp || 0}</span></div>
+                    <div className="detail-row"><span>Consumption 3M Avg:</span><span>{productDetails.consumption3MAvg || 0}</span></div>
+                    <div className="detail-row"><span>Consumption 12M Avg:</span><span>{productDetails.consumption12MAvg || 0}</span></div>
+                    <div className="detail-row"><span>Variance 12M to 3M:</span><span>{productDetails.variance12MTo3M || 0}</span></div>
+                    <div className="detail-row"><span>On Hand Nettable:</span><span>{productDetails.onHandNettable || 0}</span></div>
+                    <div className="detail-row"><span>Months Supply (Nettable):</span><span>{productDetails.monthsSupplyNettable || 0}</span></div>
+                    <div className="detail-row"><span>On Hand Non-Nettable:</span><span>{productDetails.onHandNonNettable || 0}</span></div>
+                    <div className="detail-row"><span>Months Supply (Non-Nettable):</span><span>{productDetails.monthsSupplyNonNettable || 0}</span></div>
+                    <div className="detail-row"><span>On Hand to Safety Stock %:</span><span>{productDetails.onHandToSafetyStockPercent || 0}%</span></div>
+                    <div className="detail-row"><span>OH - Expiry:</span><span>{productDetails.ohExpiry || 'N/A'}</span></div>
+                  </>
+                )}
+
+                {/* Raw Material Fields */}
+                {productDetails?.itemType === 'Raw material' && (
+                  <>
+                    <div className="detail-row"><span>Buyer Code:</span><span>{productDetails.buyerCode || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Org:</span><span>{productDetails.org || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Item Description:</span><span>{productDetails.itemDescription || 'N/A'}</span></div>
+                    <div className="detail-row"><span>UOM:</span><span>{productDetails.uom || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Open PO Qty:</span><span>{productDetails.openPoQty || 0}</span></div>
+                    <div className="detail-row"><span>Purchase Order (PO):</span><span>{productDetails.purchaseOrder || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Purchase Requisition (PR):</span><span>{productDetails.purchaseRequisition || 'N/A'}</span></div>
+                    <div className="detail-row"><span>PO In Receiving:</span><span>{productDetails.poInReceiving || 0}</span></div>
+                    <div className="detail-row"><span>PO Acknowledgement:</span><span>{productDetails.poAcknowledgement || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Internal Requisition:</span><span>{productDetails.internalRequisition || 0}</span></div>
+                    <div className="detail-row"><span>Intransit Shipment:</span><span>{productDetails.intransitShipment || 0}</span></div>
+                    <div className="detail-row"><span>Intransit Receipts:</span><span>{productDetails.intransitReceipts || 0}</span></div>
+                    <div className="detail-row"><span>Transfer Order:</span><span>{productDetails.transferOrder || 'N/A'}</span></div>
+                    <div className="detail-row"><span>ATP:</span><span>{productDetails.atp || 0}</span></div>
+                    <div className="detail-row"><span>Consumption 3M Avg:</span><span>{productDetails.consumption3MAvg || 0}</span></div>
+                    <div className="detail-row"><span>Consumption 12M Avg:</span><span>{productDetails.consumption12MAvg || 0}</span></div>
+                    <div className="detail-row"><span>Variance 12M to 3M:</span><span>{productDetails.variance12MTo3M || 0}</span></div>
+                    <div className="detail-row"><span>On Hand Nettable:</span><span>{productDetails.onHandNettable || 0}</span></div>
+                    <div className="detail-row"><span>Months Supply (Nettable):</span><span>{productDetails.monthsSupplyNettable || 0}</span></div>
+                    <div className="detail-row"><span>On Hand Non-Nettable:</span><span>{productDetails.onHandNonNettable || 0}</span></div>
+                    <div className="detail-row"><span>Months Supply (Non-Nettable):</span><span>{productDetails.monthsSupplyNonNettable || 0}</span></div>
+                    <div className="detail-row"><span>On Hand to Safety Stock %:</span><span>{productDetails.onHandToSafetyStockPercent || 0}%</span></div>
+                    <div className="detail-row"><span>OH - Expiry:</span><span>{productDetails.ohExpiry || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Requested Inbound Shipment:</span><span>{productDetails.requestedInboundShipment || 0}</span></div>
+                    <div className="detail-row"><span>Planned Inbound Shipment:</span><span>{productDetails.plannedInboundShipment || 0}</span></div>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="modal-error">Failed to load product details</div>
+            )}
           </div>
         </div>
       )}
