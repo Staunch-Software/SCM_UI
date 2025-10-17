@@ -104,8 +104,8 @@ const InventoryPage = () => {
       await updateSafetyStockPeriod(currentMonth, currentYear, currentMonth, currentYear);
       await updateForecastMonth(currentMonth, currentYear, currentMonth, currentYear);
 
-      const response = await fetch("http://127.0.0.1:8000/api/inventory-analysis");
-      // const response = await fetch("https://odooerp.staunchtec.com/api/inventory-analysis");
+      //const response = await fetch("http://127.0.0.1:8000/api/inventory-analysis");
+      const response = await fetch("https://odooerp.staunchtec.com/api/inventory-analysis");
       if (!response.ok) {
         throw new Error(`API Error: ${response.status} ${response.statusText}`);
       }
@@ -133,8 +133,8 @@ const InventoryPage = () => {
   const updateSafetyStockPeriod = async (fromMonth, fromYear, toMonth, toYear) => {
     try {
       setUpdatingPeriod(true);
-      const response = await fetch(`http://127.0.0.1:8000/api/safety-stock-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`);
-      // const response = await fetch(`https://odooerp.staunchtec.com/api/safety-stock-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`);
+      //const response = await fetch(`http://127.0.0.1:8000/api/safety-stock-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`);
+      const response = await fetch(`https://odooerp.staunchtec.com/api/safety-stock-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`);
 
       if (!response.ok) throw new Error("Failed to fetch safety stock data");
       const data = await response.json();
@@ -172,8 +172,8 @@ const InventoryPage = () => {
   const updateForecastMonth = async (fromMonth, fromYear, toMonth, toYear) => {
     try {
       setUpdatingForecast(true);
-      const response = await fetch(`http://127.0.0.1:8000/api/forecast-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`);
-      // const response = await fetch(`https://odooerp.staunchtec.com/api/forecast-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`);
+      //const response = await fetch(`http://127.0.0.1:8000/api/forecast-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`);
+      const response = await fetch(`https://odooerp.staunchtec.com/api/forecast-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`);
 
       if (!response.ok) throw new Error("Failed to fetch forecast data");
       const data = await response.json();  // ✅ Get full data object
@@ -214,7 +214,8 @@ const InventoryPage = () => {
     setLoadingDetails(true);
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/product-details/${product.product_id}`);
+      //const response = await fetch(`http://127.0.0.1:8000/api/product-details/${product.product_id}`);
+      const response = await fetch(`https://odooerp.staunchtec.com/api/product-details/${product.product_id}`);
       const data = await response.json();
       setProductDetails(data);
     } catch (err) {
