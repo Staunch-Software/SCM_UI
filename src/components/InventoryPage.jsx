@@ -836,8 +836,8 @@ const InventoryPage = () => {
                   </>
                 )}
 
-                {/* Sub Assembly Fields */}
-                {productDetails?.itemType === 'Sub assembly' && (
+                {/* Sub Assembly WITH BOM - Show Work Order Fields */}
+                {productDetails?.itemType === 'Sub assembly' && productDetails?.hasBOM && (
                   <>
                     <div className="detail-row"><span>Planner Code:</span><span>{productDetails.plannerCode || 'N/A'}</span></div>
                     <div className="detail-row"><span>Org:</span><span>{productDetails.org || 'N/A'}</span></div>
@@ -861,6 +861,37 @@ const InventoryPage = () => {
                     <div className="detail-row"><span>Months Supply (Non-Nettable):</span><span>{productDetails.monthsSupplyNonNettable || 0}</span></div>
                     <div className="detail-row"><span>On Hand to Safety Stock %:</span><span>{productDetails.onHandToSafetyStockPercent || 0}%</span></div>
                     <div className="detail-row"><span>OH - Expiry:</span><span>{productDetails.ohExpiry || 'N/A'}</span></div>
+                  </>
+                )}
+
+                {/* Sub Assembly WITHOUT BOM - Show Purchase Order Fields */}
+                {productDetails?.itemType === 'Sub assembly' && !productDetails?.hasBOM && (
+                  <>
+                    <div className="detail-row"><span>Buyer Code:</span><span>{productDetails.buyerCode || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Org:</span><span>{productDetails.org || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Item Description:</span><span>{productDetails.itemDescription || 'N/A'}</span></div>
+                    <div className="detail-row"><span>UOM:</span><span>{productDetails.uom || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Open PO Qty:</span><span>{productDetails.openPoQty || 0}</span></div>
+                    <div className="detail-row"><span>Purchase Order (PO):</span><span>{productDetails.purchaseOrder || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Purchase Requisition (PR):</span><span>{productDetails.purchaseRequisition || 'N/A'}</span></div>
+                    <div className="detail-row"><span>PO In Receiving:</span><span>{productDetails.poInReceiving || 0}</span></div>
+                    <div className="detail-row"><span>PO Acknowledgement:</span><span>{productDetails.poAcknowledgement || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Internal Requisition:</span><span>{productDetails.internalRequisition || 0}</span></div>
+                    <div className="detail-row"><span>Intransit Shipment:</span><span>{productDetails.intransitShipment || 0}</span></div>
+                    <div className="detail-row"><span>Intransit Receipts:</span><span>{productDetails.intransitReceipts || 0}</span></div>
+                    <div className="detail-row"><span>Transfer Order:</span><span>{productDetails.transferOrder || 'N/A'}</span></div>
+                    <div className="detail-row"><span>ATP:</span><span>{productDetails.atp || 0}</span></div>
+                    <div className="detail-row"><span>Consumption 3M Avg:</span><span>{productDetails.consumption3MAvg || 0}</span></div>
+                    <div className="detail-row"><span>Consumption 12M Avg:</span><span>{productDetails.consumption12MAvg || 0}</span></div>
+                    <div className="detail-row"><span>Variance 12M to 3M:</span><span>{productDetails.variance12MTo3M || 0}</span></div>
+                    <div className="detail-row"><span>On Hand Nettable:</span><span>{productDetails.onHandNettable || 0}</span></div>
+                    <div className="detail-row"><span>Months Supply (Nettable):</span><span>{productDetails.monthsSupplyNettable || 0}</span></div>
+                    <div className="detail-row"><span>On Hand Non-Nettable:</span><span>{productDetails.onHandNonNettable || 0}</span></div>
+                    <div className="detail-row"><span>Months Supply (Non-Nettable):</span><span>{productDetails.monthsSupplyNonNettable || 0}</span></div>
+                    <div className="detail-row"><span>On Hand to Safety Stock %:</span><span>{productDetails.onHandToSafetyStockPercent || 0}%</span></div>
+                    <div className="detail-row"><span>OH - Expiry:</span><span>{productDetails.ohExpiry || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Requested Inbound Shipment:</span><span>{productDetails.requestedInboundShipment || 0}</span></div>
+                    <div className="detail-row"><span>Planned Inbound Shipment:</span><span>{productDetails.plannedInboundShipment || 0}</span></div>
                   </>
                 )}
 
