@@ -91,6 +91,13 @@ const InventoryPage = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [productDetails, setProductDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const formatNumber = (value, fallback = 0) => {
+    // Check if value is NaN, null, or undefined
+    if (value == null || isNaN(value)) {
+      return fallback;
+    }
+    return value;
+  };
   const fetchInventoryFromAPI = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -314,8 +321,8 @@ const InventoryPage = () => {
     const excessItems = processedInventory.filter((item) => item.excess > 0).length;
     const totalExcessValue = processedInventory.reduce((sum, item) => sum + (item.excess * item.costPerUnit), 0);
 
-    const totalMO = processedInventory.reduce((sum, item) => sum + item.workOrderCount, 0);
-    const totalPO = processedInventory.reduce((sum, item) => sum + item.purchaseOrderCount, 0);
+    const totalMO = processedInventory.reduce((sum, item) => sum + (item.workOrderCount || 0), 0);
+    const totalPO = processedInventory.reduce((sum, item) => sum + (item.purchaseOrderCount || 0), 0);
 
     return { totalValue, totalExcess, excessItems, totalExcessValue, totalMO, totalPO };
   }, [processedInventory]);
@@ -401,9 +408,9 @@ const InventoryPage = () => {
           <div className="summary-card"><div className="summary-icon green"><TrendingUp size={24} /></div><div className="summary-info"><p className="summary-label">Total Inventory Value</p><p className="summary-value">${summaryMetrics.totalValue.toLocaleString()}</p></div></div>
           <div className="summary-card"><div className="summary-icon orange"><AlertTriangle size={24} /></div><div className="summary-info"><p className="summary-label">Excess Items</p><p className="summary-value">{summaryMetrics.excessItems}</p><p className="summary-subtext">{summaryMetrics.totalExcess} units excess</p><p className="summary-subtext" style={{ color: '#c2410c', fontWeight: '600', fontSize: '0.875rem' }}>${summaryMetrics.totalExcessValue.toLocaleString()} total value</p></div></div>
           <div className="summary-card split-card">
-            <div className="split-section"><div className="split-icon manufacturing"><Factory size={20} /></div><div><p className="split-label">Manufacturing Orders</p><p className="split-value">{summaryMetrics.totalMO}</p></div></div>
+            <div className="split-section"><div className="split-icon manufacturing"><Factory size={20} /></div><div><p className="split-label">Manufacturing Orders</p><p className="split-value">{formatNumber(summaryMetrics.totalMO)}</p></div></div>
             <div className="split-divider"></div>
-            <div className="split-section"><div className="split-icon purchase"><ShoppingBag size={20} /></div><div><p className="split-label">Purchase Orders</p><p className="split-value">{summaryMetrics.totalPO}</p></div></div>
+            <div className="split-section"><div className="split-icon purchase"><ShoppingBag size={20} /></div><div><p className="split-label">Purchase Orders</p><p className="split-value">{formatNumber(summaryMetrics.totalPO)}</p></div></div>
           </div>
         </div>
 
