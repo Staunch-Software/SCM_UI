@@ -818,7 +818,7 @@ const InventoryPage = () => {
                     <div className="detail-row"><span>Org:</span><span>{productDetails.org || 'N/A'}</span></div>
                     <div className="detail-row"><span>Item Description:</span><span>{productDetails.itemDescription || 'N/A'}</span></div>
                     <div className="detail-row"><span>UOM:</span><span>{productDetails.uom || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Work Order:</span><span>{productDetails.workOrder || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Work Order:</span><span>{productDetails.workOrderList?.join(', ') || 'None'}</span></div>
                     <div className="detail-row"><span>Sales Order Qty:</span><span>{productDetails.salesOrderQty || 0}</span></div>
                     <div className="detail-row"><span>Sales Orders:</span><span>{productDetails.salesOrderList?.join(', ') || 'None'}</span></div>
                     <div className="detail-row"><span>Required WO QTY:</span><span>{productDetails.requiredWoQty || 0}</span></div>
@@ -844,7 +844,7 @@ const InventoryPage = () => {
                     <div className="detail-row"><span>Org:</span><span>{productDetails.org || 'N/A'}</span></div>
                     <div className="detail-row"><span>Item Description:</span><span>{productDetails.itemDescription || 'N/A'}</span></div>
                     <div className="detail-row"><span>UOM:</span><span>{productDetails.uom || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Work Order:</span><span>{productDetails.workOrder || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Work Order:</span><span>{productDetails.workOrderList?.join(', ') || 'None'}</span></div>
                     <div className="detail-row"><span>Required WO QTY:</span><span>{productDetails.requiredWoQty || 0}</span></div>
                     <div className="detail-row"><span>Issued WO Qty:</span><span>{productDetails.issuedWoQty || 0}</span></div>
                     <div className="detail-row"><span>Open WO QTY:</span><span>{productDetails.openWoQty || 0}</span></div>
@@ -873,14 +873,29 @@ const InventoryPage = () => {
                     <div className="detail-row"><span>Item Description:</span><span>{productDetails.itemDescription || 'N/A'}</span></div>
                     <div className="detail-row"><span>UOM:</span><span>{productDetails.uom || 'N/A'}</span></div>
                     <div className="detail-row"><span>Open PO Qty:</span><span>{productDetails.openPoQty || 0}</span></div>
-                    <div className="detail-row"><span>Purchase Order (PO):</span><span>{productDetails.purchaseOrder || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Purchase Requisition (PR):</span><span>{productDetails.purchaseRequisition || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Purchase Order (PO):</span><span>{productDetails.purchaseOrderList?.join(', ') || 'None'}</span></div>
+                    <div className="detail-row"><span>Purchase Requisition (PR):</span><span>{productDetails.purchaseRequisitionList?.join(', ') || 'None'}</span></div>
                     <div className="detail-row"><span>PO In Receiving:</span><span>{productDetails.poInReceiving || 0}</span></div>
-                    <div className="detail-row"><span>PO Acknowledgement:</span><span>{productDetails.poAcknowledgement || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Internal Requisition:</span><span>{productDetails.internalRequisition || 0}</span></div>
-                    <div className="detail-row"><span>Intransit Shipment:</span><span>{productDetails.intransitShipment || 0}</span></div>
-                    <div className="detail-row"><span>Intransit Receipts:</span><span>{productDetails.intransitReceipts || 0}</span></div>
-                    <div className="detail-row"><span>Transfer Order:</span><span>{productDetails.transferOrder || 'N/A'}</span></div>
+                    <div className="detail-row"><span>PO Acknowledgement:</span><span>{Array.isArray(productDetails.poAcknowledgementList) ? productDetails.poAcknowledgementList.join(', ') : (productDetails.poAcknowledgementList || 'None')}</span></div>
+
+                    {/* Two Column Flow Section */}
+                    <div className="two-column-section">
+                      <div className="flow-column">
+                        <div className="flow-header">Supplier → Warehouse</div>
+                        <div className="detail-row"><span>Requested Inbound Shipment:</span><span>{productDetails.requestedInboundShipment || 0}</span></div>
+                        <div className="detail-row"><span>Planned Inbound Shipment:</span><span>{productDetails.plannedInboundShipment || 0}</span></div>
+                        <div className="detail-row"><span>Intransit Shipment:</span><span>{productDetails.intransitShipment || 0}</span></div>
+                        <div className="detail-row"><span>Intransit Receipts:</span><span>{productDetails.intransitReceipts || 0}</span></div>
+                      </div>
+                      <div className="flow-column">
+                        <div className="flow-header">Warehouse ↔ Warehouse</div>
+                        <div className="detail-row"><span>Internal Requisition:</span><span>{productDetails.internalRequisition || 0}</span></div>
+                        <div className="detail-row"><span>Transfer Order:</span><span>{productDetails.transferOrder || 'N/A'}</span></div>
+                        <div className="detail-row"><span>Intransit Shipment:</span><span>{productDetails.intransitShipment || 0}</span></div>
+                        <div className="detail-row"><span>Intransit Receipts:</span><span>{productDetails.intransitReceipts || 0}</span></div>
+                      </div>
+                    </div>
+
                     <div className="detail-row"><span>ATP:</span><span>{productDetails.atp || 0}</span></div>
                     <div className="detail-row"><span>Consumption 3M Avg:</span><span>{productDetails.consumption3MAvg || 0}</span></div>
                     <div className="detail-row"><span>Consumption 12M Avg:</span><span>{productDetails.consumption12MAvg || 0}</span></div>
@@ -891,8 +906,6 @@ const InventoryPage = () => {
                     <div className="detail-row"><span>Months Supply (Non-Nettable):</span><span>{productDetails.monthsSupplyNonNettable || 0}</span></div>
                     <div className="detail-row"><span>On Hand to Safety Stock %:</span><span>{productDetails.onHandToSafetyStockPercent || 0}%</span></div>
                     <div className="detail-row"><span>OH - Expiry:</span><span>{productDetails.ohExpiry || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Requested Inbound Shipment:</span><span>{productDetails.requestedInboundShipment || 0}</span></div>
-                    <div className="detail-row"><span>Planned Inbound Shipment:</span><span>{productDetails.plannedInboundShipment || 0}</span></div>
                   </>
                 )}
 
@@ -904,14 +917,29 @@ const InventoryPage = () => {
                     <div className="detail-row"><span>Item Description:</span><span>{productDetails.itemDescription || 'N/A'}</span></div>
                     <div className="detail-row"><span>UOM:</span><span>{productDetails.uom || 'N/A'}</span></div>
                     <div className="detail-row"><span>Open PO Qty:</span><span>{productDetails.openPoQty || 0}</span></div>
-                    <div className="detail-row"><span>Purchase Order (PO):</span><span>{productDetails.purchaseOrder || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Purchase Requisition (PR):</span><span>{productDetails.purchaseRequisition || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Purchase Order (PO):</span><span>{productDetails.purchaseOrderList?.join(', ') || 'None'}</span></div>
+                    <div className="detail-row"><span>Purchase Requisition (PR):</span><span>{productDetails.purchaseRequisitionList?.join(', ') || 'None'}</span></div>
                     <div className="detail-row"><span>PO In Receiving:</span><span>{productDetails.poInReceiving || 0}</span></div>
-                    <div className="detail-row"><span>PO Acknowledgement:</span><span>{productDetails.poAcknowledgement || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Internal Requisition:</span><span>{productDetails.internalRequisition || 0}</span></div>
-                    <div className="detail-row"><span>Intransit Shipment:</span><span>{productDetails.intransitShipment || 0}</span></div>
-                    <div className="detail-row"><span>Intransit Receipts:</span><span>{productDetails.intransitReceipts || 0}</span></div>
-                    <div className="detail-row"><span>Transfer Order:</span><span>{productDetails.transferOrder || 'N/A'}</span></div>
+                    <div className="detail-row"><span>PO Acknowledgement:</span><span>{productDetails.poAcknowledgementList?.join(', ') || 'None'}</span></div>
+
+                    {/* Two Column Flow Section */}
+                    <div className="two-column-section">
+                      <div className="flow-column">
+                        <div className="flow-header">Supplier → Warehouse</div>
+                        <div className="detail-row"><span>Requested Inbound Shipment:</span><span>{productDetails.requestedInboundShipment || 0}</span></div>
+                        <div className="detail-row"><span>Planned Inbound Shipment:</span><span>{productDetails.plannedInboundShipment || 0}</span></div>
+                        <div className="detail-row"><span>Intransit Shipment:</span><span>{productDetails.intransitShipment || 0}</span></div>
+                        <div className="detail-row"><span>Intransit Receipts:</span><span>{productDetails.intransitReceipts || 0}</span></div>
+                      </div>
+                      <div className="flow-column">
+                        <div className="flow-header">Warehouse ↔ Warehouse</div>
+                        <div className="detail-row"><span>Internal Requisition:</span><span>{productDetails.internalRequisition || 0}</span></div>
+                        <div className="detail-row"><span>Transfer Order:</span><span>{productDetails.transferOrder || 'N/A'}</span></div>
+                        <div className="detail-row"><span>Intransit Shipment:</span><span>{productDetails.intransitShipment || 0}</span></div>
+                        <div className="detail-row"><span>Intransit Receipts:</span><span>{productDetails.intransitReceipts || 0}</span></div>
+                      </div>
+                    </div>
+
                     <div className="detail-row"><span>ATP:</span><span>{productDetails.atp || 0}</span></div>
                     <div className="detail-row"><span>Consumption 3M Avg:</span><span>{productDetails.consumption3MAvg || 0}</span></div>
                     <div className="detail-row"><span>Consumption 12M Avg:</span><span>{productDetails.consumption12MAvg || 0}</span></div>
@@ -922,8 +950,6 @@ const InventoryPage = () => {
                     <div className="detail-row"><span>Months Supply (Non-Nettable):</span><span>{productDetails.monthsSupplyNonNettable || 0}</span></div>
                     <div className="detail-row"><span>On Hand to Safety Stock %:</span><span>{productDetails.onHandToSafetyStockPercent || 0}%</span></div>
                     <div className="detail-row"><span>OH - Expiry:</span><span>{productDetails.ohExpiry || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Requested Inbound Shipment:</span><span>{productDetails.requestedInboundShipment || 0}</span></div>
-                    <div className="detail-row"><span>Planned Inbound Shipment:</span><span>{productDetails.plannedInboundShipment || 0}</span></div>
                   </>
                 )}
               </div>
