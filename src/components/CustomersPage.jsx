@@ -33,24 +33,26 @@ const CustomersPage = () => {
         </div>
       </div>
       <div className="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Order Reference</th>
-            <th>Customer Name</th>
-          </tr>
-        </thead>
-        <tbody>
-          {customers.map((c, idx) => (
-            <tr key={idx}>
-              <td>{idx + 1}</td>
-              <td>{c.order_reference}</td>
-              <td>{c.customer_name}</td>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Order Reference</th>
+              <th>Customer Name</th>
+              <th>Sales ID</th> 
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {customers.map((c, idx) => (
+              <tr key={idx}>
+                <td>{idx + 1}</td>
+                <td>{c.order_reference}</td>
+                <td>{c.customer_name}</td>
+                <td>{c.sales_id || "N/A"}</td> 
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
