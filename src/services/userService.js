@@ -1,5 +1,5 @@
 // src/services/userService.js
-import apiClient from './apiClient';
+import apiClient from './apiclient';
 
 // --- AUTHENTICATION API ---
 export const authAPI = {
