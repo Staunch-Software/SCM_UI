@@ -365,7 +365,7 @@ const EnhancedDashboard = () => {
               </div>
             </div>
           ) : (
-            <div className="text-gray-500 text-center p-8">No data available for selected period 📭</div>
+            <div className="text-gray-500 text-center p-8">No data available for selected period</div>
           )}
         </div>
 

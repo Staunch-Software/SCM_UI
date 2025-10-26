@@ -1,8 +1,3 @@
-
-/* ====================================
-   INVENTORY PAGE STYLES - CLIENT ANALYSIS
-   ==================================== */
-
 /* Base Styles */
 .inventory-page {
   min-height: 100vh;
@@ -1354,77 +1349,6 @@
   margin-bottom: -6px;
 }
 
-/* Month Breakdown Tooltip on Cell Hover */
-.cell-with-breakdown {
-  cursor: help;
-  position: relative;
-}
-
-.breakdown-tooltip-container {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 9999;
-  margin-bottom: 8px;
-  pointer-events: none;
-}
-
-.cell-with-breakdown:hover .breakdown-tooltip-container {
-  display: block;
-}
-
-.month-breakdown-tooltip {
-  background-color: #1f2937;
-  color: white;
-  padding: 0.75rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  min-width: 200px;
-  white-space: nowrap;
-}
-
-.tooltip-header {
-  font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 0.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  color: #60a5fa;
-}
-
-.tooltip-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.25rem 0;
-  font-size: 0.8rem;
-}
-
-.tooltip-month {
-  color: #d1d5db;
-  margin-right: 1rem;
-}
-
-.tooltip-value {
-  font-weight: 600;
-  color: white;
-}
-
-/* Tooltip Arrow */
-.breakdown-tooltip-container::after {
-  content: '';
-  position: absolute;
-  top: -6px;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 6px solid transparent;
-  border-top-color: #1f2937;
-}
-
 /* Product Detail Modal Styles */
 .product-detail-modal {
   width: 70vw !important;
@@ -1529,4 +1453,222 @@
   border-radius: 6px;
   text-align: center;
   border: 1px solid #dbeafe;
+}
+
+/* ====================================
+   FORECAST DRAWER STYLES
+   ==================================== */
+.forecast-drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+  animation: fadeIn 0.3s ease;
+}
+
+.forecast-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 500px;
+  height: 100vh;
+  background-color: white;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  overflow-y: auto;
+  animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem;
+  border-bottom: 2px solid #e5e7eb;
+  background-color: #f9fafb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.drawer-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.drawer-subtitle {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.drawer-close {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #6b7280;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.drawer-close:hover {
+  background-color: #e5e7eb;
+  color: #111827;
+}
+
+.drawer-section {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.drawer-section h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+/* Variance Bars */
+.variance-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.variance-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.variance-month {
+  font-size: 0.75rem;
+  color: #6b7280;
+  min-width: 60px;
+  font-weight: 500;
+}
+
+.variance-bar-track {
+  flex: 1;
+  height: 28px;
+  background-color: #f3f4f6;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.variance-bar-fill {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 0.5rem;
+  transition: width 0.3s ease;
+}
+
+.variance-bar-fill.positive {
+  background-color: #d1fae5;
+  border-left: 3px solid #059669;
+}
+
+.variance-bar-fill.negative {
+  background-color: #fee2e2;
+  border-left: 3px solid #dc2626;
+}
+
+.variance-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+/* Data Table */
+.drawer-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.drawer-table thead {
+  background-color: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.drawer-table th {
+  padding: 0.75rem 0.5rem;
+  text-align: left;
+  font-weight: 600;
+  color: #6b7280;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.drawer-table tbody tr {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.drawer-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.drawer-table td {
+  padding: 0.75rem 0.5rem;
+  color: #111827;
+}
+
+/* Insights Section */
+.insights-section {
+  background-color: #fffbeb;
+  border-left: 4px solid #f59e0b;
+}
+
+.insights-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.insights-list li {
+  font-size: 0.875rem;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.insights-list strong {
+  color: #111827;
+  min-width: 80px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .forecast-drawer {
+    width: 100vw;
+  }
 }

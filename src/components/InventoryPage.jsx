@@ -89,6 +89,9 @@ const InventoryPage = () => {
   // ADD these new states:
   const [showProductModal, setShowProductModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showForecastDrawer, setShowForecastDrawer] = useState(false);
+  const [drawerData, setDrawerData] = useState(null);
+  const [drawerType, setDrawerType] = useState(''); // 'forecast' or 'safety'
   const [productDetails, setProductDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const formatNumber = (value, fallback = 0) => {
@@ -368,23 +371,6 @@ const InventoryPage = () => {
   if (error) return <div className="no-data-screen"><p style={{ color: "red" }}>{error}</p></div>;
   if (!inventory.length) return <div className="no-data-screen"><p>No inventory records found.</p></div>;
 
-  const MonthBreakdownTooltip = ({ productId, details, type }) => {
-    if (!details || !details[productId]) return null;
-
-    const monthData = details[productId];
-
-    return (
-      <div className="month-breakdown-tooltip">
-        <div className="tooltip-header">{type} Breakdown:</div>
-        {Object.entries(monthData).map(([month, value]) => (
-          <div key={month} className="tooltip-row">
-            <span className="tooltip-month">{month}:</span>
-            <span className="tooltip-value">{value}</span>
-          </div>
-        ))}
-      </div>
-    );
-  };
   return (
     <div className="inventory-page">
       <div className="inventory-header-main">
@@ -654,30 +640,40 @@ const InventoryPage = () => {
                     {showDemand && (
                       <>
                         <td className="font-medium">{item.avgMonthlyDemand}</td>
-                        <td className="text-gray cell-with-breakdown" style={{ position: 'relative' }}>
+                        <td
+                          className="text-gray"
+                          style={{ cursor: 'pointer', color: '#2563eb', textDecoration: 'underline' }}
+                          onClick={() => {
+                            setDrawerData({
+                              product: item,
+                              details: forecastMonthDetails[item.product_id],
+                              dateRange: forecastMonth
+                            });
+                            setDrawerType('forecast');
+                            setShowForecastDrawer(true);
+                          }}
+                        >
                           {item.forecast}
-                          <div className="breakdown-tooltip-container">
-                            <MonthBreakdownTooltip
-                              productId={item.product_id}
-                              details={forecastMonthDetails}
-                              type="Forecast"
-                            />
-                          </div>
                         </td>
                         {isForecastRange && (
                           <td className={`font-medium ${item.monthSupply > 6 ? "text-red" : item.monthSupply > 3 ? "text-orange" : "text-green"}`}>
                             {item.monthSupply}M
                           </td>
                         )}
-                        <td className="text-gray cell-with-breakdown" style={{ position: 'relative' }}>
+                        <td
+                          className="text-gray"
+                          style={{ cursor: 'pointer', color: '#2563eb', textDecoration: 'underline' }}
+                          onClick={() => {
+                            setDrawerData({
+                              product: item,
+                              details: safetyStockDetails[item.product_id],
+                              dateRange: safetyStockPeriod
+                            });
+                            setDrawerType('safety');
+                            setShowForecastDrawer(true);
+                          }}
+                        >
                           {item.safetyStock}
-                          <div className="breakdown-tooltip-container">
-                            <MonthBreakdownTooltip
-                              productId={item.product_id}
-                              details={safetyStockDetails}
-                              type="Safety Stock"
-                            />
-                          </div>
                         </td>
                         <td className="text-gray">{item.salesOrder}</td>
                         {/* --- FIX: Added Dependent Demand data cell --- */}
@@ -966,7 +962,158 @@ const InventoryPage = () => {
           </div>
         </div>
       )}
+      {/* Forecast/Safety Stock Drawer */}
+      {showForecastDrawer && drawerData && (
+        <ForecastDrawer
+          data={drawerData}
+          type={drawerType}
+          onClose={() => setShowForecastDrawer(false)}
+        />
+      )}
     </div>
+  );
+};
+
+// Forecast/Safety Stock Drawer Component
+const ForecastDrawer = ({ data, type, onClose }) => {
+  const { product, details, dateRange } = data;
+  
+  if (!details) return null;
+
+  // Prepare chart data
+  const monthEntries = Object.entries(details).map(([month, value]) => ({
+    month: month.split(' ')[0], // Short month name
+    value: value || 0
+  }));
+
+  // Calculate insights
+  const values = monthEntries.map(e => e.value);
+  const peak = Math.max(...values);
+  const peakMonth = monthEntries.find(e => e.value === peak)?.month;
+  const avgValue = (values.reduce((a, b) => a + b, 0) / values.length).toFixed(1);
+  const firstValue = values[0];
+  const lastValue = values[values.length - 1];
+  const growth = firstValue > 0 ? (((lastValue - firstValue) / firstValue) * 100).toFixed(1) : 0;
+
+  // Variance data (month-over-month change %)
+  const varianceData = monthEntries.map((entry, idx) => {
+    if (idx === 0) return { ...entry, change: 0 };
+    const prevValue = monthEntries[idx - 1].value;
+    const change = prevValue > 0 ? (((entry.value - prevValue) / prevValue) * 100).toFixed(1) : 0;
+    return { ...entry, change: parseFloat(change) };
+  });
+
+  return (
+    <>
+      <div className="forecast-drawer-overlay" onClick={onClose}></div>
+      <div className="forecast-drawer">
+        {/* Header */}
+        <div className="drawer-header">
+          <div>
+            <h3>{product.product_name}</h3>
+            <p className="drawer-subtitle">
+              {product.sku} • {type === 'forecast' ? 'Forecast' : 'Safety Stock'} • {dateRange}
+            </p>
+          </div>
+          <button className="drawer-close" onClick={onClose}>×</button>
+        </div>
+
+        {/* Line Chart - 12 Month Trend */}
+        <div className="drawer-section">
+          <h4>📈 12-Month {type === 'forecast' ? 'Forecast' : 'Safety Stock'} Trend</h4>
+          <div style={{ width: '100%', height: 200 }}>
+            {/* Using inline SVG for simple line chart */}
+            <svg width="100%" height="100%" viewBox="0 0 400 150" preserveAspectRatio="none">
+              <polyline
+                points={monthEntries.map((d, i) => 
+                  `${(i / (monthEntries.length - 1)) * 380 + 10},${140 - (d.value / peak) * 120}`
+                ).join(' ')}
+                fill="none"
+                stroke="#2563eb"
+                strokeWidth="2"
+              />
+              {monthEntries.map((d, i) => (
+                <circle
+                  key={i}
+                  cx={(i / (monthEntries.length - 1)) * 380 + 10}
+                  cy={140 - (d.value / peak) * 120}
+                  r="3"
+                  fill="#2563eb"
+                />
+              ))}
+            </svg>
+          </div>
+        </div>
+
+        {/* Bar Chart - Monthly Variance */}
+        <div className="drawer-section">
+          <h4>📊 Monthly Variance (%)</h4>
+          <div className="variance-bars">
+            {varianceData.map((item, idx) => (
+              <div key={idx} className="variance-bar-item">
+                <span className="variance-month">{item.month}</span>
+                <div className="variance-bar-track">
+                  <div 
+                    className={`variance-bar-fill ${item.change >= 0 ? 'positive' : 'negative'}`}
+                    style={{ width: `${Math.abs(item.change) * 10}%`, maxWidth: '100%' }}
+                  >
+                    <span className="variance-label">{item.change}%</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Data Table */}
+        <div className="drawer-section">
+          <h4>📋 Monthly Breakdown</h4>
+          <table className="drawer-table">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Value</th>
+                <th>Change</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {varianceData.map((item, idx) => (
+                <tr key={idx}>
+                  <td>{Object.keys(details)[idx]}</td>
+                  <td><strong>{item.value}</strong></td>
+                  <td className={item.change >= 0 ? 'text-green' : 'text-red'}>
+                    {idx === 0 ? '--' : `${item.change > 0 ? '+' : ''}${item.change}%`}
+                  </td>
+                  <td>
+                    {item.value >= avgValue ? 
+                      <span style={{ color: '#059669' }}>✓</span> : 
+                      <span style={{ color: '#d97706' }}>⚠</span>
+                    }
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Key Insights */}
+        <div className="drawer-section insights-section">
+          <h4>📌 Key Insights</h4>
+          <ul className="insights-list">
+            <li><strong>Peak:</strong> {peakMonth} ({peak} units)</li>
+            <li><strong>Average:</strong> {avgValue} units/month</li>
+            <li>
+              <strong>Trend:</strong> 
+              <span className={growth >= 0 ? 'text-green' : 'text-red'}>
+                {growth >= 0 ? ' ↑' : ' ↓'} {Math.abs(growth)}% {growth >= 0 ? 'growth' : 'decline'}
+              </span>
+            </li>
+            <li><strong>Volatility:</strong> {Math.abs(growth) > 10 ? 'High' : Math.abs(growth) > 5 ? 'Moderate' : 'Low'}</li>
+          </ul>
+        </div>
+      </div>
+    </>
   );
 };
 
