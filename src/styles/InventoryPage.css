@@ -1473,7 +1473,7 @@
   position: fixed;
   top: 0;
   right: 0;
-  width: 650px;
+  width: 750px;
   height: 100vh;
   background-color: white;
   box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
@@ -1690,8 +1690,10 @@
 }
 
 .chart-point:hover {
-  r: 5;
-  fill: #1d4ed8;
+  r: 6;
+  fill: #3b82f6;
+  stroke: #1d4ed8;
+  stroke-width: 3;
 }
 
 /* Responsive */

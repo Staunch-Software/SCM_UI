@@ -1053,32 +1053,107 @@ const ForecastDrawer = ({ data, type, onClose }) => {
         {/* Line Chart - 12 Month Trend */}
         <div className="drawer-section">
           <h4><LineChart size={16} style={{ display: 'inline', marginRight: '8px' }} /> Month {type === 'forecast' ? 'Forecast' : 'Safety Stock'} Trend</h4>
-          <div style={{ width: '100%', height: 200, position: 'relative' , padding: '0 20px' }}>
-            {/* Using inline SVG for simple line chart */}
-            <svg width="100%" height="100%" viewBox="0 0 600 150" preserveAspectRatio="none">
+          <div style={{ width: '100%', height: 200, position: 'relative', padding: '0 40px 0 20px' }}>
+            {/* Area Chart with Gradient */}
+            <svg width="100%" height="100%" viewBox="0 0 600 180" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style={{ stopColor: '#3b82f6', stopOpacity: 0.3 }} />
+                  <stop offset="100%" style={{ stopColor: '#3b82f6', stopOpacity: 0.05 }} />
+                </linearGradient>
+              </defs>
+
+              {/* Y-Axis */}
+              <line x1="30" y1="10" x2="30" y2="150" stroke="#e5e7eb" strokeWidth="1" />
+
+              {/* X-Axis */}
+              <line x1="30" y1="150" x2="570" y2="150" stroke="#e5e7eb" strokeWidth="1" />
+
+              {/* Grid Lines (Horizontal) */}
+              {[0, 1, 2, 3, 4].map(i => (
+                <line
+                  key={`grid-${i}`}
+                  x1="30"
+                  y1={10 + (i * 35)}
+                  x2="570"
+                  y2={10 + (i * 35)}
+                  stroke="#f3f4f6"
+                  strokeWidth="1"
+                  strokeDasharray="3 3"
+                />
+              ))}
+
+              {/* Y-Axis Labels */}
+              {[0, 1, 2, 3, 4].map(i => {
+                const value = Math.round(peak - (i * peak / 4));
+                return (
+                  <text
+                    key={`ylabel-${i}`}
+                    x="25"
+                    y={10 + (i * 35) + 4}
+                    textAnchor="end"
+                    fontSize="11"
+                    fill="#6b7280"
+                  >
+                    {value}
+                  </text>
+                );
+              })}
+
+              {/* Area Fill */}
+              <polygon
+                points={[
+                  ...monthEntries.map((d, i) =>
+                    `${(i / (monthEntries.length - 1)) * 540 + 30},${150 - ((d.value / peak) * 130)}`
+                  ),
+                  `${540 + 30},150`, // Bottom right
+                  `30,150` // Bottom left
+                ].join(' ')}
+                fill="url(#areaGradient)"
+              />
+
+              {/* Line */}
               <polyline
                 points={monthEntries.map((d, i) =>
-                  `${(i / (monthEntries.length - 1)) * 560 + 20},${140 - (d.value / peak) * 120}`
+                  `${(i / (monthEntries.length - 1)) * 540 + 30},${150 - ((d.value / peak) * 130)}`
                 ).join(' ')}
                 fill="none"
-                stroke="#2563eb"
-                strokeWidth="2"
+                stroke="#3b82f6"
+                strokeWidth="2.5"
               />
+
+              {/* Data Points */}
               {monthEntries.map((d, i) => {
                 const fullMonth = Object.keys(details)[i];
                 return (
                   <g key={i}>
                     <circle
-                      cx={(i / (monthEntries.length - 1)) * 560 + 20}
-                      cy={140 - (d.value / peak) * 120}
-                      r="3"
-                      fill="#2563eb"
+                      cx={(i / (monthEntries.length - 1)) * 540 + 30}
+                      cy={150 - ((d.value / peak) * 130)}
+                      r="4"
+                      fill="white"
+                      stroke="#3b82f6"
+                      strokeWidth="2"
                       className="chart-point"
                       data-tooltip={`${fullMonth} - ${d.value}`}
                     />
                   </g>
                 );
               })}
+
+              {/* X-Axis Labels */}
+              {monthEntries.map((d, i) => (
+                <text
+                  key={`xlabel-${i}`}
+                  x={(i / (monthEntries.length - 1)) * 540 + 30}
+                  y="168"
+                  textAnchor="middle"
+                  fontSize="11"
+                  fill="#6b7280"
+                >
+                  {d.month}
+                </text>
+              ))}
             </svg>
             <div id="chart-tooltip" className="chart-tooltip"></div>
           </div>
