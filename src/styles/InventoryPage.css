@@ -1473,7 +1473,7 @@
   position: fixed;
   top: 0;
   right: 0;
-  width: 500px;
+  width: 650px;
   height: 100vh;
   background-color: white;
   box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
@@ -1664,6 +1664,34 @@
 .insights-list strong {
   color: #111827;
   min-width: 80px;
+}
+
+/* Chart Tooltip */
+.chart-tooltip {
+  position: absolute;
+  background-color: #1f2937;
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 10000;
+  display: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transform: translate(-50%, -100%);
+  margin-top: -8px;
+}
+
+.chart-point {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chart-point:hover {
+  r: 5;
+  fill: #1d4ed8;
 }
 
 /* Responsive */

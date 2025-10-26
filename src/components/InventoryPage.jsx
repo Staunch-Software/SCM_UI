@@ -10,7 +10,7 @@ import {
   ShoppingBag,
   RefreshCw,
   ChevronsDown,
-  ChevronsUp,
+  ChevronsUp, BarChart3, LineChart, ClipboardList, Lightbulb
 } from "lucide-react";
 import "../styles/InventoryPage.css";
 
@@ -641,8 +641,8 @@ const InventoryPage = () => {
                       <>
                         <td className="font-medium">{item.avgMonthlyDemand}</td>
                         <td
-                          className="text-gray"
-                          style={{ cursor: 'pointer', color: '#2563eb', textDecoration: 'underline' }}
+                          className="text-gray font-medium"
+                          style={{ cursor: 'pointer', color: '#2563eb' }}
                           onClick={() => {
                             setDrawerData({
                               product: item,
@@ -661,8 +661,8 @@ const InventoryPage = () => {
                           </td>
                         )}
                         <td
-                          className="text-gray"
-                          style={{ cursor: 'pointer', color: '#2563eb', textDecoration: 'underline' }}
+                          className="text-gray font-medium"
+                          style={{ cursor: 'pointer', color: '#2563eb' }}
                           onClick={() => {
                             setDrawerData({
                               product: item,
@@ -977,8 +977,40 @@ const InventoryPage = () => {
 // Forecast/Safety Stock Drawer Component
 const ForecastDrawer = ({ data, type, onClose }) => {
   const { product, details, dateRange } = data;
-  
+
   if (!details) return null;
+
+  React.useEffect(() => {
+    const handleMouseOver = (e) => {
+      if (e.target.classList.contains('chart-point')) {
+        const tooltip = document.getElementById('chart-tooltip');
+        const tooltipText = e.target.getAttribute('data-tooltip');
+        const rect = e.target.getBoundingClientRect();
+        const container = e.target.closest('.drawer-section');
+        const containerRect = container.getBoundingClientRect();
+
+        tooltip.textContent = tooltipText;
+        tooltip.style.display = 'block';
+        tooltip.style.left = (rect.left - containerRect.left + rect.width / 2) + 'px';
+        tooltip.style.top = (rect.top - containerRect.top) + 'px';
+      }
+    };
+
+    const handleMouseOut = (e) => {
+      if (e.target.classList.contains('chart-point')) {
+        const tooltip = document.getElementById('chart-tooltip');
+        tooltip.style.display = 'none';
+      }
+    };
+
+    document.addEventListener('mouseover', handleMouseOver);
+    document.addEventListener('mouseout', handleMouseOut);
+
+    return () => {
+      document.removeEventListener('mouseover', handleMouseOver);
+      document.removeEventListener('mouseout', handleMouseOut);
+    };
+  }, []);
 
   // Prepare chart data
   const monthEntries = Object.entries(details).map(([month, value]) => ({
@@ -1020,44 +1052,51 @@ const ForecastDrawer = ({ data, type, onClose }) => {
 
         {/* Line Chart - 12 Month Trend */}
         <div className="drawer-section">
-          <h4>📈 12-Month {type === 'forecast' ? 'Forecast' : 'Safety Stock'} Trend</h4>
-          <div style={{ width: '100%', height: 200 }}>
+          <h4><LineChart size={16} style={{ display: 'inline', marginRight: '8px' }} /> Month {type === 'forecast' ? 'Forecast' : 'Safety Stock'} Trend</h4>
+          <div style={{ width: '100%', height: 200, position: 'relative' , padding: '0 20px' }}>
             {/* Using inline SVG for simple line chart */}
-            <svg width="100%" height="100%" viewBox="0 0 400 150" preserveAspectRatio="none">
+            <svg width="100%" height="100%" viewBox="0 0 600 150" preserveAspectRatio="none">
               <polyline
-                points={monthEntries.map((d, i) => 
-                  `${(i / (monthEntries.length - 1)) * 380 + 10},${140 - (d.value / peak) * 120}`
+                points={monthEntries.map((d, i) =>
+                  `${(i / (monthEntries.length - 1)) * 560 + 20},${140 - (d.value / peak) * 120}`
                 ).join(' ')}
                 fill="none"
                 stroke="#2563eb"
                 strokeWidth="2"
               />
-              {monthEntries.map((d, i) => (
-                <circle
-                  key={i}
-                  cx={(i / (monthEntries.length - 1)) * 380 + 10}
-                  cy={140 - (d.value / peak) * 120}
-                  r="3"
-                  fill="#2563eb"
-                />
-              ))}
+              {monthEntries.map((d, i) => {
+                const fullMonth = Object.keys(details)[i];
+                return (
+                  <g key={i}>
+                    <circle
+                      cx={(i / (monthEntries.length - 1)) * 560 + 20}
+                      cy={140 - (d.value / peak) * 120}
+                      r="3"
+                      fill="#2563eb"
+                      className="chart-point"
+                      data-tooltip={`${fullMonth} - ${d.value}`}
+                    />
+                  </g>
+                );
+              })}
             </svg>
+            <div id="chart-tooltip" className="chart-tooltip"></div>
           </div>
         </div>
 
-        {/* Bar Chart - Monthly Variance */}
+        {/* Bar Chart - Monthly Forecast Values */}
         <div className="drawer-section">
-          <h4>📊 Monthly Variance (%)</h4>
+          <h4><BarChart3 size={16} style={{ display: 'inline', marginRight: '8px' }} /> Monthly {type === 'forecast' ? 'Forecast' : 'Safety Stock'} Values</h4>
           <div className="variance-bars">
-            {varianceData.map((item, idx) => (
+            {monthEntries.map((item, idx) => (
               <div key={idx} className="variance-bar-item">
                 <span className="variance-month">{item.month}</span>
                 <div className="variance-bar-track">
-                  <div 
-                    className={`variance-bar-fill ${item.change >= 0 ? 'positive' : 'negative'}`}
-                    style={{ width: `${Math.abs(item.change) * 10}%`, maxWidth: '100%' }}
+                  <div
+                    className="variance-bar-fill positive"
+                    style={{ width: `${(item.value / peak) * 100}%`, maxWidth: '100%' }}
                   >
-                    <span className="variance-label">{item.change}%</span>
+                    <span className="variance-label">{item.value}</span>
                   </div>
                 </div>
               </div>
@@ -1067,7 +1106,7 @@ const ForecastDrawer = ({ data, type, onClose }) => {
 
         {/* Data Table */}
         <div className="drawer-section">
-          <h4>📋 Monthly Breakdown</h4>
+          <h4><ClipboardList size={16} style={{ display: 'inline', marginRight: '8px' }} /> Monthly Breakdown</h4>
           <table className="drawer-table">
             <thead>
               <tr>
@@ -1086,8 +1125,8 @@ const ForecastDrawer = ({ data, type, onClose }) => {
                     {idx === 0 ? '--' : `${item.change > 0 ? '+' : ''}${item.change}%`}
                   </td>
                   <td>
-                    {item.value >= avgValue ? 
-                      <span style={{ color: '#059669' }}>✓</span> : 
+                    {item.value >= avgValue ?
+                      <span style={{ color: '#059669' }}>✓</span> :
                       <span style={{ color: '#d97706' }}>⚠</span>
                     }
                   </td>
@@ -1099,12 +1138,12 @@ const ForecastDrawer = ({ data, type, onClose }) => {
 
         {/* Key Insights */}
         <div className="drawer-section insights-section">
-          <h4>📌 Key Insights</h4>
+          <h4><Lightbulb size={16} style={{ display: 'inline', marginRight: '8px' }} /> Key Insights</h4>
           <ul className="insights-list">
             <li><strong>Peak:</strong> {peakMonth} ({peak} units)</li>
             <li><strong>Average:</strong> {avgValue} units/month</li>
             <li>
-              <strong>Trend:</strong> 
+              <strong>Trend:</strong>
               <span className={growth >= 0 ? 'text-green' : 'text-red'}>
                 {growth >= 0 ? ' ↑' : ' ↓'} {Math.abs(growth)}% {growth >= 0 ? 'growth' : 'decline'}
               </span>
