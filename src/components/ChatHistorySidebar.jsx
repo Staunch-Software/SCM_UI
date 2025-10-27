@@ -3,6 +3,16 @@ import { MessageSquare, Trash2, Plus, MoreVertical, Edit2 } from 'lucide-react';
 import { sessionApi } from '../services/sessionApi';
 import '../styles/ChatHistorySidebar.css';
 
+const getFormattedDateTime = (timestamp) => {
+  const date = new Date(timestamp);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${day}-${month}-${year} ${hours}:${minutes}`;
+};
+
 const getRelativeTime = (timestamp) => {
   // console.log('Input timestamp:', timestamp);
   // console.log('Parsed date:', new Date(timestamp));
@@ -171,6 +181,7 @@ const ChatHistorySidebar = ({ currentSessionId, onSelectSession, onNewChat }) =>
                 <div
                   key={session.sessionId}
                   className={`session-item ${session.sessionId === currentSessionId ? 'active' : ''}`}
+                  data-tooltip={`Last updated: ${getFormattedDateTime(session.lastActivity || session.createdAt)}`}
                   onClick={() => {
                     console.log('Clicked session:', session.sessionId);
                     onSelectSession(session.sessionId);

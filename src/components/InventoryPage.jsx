@@ -10,7 +10,7 @@ import {
   ShoppingBag,
   RefreshCw,
   ChevronsDown,
-  ChevronsUp,
+  ChevronsUp, BarChart3, LineChart, ClipboardList, Lightbulb
 } from "lucide-react";
 import "../styles/InventoryPage.css";
 
@@ -89,6 +89,9 @@ const InventoryPage = () => {
   // ADD these new states:
   const [showProductModal, setShowProductModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showForecastDrawer, setShowForecastDrawer] = useState(false);
+  const [drawerData, setDrawerData] = useState(null);
+  const [drawerType, setDrawerType] = useState(''); // 'forecast' or 'safety'
   const [productDetails, setProductDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const formatNumber = (value, fallback = 0) => {
@@ -368,23 +371,6 @@ const InventoryPage = () => {
   if (error) return <div className="no-data-screen"><p style={{ color: "red" }}>{error}</p></div>;
   if (!inventory.length) return <div className="no-data-screen"><p>No inventory records found.</p></div>;
 
-  const MonthBreakdownTooltip = ({ productId, details, type }) => {
-    if (!details || !details[productId]) return null;
-
-    const monthData = details[productId];
-
-    return (
-      <div className="month-breakdown-tooltip">
-        <div className="tooltip-header">{type} Breakdown:</div>
-        {Object.entries(monthData).map(([month, value]) => (
-          <div key={month} className="tooltip-row">
-            <span className="tooltip-month">{month}:</span>
-            <span className="tooltip-value">{value}</span>
-          </div>
-        ))}
-      </div>
-    );
-  };
   return (
     <div className="inventory-page">
       <div className="inventory-header-main">
@@ -654,30 +640,40 @@ const InventoryPage = () => {
                     {showDemand && (
                       <>
                         <td className="font-medium">{item.avgMonthlyDemand}</td>
-                        <td className="text-gray cell-with-breakdown" style={{ position: 'relative' }}>
+                        <td
+                          className="text-gray font-medium"
+                          style={{ cursor: 'pointer', color: '#2563eb' }}
+                          onClick={() => {
+                            setDrawerData({
+                              product: item,
+                              details: forecastMonthDetails[item.product_id],
+                              dateRange: forecastMonth
+                            });
+                            setDrawerType('forecast');
+                            setShowForecastDrawer(true);
+                          }}
+                        >
                           {item.forecast}
-                          <div className="breakdown-tooltip-container">
-                            <MonthBreakdownTooltip
-                              productId={item.product_id}
-                              details={forecastMonthDetails}
-                              type="Forecast"
-                            />
-                          </div>
                         </td>
                         {isForecastRange && (
                           <td className={`font-medium ${item.monthSupply > 6 ? "text-red" : item.monthSupply > 3 ? "text-orange" : "text-green"}`}>
                             {item.monthSupply}M
                           </td>
                         )}
-                        <td className="text-gray cell-with-breakdown" style={{ position: 'relative' }}>
+                        <td
+                          className="text-gray font-medium"
+                          style={{ cursor: 'pointer', color: '#2563eb' }}
+                          onClick={() => {
+                            setDrawerData({
+                              product: item,
+                              details: safetyStockDetails[item.product_id],
+                              dateRange: safetyStockPeriod
+                            });
+                            setDrawerType('safety');
+                            setShowForecastDrawer(true);
+                          }}
+                        >
                           {item.safetyStock}
-                          <div className="breakdown-tooltip-container">
-                            <MonthBreakdownTooltip
-                              productId={item.product_id}
-                              details={safetyStockDetails}
-                              type="Safety Stock"
-                            />
-                          </div>
                         </td>
                         <td className="text-gray">{item.salesOrder}</td>
                         {/* --- FIX: Added Dependent Demand data cell --- */}
@@ -825,7 +821,7 @@ const InventoryPage = () => {
                     <div className="detail-row"><span>Org:</span><span>{productDetails.org || 'N/A'}</span></div>
                     <div className="detail-row"><span>Item Description:</span><span>{productDetails.itemDescription || 'N/A'}</span></div>
                     <div className="detail-row"><span>UOM:</span><span>{productDetails.uom || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Work Order:</span><span>{productDetails.workOrder || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Work Order:</span><span>{productDetails.workOrderList?.join(', ') || 'None'}</span></div>
                     <div className="detail-row"><span>Sales Order Qty:</span><span>{productDetails.salesOrderQty || 0}</span></div>
                     <div className="detail-row"><span>Sales Orders:</span><span>{productDetails.salesOrderList?.join(', ') || 'None'}</span></div>
                     <div className="detail-row"><span>Required WO QTY:</span><span>{productDetails.requiredWoQty || 0}</span></div>
@@ -851,7 +847,7 @@ const InventoryPage = () => {
                     <div className="detail-row"><span>Org:</span><span>{productDetails.org || 'N/A'}</span></div>
                     <div className="detail-row"><span>Item Description:</span><span>{productDetails.itemDescription || 'N/A'}</span></div>
                     <div className="detail-row"><span>UOM:</span><span>{productDetails.uom || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Work Order:</span><span>{productDetails.workOrder || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Work Order:</span><span>{productDetails.workOrderList?.join(', ') || 'None'}</span></div>
                     <div className="detail-row"><span>Required WO QTY:</span><span>{productDetails.requiredWoQty || 0}</span></div>
                     <div className="detail-row"><span>Issued WO Qty:</span><span>{productDetails.issuedWoQty || 0}</span></div>
                     <div className="detail-row"><span>Open WO QTY:</span><span>{productDetails.openWoQty || 0}</span></div>
@@ -880,14 +876,29 @@ const InventoryPage = () => {
                     <div className="detail-row"><span>Item Description:</span><span>{productDetails.itemDescription || 'N/A'}</span></div>
                     <div className="detail-row"><span>UOM:</span><span>{productDetails.uom || 'N/A'}</span></div>
                     <div className="detail-row"><span>Open PO Qty:</span><span>{productDetails.openPoQty || 0}</span></div>
-                    <div className="detail-row"><span>Purchase Order (PO):</span><span>{productDetails.purchaseOrder || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Purchase Requisition (PR):</span><span>{productDetails.purchaseRequisition || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Purchase Order (PO):</span><span>{productDetails.purchaseOrderList?.join(', ') || 'None'}</span></div>
+                    <div className="detail-row"><span>Purchase Requisition (PR):</span><span>{productDetails.purchaseRequisitionList?.join(', ') || 'None'}</span></div>
                     <div className="detail-row"><span>PO In Receiving:</span><span>{productDetails.poInReceiving || 0}</span></div>
-                    <div className="detail-row"><span>PO Acknowledgement:</span><span>{productDetails.poAcknowledgement || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Internal Requisition:</span><span>{productDetails.internalRequisition || 0}</span></div>
-                    <div className="detail-row"><span>Intransit Shipment:</span><span>{productDetails.intransitShipment || 0}</span></div>
-                    <div className="detail-row"><span>Intransit Receipts:</span><span>{productDetails.intransitReceipts || 0}</span></div>
-                    <div className="detail-row"><span>Transfer Order:</span><span>{productDetails.transferOrder || 'N/A'}</span></div>
+                    <div className="detail-row"><span>PO Acknowledgement:</span><span>{Array.isArray(productDetails.poAcknowledgementList) ? productDetails.poAcknowledgementList.join(', ') : (productDetails.poAcknowledgementList || 'None')}</span></div>
+
+                    {/* Two Column Flow Section */}
+                    <div className="two-column-section">
+                      <div className="flow-column">
+                        <div className="flow-header">Supplier → Warehouse</div>
+                        <div className="detail-row"><span>Requested Inbound Shipment:</span><span>{productDetails.requestedInboundShipment || 0}</span></div>
+                        <div className="detail-row"><span>Planned Inbound Shipment:</span><span>{productDetails.plannedInboundShipment || 0}</span></div>
+                        <div className="detail-row"><span>Intransit Shipment:</span><span>{productDetails.intransitShipment || 0}</span></div>
+                        <div className="detail-row"><span>Intransit Receipts:</span><span>{productDetails.intransitReceipts || 0}</span></div>
+                      </div>
+                      <div className="flow-column">
+                        <div className="flow-header">Warehouse ↔ Warehouse</div>
+                        <div className="detail-row"><span>Internal Requisition:</span><span>{productDetails.internalRequisition || 0}</span></div>
+                        <div className="detail-row"><span>Transfer Order:</span><span>{productDetails.transferOrder || 'N/A'}</span></div>
+                        <div className="detail-row"><span>Intransit Shipment:</span><span>{productDetails.intransitShipment || 0}</span></div>
+                        <div className="detail-row"><span>Intransit Receipts:</span><span>{productDetails.intransitReceipts || 0}</span></div>
+                      </div>
+                    </div>
+
                     <div className="detail-row"><span>ATP:</span><span>{productDetails.atp || 0}</span></div>
                     <div className="detail-row"><span>Consumption 3M Avg:</span><span>{productDetails.consumption3MAvg || 0}</span></div>
                     <div className="detail-row"><span>Consumption 12M Avg:</span><span>{productDetails.consumption12MAvg || 0}</span></div>
@@ -898,8 +909,6 @@ const InventoryPage = () => {
                     <div className="detail-row"><span>Months Supply (Non-Nettable):</span><span>{productDetails.monthsSupplyNonNettable || 0}</span></div>
                     <div className="detail-row"><span>On Hand to Safety Stock %:</span><span>{productDetails.onHandToSafetyStockPercent || 0}%</span></div>
                     <div className="detail-row"><span>OH - Expiry:</span><span>{productDetails.ohExpiry || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Requested Inbound Shipment:</span><span>{productDetails.requestedInboundShipment || 0}</span></div>
-                    <div className="detail-row"><span>Planned Inbound Shipment:</span><span>{productDetails.plannedInboundShipment || 0}</span></div>
                   </>
                 )}
 
@@ -911,14 +920,29 @@ const InventoryPage = () => {
                     <div className="detail-row"><span>Item Description:</span><span>{productDetails.itemDescription || 'N/A'}</span></div>
                     <div className="detail-row"><span>UOM:</span><span>{productDetails.uom || 'N/A'}</span></div>
                     <div className="detail-row"><span>Open PO Qty:</span><span>{productDetails.openPoQty || 0}</span></div>
-                    <div className="detail-row"><span>Purchase Order (PO):</span><span>{productDetails.purchaseOrder || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Purchase Requisition (PR):</span><span>{productDetails.purchaseRequisition || 'N/A'}</span></div>
+                    <div className="detail-row"><span>Purchase Order (PO):</span><span>{productDetails.purchaseOrderList?.join(', ') || 'None'}</span></div>
+                    <div className="detail-row"><span>Purchase Requisition (PR):</span><span>{productDetails.purchaseRequisitionList?.join(', ') || 'None'}</span></div>
                     <div className="detail-row"><span>PO In Receiving:</span><span>{productDetails.poInReceiving || 0}</span></div>
-                    <div className="detail-row"><span>PO Acknowledgement:</span><span>{productDetails.poAcknowledgement || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Internal Requisition:</span><span>{productDetails.internalRequisition || 0}</span></div>
-                    <div className="detail-row"><span>Intransit Shipment:</span><span>{productDetails.intransitShipment || 0}</span></div>
-                    <div className="detail-row"><span>Intransit Receipts:</span><span>{productDetails.intransitReceipts || 0}</span></div>
-                    <div className="detail-row"><span>Transfer Order:</span><span>{productDetails.transferOrder || 'N/A'}</span></div>
+                    <div className="detail-row"><span>PO Acknowledgement:</span><span>{productDetails.poAcknowledgementList?.join(', ') || 'None'}</span></div>
+
+                    {/* Two Column Flow Section */}
+                    <div className="two-column-section">
+                      <div className="flow-column">
+                        <div className="flow-header">Supplier → Warehouse</div>
+                        <div className="detail-row"><span>Requested Inbound Shipment:</span><span>{productDetails.requestedInboundShipment || 0}</span></div>
+                        <div className="detail-row"><span>Planned Inbound Shipment:</span><span>{productDetails.plannedInboundShipment || 0}</span></div>
+                        <div className="detail-row"><span>Intransit Shipment:</span><span>{productDetails.intransitShipment || 0}</span></div>
+                        <div className="detail-row"><span>Intransit Receipts:</span><span>{productDetails.intransitReceipts || 0}</span></div>
+                      </div>
+                      <div className="flow-column">
+                        <div className="flow-header">Warehouse ↔ Warehouse</div>
+                        <div className="detail-row"><span>Internal Requisition:</span><span>{productDetails.internalRequisition || 0}</span></div>
+                        <div className="detail-row"><span>Transfer Order:</span><span>{productDetails.transferOrder || 'N/A'}</span></div>
+                        <div className="detail-row"><span>Intransit Shipment:</span><span>{productDetails.intransitShipment || 0}</span></div>
+                        <div className="detail-row"><span>Intransit Receipts:</span><span>{productDetails.intransitReceipts || 0}</span></div>
+                      </div>
+                    </div>
+
                     <div className="detail-row"><span>ATP:</span><span>{productDetails.atp || 0}</span></div>
                     <div className="detail-row"><span>Consumption 3M Avg:</span><span>{productDetails.consumption3MAvg || 0}</span></div>
                     <div className="detail-row"><span>Consumption 12M Avg:</span><span>{productDetails.consumption12MAvg || 0}</span></div>
@@ -929,8 +953,6 @@ const InventoryPage = () => {
                     <div className="detail-row"><span>Months Supply (Non-Nettable):</span><span>{productDetails.monthsSupplyNonNettable || 0}</span></div>
                     <div className="detail-row"><span>On Hand to Safety Stock %:</span><span>{productDetails.onHandToSafetyStockPercent || 0}%</span></div>
                     <div className="detail-row"><span>OH - Expiry:</span><span>{productDetails.ohExpiry || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Requested Inbound Shipment:</span><span>{productDetails.requestedInboundShipment || 0}</span></div>
-                    <div className="detail-row"><span>Planned Inbound Shipment:</span><span>{productDetails.plannedInboundShipment || 0}</span></div>
                   </>
                 )}
               </div>
@@ -940,7 +962,272 @@ const InventoryPage = () => {
           </div>
         </div>
       )}
+      {/* Forecast/Safety Stock Drawer */}
+      {showForecastDrawer && drawerData && (
+        <ForecastDrawer
+          data={drawerData}
+          type={drawerType}
+          onClose={() => setShowForecastDrawer(false)}
+        />
+      )}
     </div>
+  );
+};
+
+// Forecast/Safety Stock Drawer Component
+const ForecastDrawer = ({ data, type, onClose }) => {
+  const { product, details, dateRange } = data;
+
+  if (!details) return null;
+
+  React.useEffect(() => {
+    const handleMouseOver = (e) => {
+      if (e.target.classList.contains('chart-point')) {
+        const tooltip = document.getElementById('chart-tooltip');
+        const tooltipText = e.target.getAttribute('data-tooltip');
+        const rect = e.target.getBoundingClientRect();
+        const container = e.target.closest('.drawer-section');
+        const containerRect = container.getBoundingClientRect();
+
+        tooltip.textContent = tooltipText;
+        tooltip.style.display = 'block';
+        tooltip.style.left = (rect.left - containerRect.left + rect.width / 2) + 'px';
+        tooltip.style.top = (rect.top - containerRect.top) + 'px';
+      }
+    };
+
+    const handleMouseOut = (e) => {
+      if (e.target.classList.contains('chart-point')) {
+        const tooltip = document.getElementById('chart-tooltip');
+        tooltip.style.display = 'none';
+      }
+    };
+
+    document.addEventListener('mouseover', handleMouseOver);
+    document.addEventListener('mouseout', handleMouseOut);
+
+    return () => {
+      document.removeEventListener('mouseover', handleMouseOver);
+      document.removeEventListener('mouseout', handleMouseOut);
+    };
+  }, []);
+
+  // Prepare chart data
+  const monthEntries = Object.entries(details).map(([month, value]) => ({
+    month: month.split(' ')[0], // Short month name
+    value: value || 0
+  }));
+
+  // Calculate insights
+  const values = monthEntries.map(e => e.value);
+  const peak = Math.max(...values);
+  const peakMonth = monthEntries.find(e => e.value === peak)?.month;
+  const avgValue = (values.reduce((a, b) => a + b, 0) / values.length).toFixed(1);
+  const firstValue = values[0];
+  const lastValue = values[values.length - 1];
+  const growth = firstValue > 0 ? (((lastValue - firstValue) / firstValue) * 100).toFixed(1) : 0;
+
+  // Variance data (month-over-month change %)
+  const varianceData = monthEntries.map((entry, idx) => {
+    if (idx === 0) return { ...entry, change: 0 };
+    const prevValue = monthEntries[idx - 1].value;
+    const change = prevValue > 0 ? (((entry.value - prevValue) / prevValue) * 100).toFixed(1) : 0;
+    return { ...entry, change: parseFloat(change) };
+  });
+
+  return (
+    <>
+      <div className="forecast-drawer-overlay" onClick={onClose}></div>
+      <div className="forecast-drawer">
+        {/* Header */}
+        <div className="drawer-header">
+          <div>
+            <h3>{product.product_name}</h3>
+            <p className="drawer-subtitle">
+              {product.sku} • {type === 'forecast' ? 'Forecast' : 'Safety Stock'} • {dateRange}
+            </p>
+          </div>
+          <button className="drawer-close" onClick={onClose}>×</button>
+        </div>
+
+        {/* Line Chart - 12 Month Trend */}
+        <div className="drawer-section">
+          <h4><LineChart size={16} style={{ display: 'inline', marginRight: '8px' }} /> Month {type === 'forecast' ? 'Forecast' : 'Safety Stock'} Trend</h4>
+          <div style={{ width: '100%', height: 200, position: 'relative', padding: '0 40px 0 20px' }}>
+            {/* Area Chart with Gradient */}
+            <svg width="100%" height="100%" viewBox="0 0 600 180" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style={{ stopColor: '#3b82f6', stopOpacity: 0.3 }} />
+                  <stop offset="100%" style={{ stopColor: '#3b82f6', stopOpacity: 0.05 }} />
+                </linearGradient>
+              </defs>
+
+              {/* Y-Axis */}
+              <line x1="30" y1="10" x2="30" y2="150" stroke="#e5e7eb" strokeWidth="1" />
+
+              {/* X-Axis */}
+              <line x1="30" y1="150" x2="570" y2="150" stroke="#e5e7eb" strokeWidth="1" />
+
+              {/* Grid Lines (Horizontal) */}
+              {[0, 1, 2, 3, 4].map(i => (
+                <line
+                  key={`grid-${i}`}
+                  x1="30"
+                  y1={10 + (i * 35)}
+                  x2="570"
+                  y2={10 + (i * 35)}
+                  stroke="#f3f4f6"
+                  strokeWidth="1"
+                  strokeDasharray="3 3"
+                />
+              ))}
+
+              {/* Y-Axis Labels */}
+              {[0, 1, 2, 3, 4].map(i => {
+                const value = Math.round(peak - (i * peak / 4));
+                return (
+                  <text
+                    key={`ylabel-${i}`}
+                    x="25"
+                    y={10 + (i * 35) + 4}
+                    textAnchor="end"
+                    fontSize="11"
+                    fill="#6b7280"
+                  >
+                    {value}
+                  </text>
+                );
+              })}
+
+              {/* Area Fill */}
+              <polygon
+                points={[
+                  ...monthEntries.map((d, i) =>
+                    `${(i / (monthEntries.length - 1)) * 540 + 30},${150 - ((d.value / peak) * 130)}`
+                  ),
+                  `${540 + 30},150`, // Bottom right
+                  `30,150` // Bottom left
+                ].join(' ')}
+                fill="url(#areaGradient)"
+              />
+
+              {/* Line */}
+              <polyline
+                points={monthEntries.map((d, i) =>
+                  `${(i / (monthEntries.length - 1)) * 540 + 30},${150 - ((d.value / peak) * 130)}`
+                ).join(' ')}
+                fill="none"
+                stroke="#3b82f6"
+                strokeWidth="2.5"
+              />
+
+              {/* Data Points */}
+              {monthEntries.map((d, i) => {
+                const fullMonth = Object.keys(details)[i];
+                return (
+                  <g key={i}>
+                    <circle
+                      cx={(i / (monthEntries.length - 1)) * 540 + 30}
+                      cy={150 - ((d.value / peak) * 130)}
+                      r="4"
+                      fill="white"
+                      stroke="#3b82f6"
+                      strokeWidth="2"
+                      className="chart-point"
+                      data-tooltip={`${fullMonth} - ${d.value}`}
+                    />
+                  </g>
+                );
+              })}
+
+              {/* X-Axis Labels */}
+              {monthEntries.map((d, i) => (
+                <text
+                  key={`xlabel-${i}`}
+                  x={(i / (monthEntries.length - 1)) * 540 + 30}
+                  y="168"
+                  textAnchor="middle"
+                  fontSize="11"
+                  fill="#6b7280"
+                >
+                  {d.month}
+                </text>
+              ))}
+            </svg>
+            <div id="chart-tooltip" className="chart-tooltip"></div>
+          </div>
+        </div>
+
+        {/* Bar Chart - Monthly Forecast Values */}
+        <div className="drawer-section">
+          <h4><BarChart3 size={16} style={{ display: 'inline', marginRight: '8px' }} /> Monthly {type === 'forecast' ? 'Forecast' : 'Safety Stock'} Values</h4>
+          <div className="variance-bars">
+            {monthEntries.map((item, idx) => (
+              <div key={idx} className="variance-bar-item">
+                <span className="variance-month">{item.month}</span>
+                <div className="variance-bar-track">
+                  <div
+                    className="variance-bar-fill positive"
+                    style={{ width: `${(item.value / peak) * 100}%`, maxWidth: '100%' }}
+                  >
+                    <span className="variance-label">{item.value}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Data Table */}
+        <div className="drawer-section">
+          <h4><ClipboardList size={16} style={{ display: 'inline', marginRight: '8px' }} /> Monthly Breakdown</h4>
+          <table className="drawer-table">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Value</th>
+                <th>Change</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {varianceData.map((item, idx) => (
+                <tr key={idx}>
+                  <td>{Object.keys(details)[idx]}</td>
+                  <td><strong>{item.value}</strong></td>
+                  <td className={item.change >= 0 ? 'text-green' : 'text-red'}>
+                    {idx === 0 ? '--' : `${item.change > 0 ? '+' : ''}${item.change}%`}
+                  </td>
+                  <td>
+                    {item.value >= avgValue ?
+                      <span style={{ color: '#059669' }}>✓</span> :
+                      <span style={{ color: '#d97706' }}>⚠</span>
+                    }
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Key Insights */}
+        <div className="drawer-section insights-section">
+          <h4><Lightbulb size={16} style={{ display: 'inline', marginRight: '8px' }} /> Key Insights</h4>
+          <ul className="insights-list">
+            <li><strong>Peak:</strong> {peakMonth} ({peak} units)</li>
+            <li><strong>Average:</strong> {avgValue} units/month</li>
+            <li>
+              <strong>Trend:</strong>
+              <span className={growth >= 0 ? 'text-green' : 'text-red'}>
+                {growth >= 0 ? ' ↑' : ' ↓'} {Math.abs(growth)}% {growth >= 0 ? 'growth' : 'decline'}
+              </span>
+            </li>
+            <li><strong>Volatility:</strong> {Math.abs(growth) > 10 ? 'High' : Math.abs(growth) > 5 ? 'Moderate' : 'Low'}</li>
+          </ul>
+        </div>
+      </div>
+    </>
   );
 };
 
