@@ -1,6 +1,7 @@
 /* Base Styles */
 .inventory-page {
   min-height: 100vh;
+  padding: 23px;
   background-color: #f9fafb;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
 }
@@ -48,19 +49,25 @@
    ==================================== */
 .inventory-header-main {
   background-color: white;
-  border-bottom: 1px solid #e5e7eb;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  width: 1295px;
+  height: 90px;
+  margin-left: 20px;
+  border-radius: 8px;
+  display: flex; /* Add this */
+  align-items: center; /* Add this to vertically center content */
 }
 
 .header-content {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 1.5rem;
+  margin: 0 20px;
+  padding: 0; /* Remove or reduce padding */
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
+  width: 100%; /* Add this */
+  /* Remove: height: -50px; - this is invalid */
 }
 
 .header-left {
@@ -69,6 +76,11 @@
   gap: 1rem;
 }
 
+/* Also add this to remove default heading margins */
+.header-left h1,
+.header-left h2 {
+  margin: 0;
+}
 .back-btn {
   width: 40px;
   height: 40px;
@@ -79,8 +91,9 @@
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
-  align-items: center;
+  /* align-items: center; */
   justify-content: center;
+ margin-top: 2rem;
 }
 
 .back-btn:hover {
@@ -142,7 +155,6 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1rem;
-  margin-bottom: 1.5rem;
 }
 
 .summary-card {
