@@ -7,7 +7,7 @@ const CustomersPage = () => {
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/api/customers")
-    // fetch("https://odooerp.staunchtec.com/api/customers")
+    //fetch("https://odooerp.staunchtec.com/api/customers")
       .then((res) => res.json())
       .then((data) => {
         setCustomers(data);

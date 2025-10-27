@@ -27,7 +27,7 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
       setError(null);
 
       const response = await fetch(`http://127.0.0.1:8000/api/planned-orders?page=${pageNum}&limit=100&search=${search}&sort=${sortField}&order=${sortOrder}`);
-      // const response = await fetch(`https://odooerp.staunchtec.com/api/planned-orders?page=${pageNum}&limit=100&search=${search}&sort=${sortField}&order=${sortOrder}`);
+      //const response = await fetch(`https://odooerp.staunchtec.com/api/planned-orders?page=${pageNum}&limit=100&search=${search}&sort=${sortField}&order=${sortOrder}`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -205,7 +205,7 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
                   (sortOrder === "asc" ? "↑" : "↓")}
               </th>
               <th>Item</th>
-              <th>Quantity</th>
+              <th>PO/MO Quantity</th>
               <th>Created Date</th>
               <th>Due Date</th>
               <th onClick={() => toggleSort("item_type")} className="sortable">
