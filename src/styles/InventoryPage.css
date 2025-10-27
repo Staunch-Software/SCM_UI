@@ -48,14 +48,59 @@
    HEADER SECTION
    ==================================== */
 .inventory-header-main {
-  background-color: white;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  width: 1310px;
-  height: 90px;
-  margin-left: 20px;
-  border-radius: 8px;
-  display: flex; /* Add this */
-  align-items: center; /* Add this to vertically center content */
+    background-color: white;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    width: 1307px;
+    height: 90px;
+    margin-left: 20px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+}
+
+/* Large desktops (1920px and above) */
+@media screen and (min-width: 1920px) {
+    .inventory-header-main {
+        width: 1307px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* Standard desktops (1440px - 1919px) */
+@media screen and (max-width: 1919px) and (min-width: 1440px) {
+    .inventory-header-main {
+        width: calc(100% - 40px);
+        max-width: 1307px;
+    }
+}
+
+/* Medium desktops (1366px - 1439px) */
+@media screen and (max-width: 1439px) and (min-width: 1366px) {
+    .inventory-header-main {
+        width: calc(100% - 40px);
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+}
+
+/* Small desktops/laptops (1024px - 1365px) */
+@media screen and (max-width: 1365px) and (min-width: 1024px) {
+    .inventory-header-main {
+        width: calc(100% - 40px);
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+}
+
+/* Tablets and smaller (below 1024px) */
+@media screen and (max-width: 1023px) {
+    .inventory-header-main {
+        width: calc(100% - 32px);
+        margin-left: 16px;
+        margin-right: 16px;
+        height: 70px; /* Slightly smaller height for tablets */
+    }
 }
 
 .header-content {
