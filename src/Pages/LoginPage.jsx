@@ -3,22 +3,25 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../services/userService';
 import '../styles/LoginPage.css';
+import { Eye, EyeClosed } from 'lucide-react';
 
 const LoginPage = () => {
   // --- State for Login Form ---
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  
+
   // --- State for Forgot Password Form ---
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [forgotPasswordMessage, setForgotPasswordMessage] = useState('');
-  
+
   // --- Shared State ---
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
-  
+
+  const [showPassword, setShowPassword] = useState(false);
+
   const navigate = useNavigate();
 
   const handleLoginSubmit = async (e) => {
@@ -146,7 +149,7 @@ const LoginPage = () => {
           </div>
           <div className={`input-wrapper ${focusedField === 'password' ? 'focused' : ''}`}>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onFocus={() => setFocusedField('password')}
@@ -156,6 +159,14 @@ const LoginPage = () => {
               disabled={isLoading}
             />
             <div className="input-glow"></div>
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="password-toggle"
+              disabled={isLoading}
+            >
+              {showPassword ? <Eye size={20} /> : <EyeClosed size={20} />}
+            </button>
           </div>
           <label className="remember-checkbox">
             <input type="checkbox" className="checkbox-input" disabled={isLoading} />
@@ -175,7 +186,7 @@ const LoginPage = () => {
           }} className="forgot-link">
             Forgot password?
           </a>
-          
+
         </form>
       </div>
       <div className="background-orbs">
