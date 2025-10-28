@@ -13,8 +13,8 @@ const Navbar = () => {
     { path: '/dashboard', label: 'Dashboard', icon: Home },
     { path: '/chat', label: 'Chat', icon: MessageSquare },
     { path: '/orders', label: 'Orders', icon: Package },
-    { path: '/inventory-dashboard', label: 'Inventory', icon: BarChart3 },
-    { path: '/customers', label: 'Customers', icon: Users },
+    { path: '/inventory-dashboard', label: 'Supply/Demand analysis', icon: BarChart3 },
+    { path: '/customers', label: 'Order Management', icon: Users },
     { path: '/vendors', label: 'Vendors', icon: Building2 }
   ];
 

@@ -27,7 +27,7 @@ const VendorsPage = () => {
   const fetchSuppliers = async () => {
     try {
       const response = await fetch("https://odooerp.staunchtec.com/api/vendors/suppliers-list");
-       //const response = await fetch("http://127.0.0.1:8000/api/vendors/suppliers-list");
+      // const response = await fetch("http://127.0.0.1:8000/api/vendors/suppliers-list");
 
       const data = await response.json();
       setSuppliers(data);
@@ -40,7 +40,7 @@ const VendorsPage = () => {
   const fetchVendors = async () => {
     try {
       const response = await fetch("https://odooerp.staunchtec.com/api/vendors/all-metrics");
-      //const response = await fetch("http://127.0.0.1:8000/api/vendors/all-metrics");
+      // const response = await fetch("http://127.0.0.1:8000/api/vendors/all-metrics");
       const data = await response.json();
       setVendors(data);
     } catch (error) {
@@ -77,7 +77,7 @@ const VendorsPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      //const response = await fetch("https://127.0.0.1:8000/api/vendors/create", {
+      // const response = await fetch("https://127.0.0.1:8000/api/vendors/create", {
       const response = await fetch("https://odooerp.staunchtec.com/api/vendors/create", {
         method: "POST",
         headers: {
