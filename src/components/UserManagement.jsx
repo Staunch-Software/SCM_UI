@@ -85,7 +85,8 @@ const UserManagement = () => {
         return;
       }
 
-      const wsUrl = import.meta.env.VITE_WS_URL || 'ws://127.0.0.1:8000';
+      // const wsUrl =  'ws://127.0.0.1:8000';
+      const wsUrl =  'ws://odooerp.staunchtec.com';
       ws = new WebSocket(`${wsUrl}/api/admin/ws/user-updates?token=${token}`);
 
       // Connection timeout
