@@ -2,7 +2,7 @@ name: Deploy Frontend to VM
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
 
 jobs:
   deploy:
@@ -24,4 +24,3 @@ jobs:
             npm install
             npm run build
 
-            
