@@ -98,7 +98,7 @@ const UserManagement = () => {
       }, 5000);
 
       ws.onopen = () => {
-        console.log('✅ WebSocket connected');
+        console.log('WebSocket connected');
         clearTimeout(connectionTimeout);
         reconnectAttempts = 0;
 
