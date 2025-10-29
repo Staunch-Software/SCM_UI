@@ -86,7 +86,7 @@ const UserManagement = () => {
       }
 
       // const wsUrl =  'ws://127.0.0.1:8000';
-      const wsUrl =  'ws://odooerp.staunchtec.com';
+      const wsUrl =  'ws://20.244.0.96:9000';
       ws = new WebSocket(`${wsUrl}/api/admin/ws/user-updates?token=${token}`);
 
       // Connection timeout
