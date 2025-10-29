@@ -276,7 +276,7 @@ const EnhancedDashboard = () => {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h1 className="dashboard-title">Supply Chain Dashboard</h1>
+        <h1 className="dashboard-title">Supply Chain </h1>
         <p className="dashboard-subtitle">Overview of key metrics and performance indicators</p>
       </div>
 
