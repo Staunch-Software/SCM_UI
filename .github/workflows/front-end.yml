@@ -23,5 +23,5 @@ jobs:
             git pull origin master
             npm install
             npm run build
-            systemctl reload nginx
+            sudo systemctl reload nginx
 
