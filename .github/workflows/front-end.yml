@@ -20,8 +20,8 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
             cd /var/www/scm-frontend/SCM_UI
-            git pull origin main
+            git pull origin master
             npm install
             npm run build
-            sudo systemctl reload nginx
+            systemctl reload nginx
 
