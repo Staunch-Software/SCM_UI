@@ -218,9 +218,9 @@ const InventoryPage = () => {
 
   // ADD this new function:
   const handleProductClick = async (product) => {
-<<<<<<< HEAD
+
     navigate(`/product/${product.product_id}`);
-=======
+
     setSelectedProduct(product);
     setShowProductModal(true);
     setLoadingDetails(true);
@@ -235,7 +235,7 @@ const InventoryPage = () => {
     } finally {
       setLoadingDetails(false);
     }
->>>>>>> f29a11e023d6ce9cbdd876905d22ab066d5e534c
+
   };
 
   useEffect(() => {
