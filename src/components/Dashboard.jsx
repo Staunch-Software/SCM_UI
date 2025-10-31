@@ -1,4 +1,5 @@
 import "../styles/dashboard.css";
+import apiClient from "../services/apiclient";
 import React, { useState, useEffect } from "react";
 import {
   XAxis,
@@ -46,6 +47,7 @@ const EnhancedDashboard = () => {
   const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
+    // NEW AND CORRECTED CODE
     const fetchDashboardData = async () => {
       try {
         const [
@@ -54,30 +56,17 @@ const EnhancedDashboard = () => {
           manufacturingRes,
           orderSummaryRes,
         ] = await Promise.all([
-          fetch("http://127.0.0.1:8000/api/vendors_metrics"),
-          fetch("http://127.0.0.1:8000/api/odoo_vendors"),
-          fetch("http://127.0.0.1:8000/api/manufacturing-summary"),
-          fetch("http://127.0.0.1:8000/api/order-type-summary"),
-
-          // fetch("https://odooerp.staunchtec.com/api/vendors_metrics"),
-          // fetch("https://odooerp.staunchtec.com/api/odoo_vendors"),
-          // fetch("https://odooerp.staunchtec.com/api/manufacturing-summary"),
-          // fetch("https://odooerp.staunchtec.com/api/order-type-summary"),
+          apiClient.get("/api/vendors_metrics"),
+          apiClient.get("/api/odoo_vendors"),
+          apiClient.get("/api/manufacturing-summary"),
+          apiClient.get("/api/order-type-summary"),
         ]);
 
-        if (
-          !metricsRes.ok ||
-          !vendorsRes.ok ||
-          !manufacturingRes.ok ||
-          !orderSummaryRes.ok
-        ) {
-          throw new Error("Failed to fetch some API data");
-        }
-
-        const metricsData = await metricsRes.json();
-        const vendorsData = await vendorsRes.json();
-        const manufacturingSummaryData = await manufacturingRes.json();
-        const orderSummaryData = await orderSummaryRes.json();
+        // With Axios, the data is in the .data property
+        const metricsData = metricsRes.data;
+        const vendorsData = vendorsRes.data;
+        const manufacturingSummaryData = manufacturingRes.data;
+        const orderSummaryData = orderSummaryRes.data;
 
         setMetrics(metricsData);
         setVendors(vendorsData);
@@ -282,8 +271,8 @@ const EnhancedDashboard = () => {
 
       <div className="metrics-grid">
         <MetricCard title="Total Revenue" value={metrics.totalRevenue} change={12.5} icon={DollarSign} color="#10b981" prefix="$" />
-        <MetricCard title="Total Units Sold" value={metrics.totalUnitsSold} change={8.2} icon={Package} color="#3b82f6"  />
-        <MetricCard title="Component Spend" value={metrics.totalComponentSpend} change={-3.1} icon={ShoppingCart} color="#f59e0b" prefix="$"  />
+        <MetricCard title="Total Units Sold" value={metrics.totalUnitsSold} change={8.2} icon={Package} color="#3b82f6" />
+        <MetricCard title="Component Spend" value={metrics.totalComponentSpend} change={-3.1} icon={ShoppingCart} color="#f59e0b" prefix="$" />
         <MetricCard title="Sales Orders (from past 10 days)" value={metrics.newOrders} change={15.7} icon={Truck} color="#ef4444" />
         <MetricCard title="Active Suppliers" value={metrics.supplierCount} change={2.3} icon={Users} color="#8b5cf6" />
       </div>
@@ -292,41 +281,41 @@ const EnhancedDashboard = () => {
         {/* 🔹 Combined Dropdown + Date Filter */}
         <div style={{ marginBottom: "10px" }}>
           <div className="dashboard-filter-container">
-  <label htmlFor="filterType">Filter:</label>
-  <select
-    id="filterType"
-    value={filterType}
-    onChange={(e) => setFilterType(e.target.value)}
-  >
-    <option value="preset">Preset Range</option>
-    <option value="custom">Custom Range</option>
-  </select>
+            <label htmlFor="filterType">Filter:</label>
+            <select
+              id="filterType"
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+            >
+              <option value="preset">Preset Range</option>
+              <option value="custom">Custom Range</option>
+            </select>
 
-  {filterType === "preset" && (
-    <>
-      <label htmlFor="monthRange">Show last:</label>
-      <select
-        id="monthRange"
-        value={monthRange}
-        onChange={(e) => setMonthRange(Number(e.target.value))}
-      >
-        <option value={3}>3 months</option>
-        <option value={6}>6 months</option>
-        <option value={12}>12 months</option>
-      </select>
-    </>
-  )}
+            {filterType === "preset" && (
+              <>
+                <label htmlFor="monthRange">Show last:</label>
+                <select
+                  id="monthRange"
+                  value={monthRange}
+                  onChange={(e) => setMonthRange(Number(e.target.value))}
+                >
+                  <option value={3}>3 months</option>
+                  <option value={6}>6 months</option>
+                  <option value={12}>12 months</option>
+                </select>
+              </>
+            )}
 
-  {filterType === "custom" && (
-  <div className="date-range-group">
-    <label>From:</label>
-    <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-    <label>To:</label>
-    <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-  </div>
-)}
+            {filterType === "custom" && (
+              <div className="date-range-group">
+                <label>From:</label>
+                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                <label>To:</label>
+                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+              </div>
+            )}
 
-</div>
+          </div>
 
         </div>
         <br></br>
@@ -357,9 +346,9 @@ const EnhancedDashboard = () => {
                     />
                     <YAxis stroke="#6b7280" fontSize={12} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="completed" fill="#10b981" name="Completed" stackId="a" radius={[6,6,0,0]} />
-                    <Bar dataKey="inProgress" fill="#f59e0b" name="In Progress" stackId="a" radius={[6,6,0,0]} />
-                    <Bar dataKey="planned" fill="#3b82f6" name="Planned" stackId="a" radius={[6,6,0,0]} />
+                    <Bar dataKey="completed" fill="#10b981" name="Completed" stackId="a" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="inProgress" fill="#f59e0b" name="In Progress" stackId="a" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="planned" fill="#3b82f6" name="Planned" stackId="a" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
