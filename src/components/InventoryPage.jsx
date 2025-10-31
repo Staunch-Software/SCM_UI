@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   Download,
@@ -42,6 +43,7 @@ const QuantityCell = ({ item, previousValue }) => {
 };
 
 const InventoryPage = () => {
+  const navigate = useNavigate();
   const [inventory, setInventory] = useState([]);
   const [previousInventoryMap, setPreviousInventoryMap] = useState(new Map());
   const [loading, setLoading] = useState(true);
@@ -87,13 +89,10 @@ const InventoryPage = () => {
   const [selectedForecastToMonth, setSelectedForecastToMonth] = useState(currentMonth);
 
   // ADD these new states:
-  const [showProductModal, setShowProductModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
   const [showForecastDrawer, setShowForecastDrawer] = useState(false);
   const [drawerData, setDrawerData] = useState(null);
   const [drawerType, setDrawerType] = useState(''); // 'forecast' or 'safety'
-  const [productDetails, setProductDetails] = useState(null);
-  const [loadingDetails, setLoadingDetails] = useState(false);
+
   const formatNumber = (value, fallback = 0) => {
     // Check if value is NaN, null, or undefined
     if (value == null || isNaN(value)) {
@@ -219,20 +218,7 @@ const InventoryPage = () => {
 
   // ADD this new function:
   const handleProductClick = async (product) => {
-    setSelectedProduct(product);
-    setShowProductModal(true);
-    setLoadingDetails(true);
-
-    try {
-      const response = await fetch(`http://127.0.0.1:8000/api/product-details/${product.product_id}`);
-      // const response = await fetch(`https://odooerp.staunchtec.com/api/product-details/${product.product_id}`);
-      const data = await response.json();
-      setProductDetails(data);
-    } catch (err) {
-      console.error("Error fetching product details:", err);
-    } finally {
-      setLoadingDetails(false);
-    }
+    navigate(`/product/${product.product_id}`);
   };
 
   useEffect(() => {
@@ -354,6 +340,19 @@ const InventoryPage = () => {
       percentage: Math.round((count / totalItems) * 100),
     }));
   }, [processedInventory]);
+
+  // In summaryMetrics (around line 340):
+processedInventory.forEach(item => {
+  if (item.excess * item.costPerUnit > item.totalValue) {
+    console.log('ANOMALY:', item.product_name, {
+      onHand: item.onHand,
+      excess: item.excess,
+      costPerUnit: item.costPerUnit,
+      totalValue: item.totalValue,
+      excessValue: item.excess * item.costPerUnit
+    });
+  }
+});
 
   const handleShowAll = () => {
     setShowDemand(true);
@@ -798,167 +797,6 @@ const InventoryPage = () => {
                 <button onClick={() => setShowSafetyStockModal(false)}>Cancel</button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
-      {showProductModal && selectedProduct && (
-        <div className="modal-overlay" onClick={() => setShowProductModal(false)}>
-          <div className="modal-content product-detail-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>{selectedProduct.product_name}</h3>
-              <button className="modal-close" onClick={() => setShowProductModal(false)}>×</button>
-            </div>
-
-            {loadingDetails ? (
-              <div className="modal-loading">Loading product details...</div>
-            ) : productDetails ? (
-              <div className="product-detail-content">
-
-                {/* Finished Goods Fields */}
-                {productDetails?.itemType === 'Finished goods' && (
-                  <>
-                    <div className="detail-row"><span>Planner Code:</span><span>{productDetails.plannerCode || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Org:</span><span>{productDetails.org || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Item Description:</span><span>{productDetails.itemDescription || 'N/A'}</span></div>
-                    <div className="detail-row"><span>UOM:</span><span>{productDetails.uom || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Work Order:</span><span>{productDetails.workOrderList?.join(', ') || 'None'}</span></div>
-                    <div className="detail-row"><span>Sales Order Qty:</span><span>{productDetails.salesOrderQty || 0}</span></div>
-                    <div className="detail-row"><span>Sales Orders:</span><span>{productDetails.salesOrderList?.join(', ') || 'None'}</span></div>
-                    <div className="detail-row"><span>Required WO QTY:</span><span>{productDetails.requiredWoQty || 0}</span></div>
-                    <div className="detail-row"><span>Issued WO Qty:</span><span>{productDetails.issuedWoQty || 0}</span></div>
-                    <div className="detail-row"><span>Open WO QTY:</span><span>{productDetails.openWoQty || 0}</span></div>
-                    <div className="detail-row"><span>Consumption 3M Avg:</span><span>{productDetails.consumption3MAvg || 0}</span></div>
-                    <div className="detail-row"><span>Consumption 12M Avg:</span><span>{productDetails.consumption12MAvg || 0}</span></div>
-                    <div className="detail-row"><span>Variance 12M to 3M:</span><span>{productDetails.variance12MTo3M || 0}</span></div>
-                    <div className="detail-row"><span>On Hand Nettable:</span><span>{productDetails.onHandNettable || 0}</span></div>
-                    <div className="detail-row"><span>Months Supply (Nettable):</span><span>{productDetails.monthsSupplyNettable || 0}</span></div>
-                    <div className="detail-row"><span>On Hand Non-Nettable:</span><span>{productDetails.onHandNonNettable || 0}</span></div>
-                    <div className="detail-row"><span>Months Supply (Non-Nettable):</span><span>{productDetails.monthsSupplyNonNettable || 0}</span></div>
-                    <div className="detail-row"><span>On Hand to Safety Stock %:</span><span>{productDetails.onHandToSafetyStockPercent || 0}%</span></div>
-                    <div className="detail-row"><span>OH - Expiry:</span><span>{productDetails.ohExpiry || 'N/A'}</span></div>
-                    <div className="detail-row"><span>ATP:</span><span>{productDetails.atp || 0}</span></div>
-                  </>
-                )}
-
-                {/* Sub Assembly WITH BOM - Show Work Order Fields */}
-                {productDetails?.itemType === 'Sub assembly' && productDetails?.hasBOM && (
-                  <>
-                    <div className="detail-row"><span>Planner Code:</span><span>{productDetails.plannerCode || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Org:</span><span>{productDetails.org || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Item Description:</span><span>{productDetails.itemDescription || 'N/A'}</span></div>
-                    <div className="detail-row"><span>UOM:</span><span>{productDetails.uom || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Work Order:</span><span>{productDetails.workOrderList?.join(', ') || 'None'}</span></div>
-                    <div className="detail-row"><span>Required WO QTY:</span><span>{productDetails.requiredWoQty || 0}</span></div>
-                    <div className="detail-row"><span>Issued WO Qty:</span><span>{productDetails.issuedWoQty || 0}</span></div>
-                    <div className="detail-row"><span>Open WO QTY:</span><span>{productDetails.openWoQty || 0}</span></div>
-                    <div className="detail-row"><span>Internal Requisition:</span><span>{productDetails.internalRequisition || 0}</span></div>
-                    <div className="detail-row"><span>Intransit Shipment:</span><span>{productDetails.intransitShipment || 0}</span></div>
-                    <div className="detail-row"><span>Intransit Receipts:</span><span>{productDetails.intransitReceipts || 0}</span></div>
-                    <div className="detail-row"><span>Transfer Order:</span><span>{productDetails.transferOrder || 'N/A'}</span></div>
-                    <div className="detail-row"><span>ATP:</span><span>{productDetails.atp || 0}</span></div>
-                    <div className="detail-row"><span>Consumption 3M Avg:</span><span>{productDetails.consumption3MAvg || 0}</span></div>
-                    <div className="detail-row"><span>Consumption 12M Avg:</span><span>{productDetails.consumption12MAvg || 0}</span></div>
-                    <div className="detail-row"><span>Variance 12M to 3M:</span><span>{productDetails.variance12MTo3M || 0}</span></div>
-                    <div className="detail-row"><span>On Hand Nettable:</span><span>{productDetails.onHandNettable || 0}</span></div>
-                    <div className="detail-row"><span>Months Supply (Nettable):</span><span>{productDetails.monthsSupplyNettable || 0}</span></div>
-                    <div className="detail-row"><span>On Hand Non-Nettable:</span><span>{productDetails.onHandNonNettable || 0}</span></div>
-                    <div className="detail-row"><span>Months Supply (Non-Nettable):</span><span>{productDetails.monthsSupplyNonNettable || 0}</span></div>
-                    <div className="detail-row"><span>On Hand to Safety Stock %:</span><span>{productDetails.onHandToSafetyStockPercent || 0}%</span></div>
-                    <div className="detail-row"><span>OH - Expiry:</span><span>{productDetails.ohExpiry || 'N/A'}</span></div>
-                  </>
-                )}
-
-                {/* Sub Assembly WITHOUT BOM - Show Purchase Order Fields */}
-                {productDetails?.itemType === 'Sub assembly' && !productDetails?.hasBOM && (
-                  <>
-                    <div className="detail-row"><span>Buyer Code:</span><span>{productDetails.buyerCode || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Org:</span><span>{productDetails.org || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Item Description:</span><span>{productDetails.itemDescription || 'N/A'}</span></div>
-                    <div className="detail-row"><span>UOM:</span><span>{productDetails.uom || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Open PO Qty:</span><span>{productDetails.openPoQty || 0}</span></div>
-                    <div className="detail-row"><span>Purchase Order (PO):</span><span>{productDetails.purchaseOrderList?.join(', ') || 'None'}</span></div>
-                    <div className="detail-row"><span>Purchase Requisition (PR):</span><span>{productDetails.purchaseRequisitionList?.join(', ') || 'None'}</span></div>
-                    <div className="detail-row"><span>PO In Receiving:</span><span>{productDetails.poInReceiving || 0}</span></div>
-                    <div className="detail-row"><span>PO Acknowledgement:</span><span>{Array.isArray(productDetails.poAcknowledgementList) ? productDetails.poAcknowledgementList.join(', ') : (productDetails.poAcknowledgementList || 'None')}</span></div>
-
-                    {/* Two Column Flow Section */}
-                    <div className="two-column-section">
-                      <div className="flow-column">
-                        <div className="flow-header">Supplier → Warehouse</div>
-                        <div className="detail-row"><span>Requested Inbound Shipment:</span><span>{productDetails.requestedInboundShipment || 0}</span></div>
-                        <div className="detail-row"><span>Planned Inbound Shipment:</span><span>{productDetails.plannedInboundShipment || 0}</span></div>
-                        <div className="detail-row"><span>Intransit Shipment:</span><span>{productDetails.intransitShipment || 0}</span></div>
-                        <div className="detail-row"><span>Intransit Receipts:</span><span>{productDetails.intransitReceipts || 0}</span></div>
-                      </div>
-                      <div className="flow-column">
-                        <div className="flow-header">Warehouse ↔ Warehouse</div>
-                        <div className="detail-row"><span>Internal Requisition:</span><span>{productDetails.internalRequisition || 0}</span></div>
-                        <div className="detail-row"><span>Transfer Order:</span><span>{productDetails.transferOrder || 'N/A'}</span></div>
-                        <div className="detail-row"><span>Intransit Shipment:</span><span>{productDetails.intransitShipment || 0}</span></div>
-                        <div className="detail-row"><span>Intransit Receipts:</span><span>{productDetails.intransitReceipts || 0}</span></div>
-                      </div>
-                    </div>
-
-                    <div className="detail-row"><span>ATP:</span><span>{productDetails.atp || 0}</span></div>
-                    <div className="detail-row"><span>Consumption 3M Avg:</span><span>{productDetails.consumption3MAvg || 0}</span></div>
-                    <div className="detail-row"><span>Consumption 12M Avg:</span><span>{productDetails.consumption12MAvg || 0}</span></div>
-                    <div className="detail-row"><span>Variance 12M to 3M:</span><span>{productDetails.variance12MTo3M || 0}</span></div>
-                    <div className="detail-row"><span>On Hand Nettable:</span><span>{productDetails.onHandNettable || 0}</span></div>
-                    <div className="detail-row"><span>Months Supply (Nettable):</span><span>{productDetails.monthsSupplyNettable || 0}</span></div>
-                    <div className="detail-row"><span>On Hand Non-Nettable:</span><span>{productDetails.onHandNonNettable || 0}</span></div>
-                    <div className="detail-row"><span>Months Supply (Non-Nettable):</span><span>{productDetails.monthsSupplyNonNettable || 0}</span></div>
-                    <div className="detail-row"><span>On Hand to Safety Stock %:</span><span>{productDetails.onHandToSafetyStockPercent || 0}%</span></div>
-                    <div className="detail-row"><span>OH - Expiry:</span><span>{productDetails.ohExpiry || 'N/A'}</span></div>
-                  </>
-                )}
-
-                {/* Raw Material Fields */}
-                {productDetails?.itemType === 'Raw material' && (
-                  <>
-                    <div className="detail-row"><span>Buyer Code:</span><span>{productDetails.buyerCode || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Org:</span><span>{productDetails.org || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Item Description:</span><span>{productDetails.itemDescription || 'N/A'}</span></div>
-                    <div className="detail-row"><span>UOM:</span><span>{productDetails.uom || 'N/A'}</span></div>
-                    <div className="detail-row"><span>Open PO Qty:</span><span>{productDetails.openPoQty || 0}</span></div>
-                    <div className="detail-row"><span>Purchase Order (PO):</span><span>{productDetails.purchaseOrderList?.join(', ') || 'None'}</span></div>
-                    <div className="detail-row"><span>Purchase Requisition (PR):</span><span>{productDetails.purchaseRequisitionList?.join(', ') || 'None'}</span></div>
-                    <div className="detail-row"><span>PO In Receiving:</span><span>{productDetails.poInReceiving || 0}</span></div>
-                    <div className="detail-row"><span>PO Acknowledgement:</span><span>{productDetails.poAcknowledgementList?.join(', ') || 'None'}</span></div>
-
-                    {/* Two Column Flow Section */}
-                    <div className="two-column-section">
-                      <div className="flow-column">
-                        <div className="flow-header">Supplier → Warehouse</div>
-                        <div className="detail-row"><span>Requested Inbound Shipment:</span><span>{productDetails.requestedInboundShipment || 0}</span></div>
-                        <div className="detail-row"><span>Planned Inbound Shipment:</span><span>{productDetails.plannedInboundShipment || 0}</span></div>
-                        <div className="detail-row"><span>Intransit Shipment:</span><span>{productDetails.intransitShipment || 0}</span></div>
-                        <div className="detail-row"><span>Intransit Receipts:</span><span>{productDetails.intransitReceipts || 0}</span></div>
-                      </div>
-                      <div className="flow-column">
-                        <div className="flow-header">Warehouse ↔ Warehouse</div>
-                        <div className="detail-row"><span>Internal Requisition:</span><span>{productDetails.internalRequisition || 0}</span></div>
-                        <div className="detail-row"><span>Transfer Order:</span><span>{productDetails.transferOrder || 'N/A'}</span></div>
-                        <div className="detail-row"><span>Intransit Shipment:</span><span>{productDetails.intransitShipment || 0}</span></div>
-                        <div className="detail-row"><span>Intransit Receipts:</span><span>{productDetails.intransitReceipts || 0}</span></div>
-                      </div>
-                    </div>
-
-                    <div className="detail-row"><span>ATP:</span><span>{productDetails.atp || 0}</span></div>
-                    <div className="detail-row"><span>Consumption 3M Avg:</span><span>{productDetails.consumption3MAvg || 0}</span></div>
-                    <div className="detail-row"><span>Consumption 12M Avg:</span><span>{productDetails.consumption12MAvg || 0}</span></div>
-                    <div className="detail-row"><span>Variance 12M to 3M:</span><span>{productDetails.variance12MTo3M || 0}</span></div>
-                    <div className="detail-row"><span>On Hand Nettable:</span><span>{productDetails.onHandNettable || 0}</span></div>
-                    <div className="detail-row"><span>Months Supply (Nettable):</span><span>{productDetails.monthsSupplyNettable || 0}</span></div>
-                    <div className="detail-row"><span>On Hand Non-Nettable:</span><span>{productDetails.onHandNonNettable || 0}</span></div>
-                    <div className="detail-row"><span>Months Supply (Non-Nettable):</span><span>{productDetails.monthsSupplyNonNettable || 0}</span></div>
-                    <div className="detail-row"><span>On Hand to Safety Stock %:</span><span>{productDetails.onHandToSafetyStockPercent || 0}%</span></div>
-                    <div className="detail-row"><span>OH - Expiry:</span><span>{productDetails.ohExpiry || 'N/A'}</span></div>
-                  </>
-                )}
-              </div>
-            ) : (
-              <div className="modal-error">Failed to load product details</div>
-            )}
           </div>
         </div>
       )}

@@ -18,11 +18,11 @@
   justify-content: center;
 }
 
-.notification-bell:hover {
+/* .notification-bell:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.2);
   transform: translateY(-1px);
-}
+} */
 
 .notification-bell:focus {
   outline: 2px solid #4299e1;
@@ -47,9 +47,9 @@
 .notifications-dropdown {
   position: absolute;
   top: calc(100% + 12px);
-  right: 0;
+  right: 80px;
   width: 420px;
-  max-height: 600px;
+  height: 100vh;
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1);
@@ -165,7 +165,7 @@
 }
 
 .notifications-list {
-  max-height: 440px;
+  max-height: calc(100vh - 200px);
   overflow-y: auto;
   background: #ffffff;
 }

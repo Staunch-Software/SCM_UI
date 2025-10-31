@@ -19,6 +19,7 @@ import UserManagement from './components/UserManagement';
 import LoginPage from './Pages/LoginPage';
 // We DO NOT import ForgotPasswordPage because it's part of LoginPage.
 import ResetPasswordPage from './Pages/ResetPasswordPage'; // This is the page for the email link.
+import ProductDetailsPage from './components/ProductDetailsPage';
 
 // --- Styles ---
 import './App.css';
@@ -52,6 +53,7 @@ const App = () => {
             <Route path="vendors" element={<VendorsPage />} />
             <Route path="vendor-metrics" element={<VendorMetricsPage />} />
             <Route path="user-management" element={<UserManagement />} />
+            <Route path="/product/:productId" element={<ProductDetailsPage />} />
           </Route>
         </Route>
 
