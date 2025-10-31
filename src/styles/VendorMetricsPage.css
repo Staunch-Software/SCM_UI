@@ -2,7 +2,7 @@
 
 /* --- Page Layout --- */
 .vendor-metrics-page {
-  padding: 2rem;
+  padding: 2.5rem;
   background: #fafbfc;
   min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
@@ -16,9 +16,9 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   background: #ffffff;
-  padding: 1.5rem 2rem;
+  padding: 12px;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -100,7 +100,7 @@
 .score-legend {
   display: flex;
   gap: 1.5rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   padding: 1rem 1.5rem;
   background: #ffffff;
   border: 1px solid #e2e8f0;
@@ -134,7 +134,7 @@
 /* --- Metrics Grid --- */
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
 }
 
@@ -209,19 +209,20 @@
   vertical-align: middle;
 }
 
+/* ✅ UPDATED: Status dots match radial meter colors (Green, Yellow, Red) */
 .score-high .status-dot,
 .score-legend .score-high .status-dot {
-  background-color: #38a169;
+  background-color: #4CAF50;
 }
 
 .score-medium .status-dot,
 .score-legend .score-medium .status-dot {
-  background-color: #d69e2e;
+  background-color: #f5ce0d;
 }
 
 .score-low .status-dot,
 .score-legend .score-low .status-dot {
-  background-color: #e53e3e;
+  background-color: #f8474a;
 }
 
 /* --- Loading & Empty States --- */
@@ -326,6 +327,10 @@
     align-items: stretch;
     gap: 1rem;
   }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
@@ -339,7 +344,7 @@
   }
   
   .metrics-grid {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
   }
   
@@ -424,4 +429,215 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+/* --- Premium Radial Meter Redesign --- */
+.radial-meter-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  position: relative;
+  background: radial-gradient(circle at 30% 30%, #ffffff 0%, #f7fafc 100%);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  border: 1px solid #edf2f7;
+  transition: all 0.3s ease;
+}
+
+.radial-meter-wrapper:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+}
+
+.radial-meter {
+  width: 110px;
+  height: 110px;
+  position: relative;
+}
+
+.radial-meter svg {
+  overflow: visible;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.08));
+}
+
+/* Gradient arc with subtle shine */
+.radial-meter .CircularProgressbar-path {
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s ease, stroke 0.5s ease;
+  stroke-width: 10;
+}
+
+.radial-meter.high .CircularProgressbar-path {
+  stroke: url(#gradientHigh);
+}
+
+.radial-meter.medium .CircularProgressbar-path {
+  stroke: url(#gradientMedium);
+}
+
+.radial-meter.low .CircularProgressbar-path {
+  stroke: url(#gradientLow);
+}
+
+.radial-meter .CircularProgressbar-trail {
+  stroke: #e2e8f0;
+  stroke-width: 10;
+}
+
+.radial-meter .CircularProgressbar-text {
+  fill: #1a202c;
+  font-size: 18px;
+  font-weight: 700;
+  dominant-baseline: middle;
+}
+
+/* Glow ring effect on hover */
+.radial-meter-wrapper::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
+  border-radius: 16px;
+  background: radial-gradient(circle, rgba(66, 153, 225, 0.15), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 0;
+}
+
+.radial-meter-wrapper:hover::after {
+  opacity: 1;
+}
+
+/* Label under meter */
+.radial-meter-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4a5568;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+  margin-top: 0.25rem;
+}
+
+/* Custom gradients for each meter type */
+svg defs {
+  pointer-events: none;
+}
+
+svg defs linearGradient#gradientHigh stop:first-child {
+  stop-color: #48bb78;
+}
+svg defs linearGradient#gradientHigh stop:last-child {
+  stop-color: #2f855a;
+}
+
+svg defs linearGradient#gradientMedium stop:first-child {
+  stop-color: #ecc94b;
+}
+svg defs linearGradient#gradientMedium stop:last-child {
+  stop-color: #d69e2e;
+}
+
+svg defs linearGradient#gradientLow stop:first-child {
+  stop-color: #fc8181;
+}
+svg defs linearGradient#gradientLow stop:last-child {
+  stop-color: #c53030;
+}
+.radial-meter-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: -5px;
+}
+
+/* Base radial value style */
+.radial-value {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #fff;
+  margin-top: -8px;
+  border: 1px solid transparent;
+  padding: 5px 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+/* Hover animation */
+.radial-value:hover {
+  transform: scale(1.05);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+}
+
+/* ✅ UPDATED: Radial value colors based on percentage ranges */
+/* Safe (≥ 75%) - Green */
+.radial-value-high {
+ color: #38a169;
+  background: rgba(56, 161, 105, 0.1);
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+  display: inline-block;
+  border: 1px solid rgba(56, 161, 105, 0.2);
+ 
+}
+
+/* Medium (40–74%) - Yellow/Orange */
+.radial-value-medium {
+ color: #d69e2e;
+  background: rgba(214, 158, 46, 0.1);
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+  display: inline-block;
+  border: 1px solid rgba(214, 158, 46, 0.2);
+  
+}
+
+/* Danger (≤ 39%) - Red */
+.radial-value-low {
+  color: #e53e3e;
+  background: rgba(229, 62, 62, 0.1);
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+  display: inline-block;
+  border: 1px solid rgba(229, 62, 62, 0.2);
+  
+}
+
+/* ✅ Match background with score class */
+.score-high .radial-value {
+  background: linear-gradient(135deg, #48bb78, #2f855a);
+  border-color: #2f855a;
+}
+
+.score-medium .radial-value {
+  background: linear-gradient(135deg, #ecc94b, #d69e2e);
+  border-color: #d69e2e;
+  color: #2d3748;
+}
+
+.score-low .radial-value {
+  background: linear-gradient(135deg, #fc8181, #c53030);
+  border-color: #c53030;
+}
+
+/* --- Radial Value State Colors --- */
+.radial-meter-wrapper.high .radial-value {
+  background: linear-gradient(135deg, #48bb78, #2f855a);
+  border-color: #2f855a;
+}
+
+.radial-meter-wrapper.medium .radial-value {
+  background: linear-gradient(135deg, #ecc94b, #d69e2e);
+  border-color: #d69e2e;
+  color: #2d3748;
+}
+
+.radial-meter-wrapper.low .radial-value {
+  background: linear-gradient(135deg, #fc8181, #c53030);
+  border-color: #c53030;
 }
