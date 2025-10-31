@@ -14,8 +14,12 @@ const VendorMetricsPage = ({ setCurrentPage }) => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch("http://127.0.0.1:8000/api/vendors/all-metrics");
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const response = await fetch("https://odooerp.staunchtec.com/api/vendors/all-metrics");
+        //const response = await fetch("http://127.0.0.1:8000/api/vendors/all-metrics");
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
         const data = await response.json();
         setVendors(Array.isArray(data) ? data : []);
@@ -168,7 +172,7 @@ const VendorMetricsPage = ({ setCurrentPage }) => {
         colors = ["#4CAF50", "#F9D423", "#FF4E50"];
       }
 
-      // Years of Partnership: higher is better
+      
       else if (label === "Years of Partnership") {
         if (val >= 5) needleColor = "#4CAF50";
         else if (val >= 2) needleColor = "#F9D423";

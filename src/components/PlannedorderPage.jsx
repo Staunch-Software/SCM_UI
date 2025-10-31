@@ -26,8 +26,8 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
       }
       setError(null);
 
-      const response = await fetch(`http://127.0.0.1:8000/api/planned-orders?page=${pageNum}&limit=100&search=${search}&sort=${sortField}&order=${sortOrder}`);
-      //const response = await fetch(`https://odooerp.staunchtec.com/api/planned-orders?page=${pageNum}&limit=100&search=${search}&sort=${sortField}&order=${sortOrder}`);
+      //const response = await fetch(`http://127.0.0.1:8000/api/planned-orders?page=${pageNum}&limit=100&search=${search}&sort=${sortField}&order=${sortOrder}`);
+      const response = await fetch(`https://odooerp.staunchtec.com/api/planned-orders?page=${pageNum}&limit=100&search=${search}&sort=${sortField}&order=${sortOrder}`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -150,7 +150,7 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
         <button className="back-btn" onClick={handleBackToDashboard}>
           Back to Dashboard
         </button>
-        <h1 className="title"> Orders</h1>
+        <h1 className="title"> PO/MO Orders</h1>
         <p className="empty">No orders found.</p>
       </div>
     );
@@ -163,7 +163,7 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
           <button className="back-arrow" onClick={handleBackToDashboard}>
             ←
           </button>
-          <h1 className="title">Orders</h1>
+          <h1 className="title"> PO/MO Orders</h1>
         </div>
 
         <div className="controls">

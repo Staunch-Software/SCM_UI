@@ -1,25 +1,30 @@
 // src/Pages/LoginPage.jsx
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authAPI } from '../services/userService';
+import { useAuth } from '../context/AuthContext'; // <-- IMPORT THE CUSTOM HOOK
+import { authAPI } from '../services/userService'; // Keep for forgot password
 import '../styles/LoginPage.css';
+import { Eye, EyeClosed } from 'lucide-react';
 
 const LoginPage = () => {
   // --- State for Login Form ---
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  
+
   // --- State for Forgot Password Form ---
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [forgotPasswordMessage, setForgotPasswordMessage] = useState('');
-  
+
   // --- Shared State ---
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
-  
+  const [showPassword, setShowPassword] = useState(false);
+
   const navigate = useNavigate();
+  const { login } = useAuth(); // <-- GET THE LOGIN FUNCTION FROM THE CONTEXT
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -31,8 +36,10 @@ const LoginPage = () => {
       return;
     }
     try {
-      await authAPI.login(username, password);
-      navigate('/', { replace: true });
+      // This now calls the login function from our AuthContext.
+      // This function handles the API call AND updates the global state.
+      await login(username, password);
+      navigate('/', { replace: true }); // Navigate only after state is successfully updated
     } catch (err) {
       console.error('Login failed:', err);
       setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
@@ -146,7 +153,7 @@ const LoginPage = () => {
           </div>
           <div className={`input-wrapper ${focusedField === 'password' ? 'focused' : ''}`}>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onFocus={() => setFocusedField('password')}
@@ -156,6 +163,14 @@ const LoginPage = () => {
               disabled={isLoading}
             />
             <div className="input-glow"></div>
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="password-toggle"
+              disabled={isLoading}
+            >
+              {showPassword ? <Eye size={20} /> : <EyeClosed size={20} />}
+            </button>
           </div>
           <label className="remember-checkbox">
             <input type="checkbox" className="checkbox-input" disabled={isLoading} />
@@ -166,16 +181,13 @@ const LoginPage = () => {
             <span className="button-text">{isLoading ? 'Logging in...' : 'Login'}</span>
             <div className="button-shimmer"></div>
           </button>
-
-          {/* --- THIS IS THE CORRECTED LINK --- */}
           <a href="#" onClick={(e) => {
-            e.preventDefault(); // This stops the browser from changing the URL
-            setIsForgotPassword(true); // This changes the state to show the other form
-            setError(''); // Clear any old errors
+            e.preventDefault();
+            setIsForgotPassword(true);
+            setError('');
           }} className="forgot-link">
             Forgot password?
           </a>
-          
         </form>
       </div>
       <div className="background-orbs">
