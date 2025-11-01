@@ -339,3 +339,55 @@
     align-items: flex-start;
   }
 }
+
+/* 🌍 Additional Responsive Breakpoints */
+
+/* 🔸 For extra small screens (phones under 480px) */
+@media (max-width: 480px) {
+  .dashboard-title {
+    font-size: 22px;
+  }
+  .dashboard-subtitle {
+    font-size: 14px;
+  }
+  .metric-value {
+    font-size: 22px;
+  }
+  .metric-card {
+    padding: 16px;
+  }
+  .charts-grid-half,
+  .charts-grid-full {
+    gap: 12px;
+  }
+  .chart-title {
+    font-size: 16px;
+  }
+  .dashboard-filter-container select,
+  .dashboard-filter-container input[type="date"] {
+    width: 100%;
+  }
+}
+
+/* 🔸 For medium tablets (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .charts-grid-half {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 🔸 For larger desktops (above 1440px) */
+@media (min-width: 1440px) {
+  .dashboard-container {
+    padding: 60px 120px;
+  }
+  .metric-value {
+    font-size: 32px;
+  }
+  .chart-container {
+    padding: 32px;
+  }
+}

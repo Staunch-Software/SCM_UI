@@ -1759,3 +1759,60 @@
     width: 100vw;
   }
 }
+/* --- Responsive Refinements --- */
+
+/* Fluid header */
+.inventory-header-main {
+  width: 100%;
+  max-width: 1307px;
+  margin: 0 auto;
+  height: 90px;
+  background-color: white;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+}
+
+/* Tablet view: stack header content */
+@media (max-width: 1024px) {
+  .inventory-header-main {
+    flex-direction: column;
+    height: auto;
+    padding: 1rem;
+  }
+  .header-content {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}
+
+/* Search field responsiveness */
+.search-container {
+  max-width: 100%;
+}
+.search-input {
+  width: 100%;
+}
+
+/* Search + filters alignment fix */
+@media (max-width: 768px) {
+  .search-and-filters {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+/* Better table overflow for smaller screens */
+@media (max-width: 768px) {
+  .inventory-table {
+    min-width: unset;
+    font-size: 0.75rem;
+  }
+}
