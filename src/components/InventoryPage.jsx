@@ -217,26 +217,9 @@ const InventoryPage = () => {
   };
 
   // ADD this new function:
-  const handleProductClick = async (product) => {
-
-    navigate(`/product/${product.product_id}`);
-
-    setSelectedProduct(product);
-    setShowProductModal(true);
-    setLoadingDetails(true);
-
-    try {
-      //const response = await fetch(`http://127.0.0.1:8000/api/product-details/${product.product_id}`);
-      const response = await fetch(`https://odooerp.staunchtec.com/api/product-details/${product.product_id}`);
-      const data = await response.json();
-      setProductDetails(data);
-    } catch (err) {
-      console.error("Error fetching product details:", err);
-    } finally {
-      setLoadingDetails(false);
-    }
-
-  };
+  const handleProductClick = (product) => {
+  navigate(`/product/${product.product_id}`);
+};
 
   useEffect(() => {
     fetchInventoryFromAPI();
