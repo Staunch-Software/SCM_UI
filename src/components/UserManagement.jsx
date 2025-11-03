@@ -392,7 +392,7 @@ const UserManagement = () => {
                         {user.is_active ? <Lock size={18} /> : <Unlock size={18} />}
                       </button>
                       {/* Re-enabled the reset password button */}
-                      <button onClick={() => handleResetPassword(user)} className="btn-icon btn-icon-purple" title="Reset Password"><RefreshCw size={18} /></button>
+                      {/* <button onClick={() => handleResetPassword(user)} className="btn-icon btn-icon-purple" title="Reset Password"><RefreshCw size={18} /></button> */}
                       <button onClick={() => handleDeleteUser(user)} className="btn-icon btn-icon-danger" title="Delete User"><Trash2 size={18} /></button>
                     </div>
                   </td>
