@@ -187,7 +187,6 @@
   font-weight: 500;
   font-size: 0.875rem;
   cursor: pointer;
-  /* text-decoration: underline; */
   text-underline-offset: 2px;
   transition: color 0.2s ease;
   padding: 0;
@@ -244,37 +243,6 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.modal-header h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #2d3748;
-  margin: 0;
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: #718096;
-  cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.modal-close:hover {
-  background: #f8fafc;
-  color: #2d3748;
 }
 
 /* --- Form Styling --- */
@@ -371,80 +339,32 @@
   box-shadow: 0 4px 12px rgba(45, 55, 72, 0.15);
 }
 
-/* --- Success Popup --- */
-.success-popup {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 1100;
-  animation: slideInRight 0.3s ease-out;
-}
-
-.success-content {
-  background: #e6fffa;
-  color: #047857;
-  padding: 1rem 1.5rem;
-  border-radius: 8px;
-  border: 1px solid #a7f3d0;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-weight: 500;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-}
-
-.success-icon {
-  font-size: 1.25rem;
-  font-weight: bold;
-}
-
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* --- Loading & Empty States --- */
-.loading {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: #718096;
-  font-size: 1rem;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  margin-top: 2rem;
-}
-
 /* --- Responsive Design --- */
+@media (min-width: 1440px) {
+  .vendors-page {
+    padding: 3.5rem 5rem;
+  }
+  .title {
+    font-size: 2.25rem;
+  }
+  .suppliers-table td, .suppliers-table th {
+    font-size: 0.95rem;
+  }
+}
+
 @media (max-width: 1024px) {
   .vendors-page {
     padding: 1.5rem;
   }
-  
   .vendors-header {
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
   }
-  
   .header-left,
   .header-center,
   .header-right {
     justify-content: center;
-  }
-  
-  .header-center {
-    order: 2;
-  }
-  
-  .header-right {
-    order: 3;
   }
 }
 
@@ -452,43 +372,21 @@
   .vendors-page {
     padding: 1rem;
   }
-  
   .title {
     font-size: 1.5rem;
   }
-  
   .vendors-header {
     flex-direction: column;
     text-align: center;
   }
-  
-  .header-left {
-    justify-content: center;
-  }
-  
   .suppliers-table th,
   .suppliers-table td {
     padding: 0.75rem 1rem;
     font-size: 0.8rem;
   }
-  
-  .suppliers-table th {
-    font-size: 0.7rem;
-  }
-  
   .form-row {
     flex-direction: column;
     gap: 0.5rem;
-  }
-  
-  .modal-content {
-    margin: 1rem;
-    max-width: none;
-  }
-  
-  .modal-header,
-  .supplier-form {
-    padding: 1.5rem;
   }
 }
 
@@ -499,49 +397,12 @@
   .suppliers-table td:nth-child(4) {
     display: none;
   }
-  
-  .filter-btn {
-    padding: 0.5rem 1rem;
-    font-size: 0.8rem;
-  }
-  
+  .filter-btn,
   .add-supplier-btn {
     padding: 0.5rem 1rem;
     font-size: 0.8rem;
   }
-}
-
-/* --- Focus States for Accessibility --- */
-.back-arrow:focus,
-.filter-btn:focus,
-.add-supplier-btn:focus,
-.supplier-name-link:focus,
-.modal-close:focus,
-.cancel-btn:focus,
-.submit-btn:focus {
-  outline: 2px solid #4299e1;
-  outline-offset: 2px;
-}
-
-/* --- Animation for smooth loading --- */
-.suppliers-table tbody tr {
-  opacity: 0;
-  animation: fadeInRow 0.3s ease forwards;
-}
-
-.suppliers-table tbody tr:nth-child(1) { animation-delay: 0.05s; }
-.suppliers-table tbody tr:nth-child(2) { animation-delay: 0.1s; }
-.suppliers-table tbody tr:nth-child(3) { animation-delay: 0.15s; }
-.suppliers-table tbody tr:nth-child(4) { animation-delay: 0.2s; }
-.suppliers-table tbody tr:nth-child(5) { animation-delay: 0.25s; }
-
-@keyframes fadeInRow {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  .title {
+    font-size: 1.25rem;
   }
 }

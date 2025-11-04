@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import GaugeChart from "react-gauge-chart";
 import "../styles/VendorMetricsPage.css";
 
 const VendorMetricsPage = ({ setCurrentPage }) => {
@@ -7,7 +8,6 @@ const VendorMetricsPage = ({ setCurrentPage }) => {
   const [error, setError] = useState(null);
   const [selectedVendor, setSelectedVendor] = useState("");
 
-  // Fetch all vendors with metrics
   useEffect(() => {
     const fetchVendors = async () => {
       try {
@@ -15,7 +15,7 @@ const VendorMetricsPage = ({ setCurrentPage }) => {
         setError(null);
 
         const response = await fetch("https://odooerp.staunchtec.com/api/vendors/all-metrics");
-        //const response = await fetch("http://127.0.0.1:8000/api/vendors/all-metrics");
+        // const response = await fetch("http://127.0.0.1:8000/api/vendors/all-metrics");
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -23,17 +23,15 @@ const VendorMetricsPage = ({ setCurrentPage }) => {
 
         const data = await response.json();
         setVendors(Array.isArray(data) ? data : []);
-        
-        // Check for pre-selected vendor from sessionStorage
-        const preSelectedVendor = sessionStorage.getItem('selectedVendor');
+
+        const preSelectedVendor = sessionStorage.getItem("selectedVendor");
         if (preSelectedVendor && data.some(v => v.vendor_name === preSelectedVendor)) {
           setSelectedVendor(preSelectedVendor);
-          // Clear from sessionStorage after using
-          sessionStorage.removeItem('selectedVendor');
+          sessionStorage.removeItem("selectedVendor");
         } else if (data.length > 0) {
           setSelectedVendor(data[0].vendor_name);
         }
-        
+
         setLoading(false);
       } catch (err) {
         console.error("Error fetching vendors:", err);
@@ -46,22 +44,25 @@ const VendorMetricsPage = ({ setCurrentPage }) => {
   }, []);
 
   const handleBackToSuppliers = () => {
-    if (setCurrentPage) {
-      setCurrentPage("vendors");
-    } else {
-      window.location.href = "/vendors";
-    }
+    if (setCurrentPage) setCurrentPage("vendors");
+    else window.location.href = "/vendors";
   };
 
-  if (loading) {
+  // ✅ NEW: Helper function to get color class based on percentage
+  const getPercentageClass = (percent) => {
+    if (percent >= 0.75) return "radial-value-high";    // Safe (≥ 75%)
+    if (percent >= 0.40) return "radial-value-medium";  // Medium (40–74%)
+    return "radial-value-low";                          // Danger (≤ 39%)
+  };
+
+  if (loading)
     return (
       <div className="vendor-metrics-page">
         <p className="loading">Loading vendor metrics...</p>
       </div>
     );
-  }
 
-  if (error) {
+  if (error)
     return (
       <div className="vendor-metrics-page">
         <button className="back-btn" onClick={handleBackToSuppliers}>
@@ -70,18 +71,14 @@ const VendorMetricsPage = ({ setCurrentPage }) => {
         <div className="error-message">
           <h2>Error Loading Vendor Metrics</h2>
           <p>Failed to fetch vendor data: {error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="retry-btn"
-          >
+          <button onClick={() => window.location.reload()} className="retry-btn">
             Retry
           </button>
         </div>
       </div>
     );
-  }
 
-  if (!vendors.length) {
+  if (!vendors.length)
     return (
       <div className="vendor-metrics-page">
         <button className="back-btn" onClick={handleBackToSuppliers}>
@@ -91,72 +88,150 @@ const VendorMetricsPage = ({ setCurrentPage }) => {
         <p className="empty">No vendor metrics found.</p>
       </div>
     );
-  }
 
-  const vendor = vendors.find((v) => v.vendor_name === selectedVendor);
+  const vendor = vendors.find(v => v.vendor_name === selectedVendor);
 
-  // Helper functions for color-coding scores
-  const getScoreClass = (value) => {
-    if (value === undefined || value === null || value === "N/A") return "";
-    const num = parseFloat(value * 100);
-    if (isNaN(num)) return "";
-    if (num >= 80) return "score-high";
-    if (num >= 50) return "score-medium";
+  const getResponseClass = days => {
+    if (days <= 3) return "score-high";
+    if (days <= 7) return "score-medium";
     return "score-low";
   };
 
-  const getRiskScoreClass = (value) => {
-    if (value === undefined || value === null || value === "N/A") return "";
-    const num = parseFloat(value * 100);
-    if (isNaN(num)) return "";
-    if (num <= 30) return "score-high";
-    if (num <= 60) return "score-medium";
+  const getDisruptionClass = count => {
+    if (count <= 4) return "score-high";
+    if (count <= 8) return "score-medium";
     return "score-low";
   };
 
-  const getDisruptionClass = (count) => {
-    if (count === undefined || count === null) return "";
-    if (count <= 1) return "score-high";
-    if (count <= 3) return "score-medium";
+  const getYearsClass = years => {
+    if (years >= 5) return "score-high";
+    if (years >= 2) return "score-medium";
     return "score-low";
   };
 
-  const getResponseClass = (days) => {
-    if (days === undefined || days === null) return "";
-    if (days <= 2) return "score-high";
-    if (days <= 5) return "score-medium";
-    return "score-low";
-  };
+  const getIsoClass = value => (value ? "score-high" : "score-low");
 
-  // Format value functions
-  const formatPercent = (value) => {
-    if (value === undefined || value === null) return "N/A";
-    return (parseFloat(value) * 100).toFixed(1) + "%";
-  };
+  const formatDays = value => (value !== undefined ? `${Math.round(value)} days` : "N/A");
+  const formatYears = value => (value !== undefined ? `${value.toFixed(1)} years` : "N/A");
+  const formatCount = value => (value !== undefined ? value.toString() : "N/A");
+  const formatBoolean = value => (value ? "Yes" : "No");
 
-  const formatDays = (value) => {
-    if (value === undefined || value === null) return "N/A";
-    return parseFloat(value).toFixed(1) + " days";
-  };
+  // ✅ UPDATED: Gauge logic with color-coded radial values
+  const renderGauge = (value, min = 0, max = 1, label = "") => {
+    if (value === undefined || value === null || value === "N/A")
+      return <p className="radial-value">N/A</p>;
 
-  const formatYears = (value) => {
-    if (value === undefined || value === null) return "N/A";
-    return parseFloat(value).toFixed(1) + " years";
-  };
+    let val = parseFloat(value);
 
-  const formatCount = (value) => {
-    if (value === undefined || value === null) return "N/A";
-    return value.toString();
-  };
+    // ISO 9001 Certified (two-color only)
+    if (label === "ISO 9001 Certified") {
+      return (
+        <div className="radial-meter-container">
+          <GaugeChart
+            id={`iso-meter-${Math.random()}`}
+            nrOfLevels={2}
+            arcsLength={[0.5, 0.5]}
+            colors={["#FF4E50", "#4CAF50"]}
+            percent={value ? 1 : 0}
+            arcWidth={0.3}
+            cornerRadius={0}
+            needleColor={value ? "#4CAF50" : "#FF4E50"}
+            needleBaseColor="#333"
+            hideText={true}
+            style={{ width: "160px", height: "100px" }}
+          />
+        </div>
+      );
+    }
 
-  const formatBoolean = (value) => {
-    if (value === undefined || value === null) return "N/A";
-    return value ? "Yes" : "No";
+    if (
+      label === "Responsiveness" ||
+      label === "Supply Chain Disruptions" ||
+      label === "Years of Partnership"
+    ) {
+      let needleColor = "#4CAF50";
+      let percentValue = 0;
+      let arcsLength = [0.33, 0.33, 0.34];
+      let colors = [];
+
+      // Responsiveness: lower is better
+      if (label === "Responsiveness") {
+        if (val <= 3) needleColor = "#4CAF50";
+        else if (val <= 7) needleColor = "#F9D423";
+        else needleColor = "#FF4E50";
+        percentValue = Math.min(val / 10, 1);
+        colors = ["#4CAF50", "#F9D423", "#FF4E50"];
+      }
+
+      // Supply Chain Disruptions: lower is better
+      else if (label === "Supply Chain Disruptions") {
+        if (val <= 4) needleColor = "#4CAF50";
+        else if (val <= 8) needleColor = "#F9D423";
+        else needleColor = "#FF4E50";
+        percentValue = Math.min(val / 12, 1);
+        colors = ["#4CAF50", "#F9D423", "#FF4E50"];
+      }
+
+      
+      else if (label === "Years of Partnership") {
+        if (val >= 5) needleColor = "#4CAF50";
+        else if (val >= 2) needleColor = "#F9D423";
+        else needleColor = "#FF4E50";
+        percentValue = Math.min(val / 10, 1);
+        colors = ["#FF4E50", "#F9D423", "#4CAF50"];
+      }
+
+      return (
+        <div className="radial-meter-container">
+          <GaugeChart
+            id={`radial-meter-${Math.random()}`}
+            nrOfLevels={100}
+            arcsLength={arcsLength}
+            colors={colors}
+            percent={percentValue}
+            arcWidth={0.3}
+            cornerRadius={0}
+            animate={true}
+            needleColor={needleColor}
+            needleBaseColor="#333"
+            hideText={true}
+            style={{ width: "160px", height: "100px" }}
+          />
+        </div>
+      );
+    }
+
+    // Default case for percentage metrics
+    let needleColor = "#4CAF50";
+    let valNorm = Math.min(Math.max(val, 0), 1);
+    if (valNorm < 0.4) needleColor = "#FF4E50";
+    else if (valNorm < 0.75) needleColor = "#F9D423";
+
+    // ✅ NEW: Apply color class based on percentage
+    const colorClass = getPercentageClass(valNorm);
+
+    return (
+      <div className="radial-meter-container">
+        <GaugeChart
+          id={`radial-meter-${Math.random()}`}
+          nrOfLevels={100}
+          arcsLength={[0.4, 0.35, 0.25]}
+          colors={["#FF4E50", "#F9D423", "#4CAF50"]}
+          percent={valNorm}
+          arcWidth={0.3}
+          cornerRadius={0}
+          needleColor={needleColor}
+          needleBaseColor="#333"
+          hideText={true}
+          style={{ width: "160px", height: "100px" }}
+        />
+        <p className={`radial-value ${colorClass}`}>{(valNorm * 100).toFixed(1)}%</p>
+      </div>
+    );
   };
 
   return (
     <div className="vendor-metrics-page">
-      {/* Header */}
       <div className="metrics-header">
         <div className="title-with-back">
           <button className="back-arrow" onClick={handleBackToSuppliers}>
@@ -172,7 +247,7 @@ const VendorMetricsPage = ({ setCurrentPage }) => {
             id="vendors"
             className="vendor-select"
             value={selectedVendor}
-            onChange={(e) => setSelectedVendor(e.target.value)}
+            onChange={e => setSelectedVendor(e.target.value)}
           >
             {vendors.map((v, idx) => (
               <option key={idx} value={v.vendor_name}>
@@ -183,86 +258,67 @@ const VendorMetricsPage = ({ setCurrentPage }) => {
         </div>
       </div>
 
-      {/* Score Legend */}
       <div className="score-legend">
-        <span><span className="score-high status-dot"></span> Safe (≥ 80%)</span>
-        <span><span className="score-medium status-dot"></span> Medium (50–79%)</span>
-        <span><span className="score-low status-dot"></span> Danger (≤ 50%)</span>
+        <span><span className="score-high status-dot"></span> Safe (≥ 75%)</span>
+        <span><span className="score-medium status-dot"></span> Medium (40–74%)</span>
+        <span><span className="score-low status-dot"></span> Danger (≤ 39%)</span>
       </div>
 
-      {/* Metrics Display */}
       {vendor && (
         <div className="vendor-card">
           <h2 className="vendor-name">{vendor.vendor_name}</h2>
 
           <div className="metrics-grid">
-            {/* <div className="metric-box">
-              <h3>Rank</h3>
-              <p>{vendor.rank !== undefined ? vendor.rank : "N/A"}</p>
-            </div> */}
-            <div className="metric-box">
-              <h3>On Time Delivery</h3>
-              <p className={getScoreClass(vendor.on_time_delivery_pct)}>{formatPercent(vendor.on_time_delivery_pct)}</p>
-            </div>
-            <div className="metric-box">
-              <h3>Delivery Accuracy</h3>
-              <p className={getScoreClass(vendor.delivery_accuracy_pct)}>{formatPercent(vendor.delivery_accuracy_pct)}</p>
-            </div>
-            <div className="metric-box">
-              <h3>Defect Rate</h3>
-              <p className={getRiskScoreClass(vendor.defect_rate_pct)}>{formatPercent(vendor.defect_rate_pct)}</p>
-            </div>
-            <div className="metric-box">
-              <h3>Rejection Rate</h3>
-              <p className={getRiskScoreClass(vendor.rejection_rate_pct)}>{formatPercent(vendor.rejection_rate_pct)}</p>
-            </div>
-            <div className="metric-box">
-              <h3>Return Rate</h3>
-              <p className={getRiskScoreClass(vendor.return_rate_pct)}>{formatPercent(vendor.return_rate_pct)}</p>
-            </div>
-            <div className="metric-box">
-              <h3>Order Completion Rate</h3>
-              <p className={getScoreClass(vendor.order_completion_rate_pct)}>{formatPercent(vendor.order_completion_rate_pct)}</p>
-            </div>
-            <div className="metric-box">
+            {Object.entries({
+              "On Time Delivery": vendor.on_time_delivery_pct,
+              "Delivery Accuracy": vendor.delivery_accuracy_pct,
+              "Defect Rate": vendor.defect_rate_pct,
+              "Rejection Rate": vendor.rejection_rate_pct,
+              "Return Rate": vendor.return_rate_pct,
+              "Order Completion Rate": vendor.order_completion_rate_pct,
+              "Flexibility": vendor.flexibility_pct,
+              "Price Stability": vendor.price_stability_pct,
+              "Financial Stability": vendor.financial_stability_pct,
+              "Geographic Risk": vendor.geographic_risk_pct,
+              "Sustainability (ESG)": vendor.sustainability_esg_pct,
+              "Collaboration": vendor.collaboration_pct
+            }).map(([label, val], idx) => (
+              <div key={idx} className="metric-box radial-box">
+                <h3>{label}</h3>
+                {renderGauge(val, 0, 1, label)}
+              </div>
+            ))}
+
+            <div className="metric-box radial-box">
               <h3>Responsiveness</h3>
-              <p className={getResponseClass(vendor.responsiveness_days)}>{formatDays(vendor.responsiveness_days)}</p>
+              {renderGauge(vendor.responsiveness_days, 0, 10, "Responsiveness")}
+              <p className={getResponseClass(vendor.responsiveness_days)}>
+                {formatDays(vendor.responsiveness_days)}
+              </p>
             </div>
-            <div className="metric-box">
-              <h3>Flexibility</h3>
-              <p className={getScoreClass(vendor.flexibility_pct)}>{formatPercent(vendor.flexibility_pct)}</p>
-            </div>
-            <div className="metric-box">
-              <h3>Price Stability</h3>
-              <p className={getScoreClass(vendor.price_stability_pct)}>{formatPercent(vendor.price_stability_pct)}</p>
-            </div>
-            <div className="metric-box">
-              <h3>Financial Stability</h3>
-              <p className={getScoreClass(vendor.financial_stability_pct)}>{formatPercent(vendor.financial_stability_pct)}</p>
-            </div>
-            <div className="metric-box">
-              <h3>Geographic Risk</h3>
-              <p className={getRiskScoreClass(vendor.geographic_risk_pct)}>{formatPercent(vendor.geographic_risk_pct)}</p>
-            </div>
-            <div className="metric-box">
-              <h3>Sustainability (ESG)</h3>
-              <p className={getScoreClass(vendor.sustainability_esg_pct)}>{formatPercent(vendor.sustainability_esg_pct)}</p>
-            </div>
-            <div className="metric-box">
+
+            <div className="metric-box radial-box">
               <h3>Supply Chain Disruptions</h3>
-              <p className={getDisruptionClass(vendor.supply_chain_disruptions_count)}>{formatCount(vendor.supply_chain_disruptions_count)}</p>
+              {renderGauge(vendor.supply_chain_disruptions_count, 0, 12, "Supply Chain Disruptions")}
+              <p className={getDisruptionClass(vendor.supply_chain_disruptions_count)}>
+                {formatCount(vendor.supply_chain_disruptions_count)}
+              </p>
             </div>
-            <div className="metric-box">
+
+            <div className="metric-box radial-box">
               <h3>Years of Partnership</h3>
-              <p>{formatYears(vendor.years_of_partnership)}</p>
+              {renderGauge(vendor.years_of_partnership, 0, 10, "Years of Partnership")}
+              <p className={getYearsClass(vendor.years_of_partnership)}>
+                {formatYears(vendor.years_of_partnership)}
+              </p>
             </div>
-            <div className="metric-box">
-              <h3>Collaboration</h3>
-              <p className={getScoreClass(vendor.collaboration_pct)}>{formatPercent(vendor.collaboration_pct)}</p>
-            </div>
-            <div className="metric-box">
+
+            <div className="metric-box radial-box">
               <h3>ISO 9001 Certified</h3>
-              <p className={vendor.iso_9001 ? "score-high" : "score-low"}>{formatBoolean(vendor.iso_9001)}</p>
+              {renderGauge(vendor.iso_9001 ? 1 : 0, 0, 1, "ISO 9001 Certified")}
+              <p className={getIsoClass(vendor.iso_9001)}>
+                {formatBoolean(vendor.iso_9001)}
+              </p>
             </div>
           </div>
         </div>
