@@ -234,9 +234,30 @@ const Notifications = () => {
                       {notification.action && <button className="action-button">{notification.action}</button>}
                     </div>
                   </div>
-                  <button className="close-button" onClick={(e) => { e.stopPropagation(); dismissNotification(notification.id); }} title="Dismiss">
-                    <X size={14} />
-                  </button>
+                  <div className="notification-actions">
+                    {!notification.isRead && (
+                      <button
+                        className="mark-read-button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          markAsRead(notification.id);
+                        }}
+                        title="Mark as read"
+                      >
+                        <Check size={14} />
+                      </button>
+                    )}
+                    <button
+                      className="close-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        dismissNotification(notification.id);
+                      }}
+                      title="Dismiss"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
                 </div>
               ))
             )}
