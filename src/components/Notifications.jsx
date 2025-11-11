@@ -13,12 +13,12 @@ const Notifications = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('all');
-  
+
   const dropdownRef = useRef(null);
   const abortControllerRef = useRef(null);
-  
+
   // In a real application, this session ID would come from your authentication context or user state.
-  const sessionId = 'demo-session-123';
+  const sessionId = 'inventory_dashboard_session';
 
   const getRelativeTime = (timestamp) => {
     const now = new Date();
@@ -38,7 +38,7 @@ const Notifications = () => {
     if (!sessionId) return;
     if (abortControllerRef.current) abortControllerRef.current.abort();
     abortControllerRef.current = new AbortController();
-    
+
     try {
       setIsLoading(true);
       setError(null);
@@ -71,50 +71,35 @@ const Notifications = () => {
     };
   }, [sessionId, isOpen, fetchNotifications]);
 
-  // Effect for handling the real-time WebSocket connection with authentication
+  // Polling for new notifications every 30 seconds
   useEffect(() => {
     if (!sessionId) return;
 
-    // --- CRITICAL FIX for Authentication ---
-    // Retrieve the auth token from where you store it (e.g., localStorage, cookies, state management).
-    // This is a placeholder; you MUST replace it with your actual token retrieval logic.
-    const authToken = localStorage.getItem('user_token');
-
-    if (!authToken) {
-      console.error("Authentication token not found. WebSocket connection will not be established.");
-      return; // Abort connection if user is not logged in
-    }
-
-    // --- CRITICAL FIX for Environment Variable & URL Construction ---
-    // This uses the variable from your .env file and appends the session ID and auth token.
-    const wsUrl = `${process.env.VITE_WEBSOCKET_URL}/${sessionId}?token=${authToken}`;
-    
-    const ws = new WebSocket(wsUrl);
-
-    ws.onopen = () => console.log('WebSocket connection established');
-    ws.onerror = (error) => console.error('WebSocket error:', error);
-    ws.onclose = () => console.log('WebSocket connection closed');
-
-    ws.onmessage = (event) => {
-      const newNotificationData = JSON.parse(event.data);
-      const formattedNotification = {
-        id: newNotificationData.id,
-        title: newNotificationData.title,
-        subtitle: newNotificationData.message,
-        time: getRelativeTime(newNotificationData.created_at),
-        isRead: newNotificationData.is_read,
-        severity: newNotificationData.severity,
-        type: newNotificationData.type,
-        action: newNotificationData.metadata?.action
-      };
-      setNotifications(prev => [formattedNotification, ...prev]);
-      if (!formattedNotification.isRead) {
-        setUnreadCount(prev => prev + 1);
+    const pollNotifications = async () => {
+      try {
+        const data = await notificationApi.getNotifications(sessionId, 50, false);
+        const mappedNotifications = data.notifications.map((n) => ({
+          id: n.id,
+          title: n.title,
+          subtitle: n.message,
+          time: getRelativeTime(n.created_at),
+          isRead: n.is_read,
+          severity: n.severity,
+          type: n.type,
+          action: n.metadata?.action
+        }));
+        setNotifications(mappedNotifications);
+        setUnreadCount(data.unread_count);
+      } catch (err) {
+        console.error('Polling error:', err);
       }
     };
 
-    // Cleanup: close the WebSocket connection when the component unmounts
-    return () => ws.close();
+    // Poll immediately and then every 30 seconds
+    pollNotifications();
+    const intervalId = setInterval(pollNotifications, 30000);
+
+    return () => clearInterval(intervalId);
   }, [sessionId]);
 
   useEffect(() => {
@@ -144,7 +129,7 @@ const Notifications = () => {
   const dismissNotification = async (id) => {
     const dismissedNotif = notifications.find(n => n.id === id);
     const originalNotifications = [...notifications];
-    
+
     setNotifications(prev => prev.filter(n => n.id !== id));
     if (dismissedNotif && !dismissedNotif.isRead) {
       setUnreadCount(prev => Math.max(0, prev - 1));
@@ -165,7 +150,7 @@ const Notifications = () => {
     if (!sessionId || unreadCount === 0) return;
     const prevNotifications = [...notifications];
     const prevUnreadCount = unreadCount;
-    
+
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
     setUnreadCount(0);
 
@@ -249,9 +234,30 @@ const Notifications = () => {
                       {notification.action && <button className="action-button">{notification.action}</button>}
                     </div>
                   </div>
-                  <button className="close-button" onClick={(e) => { e.stopPropagation(); dismissNotification(notification.id); }} title="Dismiss">
-                    <X size={14} />
-                  </button>
+                  <div className="notification-actions">
+                    {!notification.isRead && (
+                      <button
+                        className="mark-read-button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          markAsRead(notification.id);
+                        }}
+                        title="Mark as read"
+                      >
+                        <Check size={14} />
+                      </button>
+                    )}
+                    <button
+                      className="close-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        dismissNotification(notification.id);
+                      }}
+                      title="Dismiss"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
                 </div>
               ))
             )}
