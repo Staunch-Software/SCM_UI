@@ -12,12 +12,13 @@ import ProtectedRoute from './components/ProtectedRoute';
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const ChatInterface = lazy(() => import('./components/ChatInterface'));
 const PlannedOrdersPage = lazy(() => import('./components/PlannedorderPage'));
-const InventoryPage = lazy(() => import('./components/InventoryPage'));
+// --- NEW: Import the new components ---
+const InventoryHub = lazy(() => import('./components/InventoryHub'));
+const Product360 = lazy(() => import('./components/Product360'));
 const CustomersPage = lazy(() => import('./components/CustomersPage'));
 const VendorsPage = lazy(() => import('./components/VendorsPage'));
 const VendorMetricsPage = lazy(() => import('./components/VendorMetricsPage'));
 const UserManagement = lazy(() => import('./components/UserManagement'));
-const ProductDetailsPage = lazy(() => import('./components/ProductDetailsPage'));
 const LoginPage = lazy(() => import('./Pages/LoginPage'));
 const ResetPasswordPage = lazy(() => import('./Pages/ResetPasswordPage'));
 
@@ -26,16 +27,7 @@ import './App.css';
 
 // --- Loading Component ---
 const PageLoader = () => (
-  <div
-    style={{
-      padding: '2rem',
-      textAlign: 'center',
-      height: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}
-  >
+  <div style={{ padding: '2rem', textAlign: 'center' }}>
     <h2>Loading Page...</h2>
   </div>
 );
@@ -53,32 +45,24 @@ const App = () => {
             {/* --- Protected Routes --- */}
             <Route element={<ProtectedRoute />}>
               <Route path="/" element={<Layout />}>
-                {/* Redirect root to dashboard */}
                 <Route index element={<Navigate to="/dashboard" replace />} />
-
-                {/* Protected pages */}
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="chat" element={<ChatInterface />} />
                 <Route path="orders" element={<PlannedOrdersPage />} />
-                <Route path="inventory-dashboard" element={<InventoryPage />} />
+
+                {/* --- UPDATED INVENTORY ROUTES --- */}
+                <Route path="inventory-hub" element={<InventoryHub />} />
+                <Route path="products/:productId" element={<Product360 />} />
+
                 <Route path="customers" element={<CustomersPage />} />
                 <Route path="vendors" element={<VendorsPage />} />
                 <Route path="vendor-metrics" element={<VendorMetricsPage />} />
                 <Route path="user-management" element={<UserManagement />} />
-                <Route path="product/:productId" element={<ProductDetailsPage />} />
               </Route>
             </Route>
 
             {/* --- 404 Not Found --- */}
-            <Route
-              path="*"
-              element={
-                <div style={{ padding: '2rem', textAlign: 'center' }}>
-                  <h2>404 - Page Not Found</h2>
-                  <p>The page you are looking for does not exist.</p>
-                </div>
-              }
-            />
+            <Route path="*" element={<div style={{ padding: '2rem', textAlign: 'center' }}> <h2>404 - Page Not Found</h2> </div>} />
           </Routes>
         </Suspense>
       </BrowserRouter>

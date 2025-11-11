@@ -1,171 +1,273 @@
-/* ProductDetailsPage.css */
+/* ========================================
+   PRODUCT DETAILS PAGE - COMPLETE STYLES
+   ======================================== */
 
-/* --- Main Container & Layout --- */
-.pdp-container {
-  padding: 24px;
-  background-color: #f8fafc;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  color: #334155;
-  min-height: 100vh;
-}
-
-/* --- Header Section --- */
-.pdp-header {
-  background-color: #ffffff;
-  padding: 20px 24px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  margin-bottom: 24px;
-  border: 1px solid #e2e8f0;
-}
-
-.pdp-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 12px 0;
-}
-
-.pdp-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-  font-size: 14px;
-  color: #64748b;
-}
-
-.pdp-meta span strong {
-  font-weight: 600;
-  color: #475569;
-}
-
-/* --- Tabs System --- */
-.pdp-tabs-container {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
-  overflow: hidden; /* Ensures child elements conform to border radius */
-}
-
-.pdp-tabs-header {
-  display: flex;
-  border-bottom: 1px solid #e2e8f0;
-  background-color: #f8fafc;
-}
-
-.pdp-tab-btn {
-  padding: 14px 20px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #64748b;
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  position: relative;
-  transition: color 0.3s ease, background-color 0.3s ease;
-}
-
-.pdp-tab-btn:hover {
-  color: #4f46e5;
-  background-color: #f1f5f9;
-}
-
-.pdp-tab-btn.active {
-  color: #4f46e5;
-  background-color: #ffffff;
-}
-
-.pdp-tab-btn.active::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
+.product-details-overlay {
+  position: fixed;
+  top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background-color: #4f46e5;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 9998;
+  animation: fadeIn 0.3s ease;
 }
 
-.pdp-tabs-content {
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.product-details-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 720px;
+  height: 100vh;
+  background: #ffffff;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease;
+  overflow: hidden;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+/* ========================================
+   HEADER
+   ======================================== */
+.details-header {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
   padding: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
 }
 
-/* --- Data Table Styling --- */
-.pdp-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
+.header-info h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: #ffffff;
 }
 
-.pdp-table th,
-.pdp-table td {
-  padding: 12px 16px;
-  text-align: left;
-  border-bottom: 1px solid #e2e8f0;
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
 }
 
-.pdp-table thead {
-  display: none; /* Hiding thead as it's a key-value table */
-}
-
-.pdp-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.pdp-table td:first-child {
+.meta-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 10px;
+  border-radius: 6px;
   font-weight: 600;
-  color: #475569;
-  width: 40%;
+  font-family: 'Monaco', 'Courier New', monospace;
 }
 
-.pdp-table td:last-child {
-  color: #334155;
+.btn-close-details {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-/* --- Loading, Error, and Not Found States --- */
-.pdp-loading-container,
-.pdp-error-container {
+.btn-close-details:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+/* ========================================
+   CONTENT AREA
+   ======================================== */
+.details-content {
+  flex: 1;
+  overflow-y: auto;
+  background: #f8fafc;
+}
+
+.details-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.details-content::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+.details-content::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.details-content::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* ========================================
+   LOADING & ERROR STATES
+   ======================================== */
+.details-loading,
+.details-error {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 60vh;
-  text-align: center;
+  min-height: 400px;
   gap: 16px;
 }
 
-.pdp-loading-container p,
-.pdp-error-container p {
-  font-size: 18px;
-  color: #64748b;
+.details-loading p,
+.details-error p {
+  font-size: 16px;
+  color: #6b7280;
 }
 
-.pdp-loading-spinner {
-  width: 48px;
-  height: 48px;
-  border: 5px solid #f3f4f6;
-  border-top: 5px solid #4f46e5;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+/* ========================================
+   TABS
+   ======================================== */
+.details-tabs {
+  display: flex;
+  background: #ffffff;
+  border-bottom: 2px solid #e5e7eb;
+  padding: 0 24px;
+  gap: 4px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.pdp-back-button {
-  background-color: #4f46e5;
-  color: white;
+.details-tab {
+  padding: 14px 20px;
+  background: transparent;
   border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
+  border-bottom: 3px solid transparent;
   font-size: 14px;
   font-weight: 600;
+  color: #6b7280;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.2s;
 }
 
-.pdp-back-button:hover {
-  background-color: #4338ca;
+.details-tab:hover {
+  color: #2563eb;
+  background: #f9fafb;
+}
+
+.details-tab.active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+  background: #eff6ff;
+}
+
+/* ========================================
+   TAB CONTENT
+   ======================================== */
+.tab-content-area {
+  padding: 24px;
+}
+
+.details-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.details-table thead {
+  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.details-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.details-table tbody tr {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.details-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.details-table td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #111827;
+}
+
+.details-table td:first-child {
+  font-weight: 600;
+  color: #6b7280;
+  width: 40%;
+}
+
+.details-table td:last-child {
+  color: #111827;
+  font-weight: 500;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 768px) {
+  .product-details-drawer {
+    width: 100vw;
+  }
+
+  .details-header {
+    padding: 16px;
+  }
+
+  .header-info h2 {
+    font-size: 18px;
+  }
+
+  .details-tabs {
+    overflow-x: auto;
+    padding: 0 16px;
+  }
+
+  .tab-content-area {
+    padding: 16px;
+  }
+}
+
+@media print {
+  .details-header,
+  .btn-close-details {
+    display: none;
+  }
+
+  .product-details-drawer {
+    box-shadow: none;
+  }
 }
