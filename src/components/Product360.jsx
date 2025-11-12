@@ -1,15 +1,6 @@
-// src/components/Product360.jsx
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import '../styles/Product360.css';
-
-const DetailRow = ({ label, value }) => (
-  <tr>
-    <td>{label}</td>
-    <td>{value ?? 'N/A'}</td>
-  </tr>
-);
 
 const Product360 = () => {
   const { productId } = useParams();
@@ -17,7 +8,7 @@ const Product360 = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('summary');
+  const [activeTab, setActiveTab] = useState('product-info');
 
   useEffect(() => {
     if (!productId) return;
@@ -43,194 +34,233 @@ const Product360 = () => {
     fetchProductData();
   }, [productId]);
 
-  const renderTabContent = () => {
-    if (!product) return null;
-
-    switch (activeTab) {
-      case 'summary':
-        return (
-          <>
-            <h3>Core Product Attributes</h3>
-            <table className="p360-table">
-              <tbody>
-                <DetailRow label="SKU" value={product.sku} />
-                <DetailRow label="Product Name" value={product.product_name} />
-                <DetailRow label="Description" value={product.itemDescription} />
-                <DetailRow label="Item Type" value={product.itemType} />
-                <DetailRow label="Procurement Type" value={product.procurementType} />
-                <DetailRow label="Item Status" value={product.itemStatus} />
-                <DetailRow label="UOM" value={product.uom} />
-              </tbody>
-            </table>
-            <h3>Planning & Location Details</h3>
-            <table className="p360-table">
-              <tbody>
-                <DetailRow label="Planner/Buyer Code" value={product.PlannerCode || product.buyerCode} />
-                <DetailRow label="Organization (Org)" value={product.org} />
-                <DetailRow label="Location" value={product.location} />
-              </tbody>
-            </table>
-            <h3>Current Inventory Levels</h3>
-            <table className="p360-table">
-              <tbody>
-                <DetailRow label="On Hand (Total)" value={product.onHand} />
-                <DetailRow label="On Hand Nettable" value={product.onHandNettable} />
-                <DetailRow label="On Hand Non-Nettable" value={product.onHandNonNettable} />
-                <DetailRow label="ATP (Available to Promise)" value={product.atp} />
-                <DetailRow label="Days in Stock" value={`${product.daysInStock} days`} />
-                <DetailRow label="Stock Expiry" value={product.ohExpiry} />
-                <DetailRow label="Total Value" value={`$${product.totalValue?.toLocaleString()}`} />
-              </tbody>
-            </table>
-          </>
-        );
-      case 'demand':
-        return (
-          <>
-            <h3>Demand Metrics Summary</h3>
-            <table className="p360-table">
-              <tbody>
-                <DetailRow label="Total Demand" value={product.totalDemand} />
-                <DetailRow label="Average Monthly Demand" value={product.avgMonthlyDemand} />
-                <DetailRow label="Forecast" value={product.forecast} />
-                <DetailRow label="Dependent Demand" value={product.dependentDemand} />
-                <DetailRow label="Open Sales Order Qty" value={product.salesOrder} />
-              </tbody>
-            </table>
-            <h3>Open Sales Orders (Sales Order List)</h3>
-            <table className="p360-table">
-              <thead><tr><th>Sales Order</th></tr></thead>
-              <tbody>
-                {product.salesOrderList?.length > 0 ? product.salesOrderList.map((so, i) => (
-                  <tr key={i}><td>{so}</td></tr>
-                )) : <tr><td>No open sales orders</td></tr>}
-              </tbody>
-            </table>
-          </>
-        );
-      case 'supply':
-        return (
-          <>
-            {product.procurementType === 'Make' && (
-              <>
-                <h3>Work Orders</h3>
-                <table className="p360-table">
-                  <tbody>
-                    <DetailRow label="Required WO Qty" value={product.requiredWoQty} />
-                    <DetailRow label="Issued WO Qty" value={product.issuedWoQty} />
-                    <DetailRow label="Open WO Qty" value={product.openWoQty} />
-                  </tbody>
-                </table>
-                <h4>Work Order List</h4>
-                <table className="p360-table">
-                  <thead><tr><th>Work Order</th></tr></thead>
-                  <tbody>
-                    {product.workOrderList?.length > 0 ? product.workOrderList.map((wo, i) => (
-                      <tr key={i}><td>{wo}</td></tr>
-                    )) : <tr><td>No open work orders</td></tr>}
-                  </tbody>
-                </table>
-              </>
-            )}
-            {product.procurementType === 'Buy' && (
-              <>
-                <h3>Purchase Orders</h3>
-                <table className="p360-table">
-                  <tbody>
-                    <DetailRow label="Open PO Qty" value={product.openPoQty} />
-                    <DetailRow label="PO In Receiving" value={product.poInReceiving} />
-                  </tbody>
-                </table>
-                <h4>Purchase Order & Requisition Lists</h4>
-                <table className="p360-table">
-                  <thead><tr><th>Type</th><th>Reference</th></tr></thead>
-                  <tbody>
-                    {product.purchaseOrderList?.map((po, i) => <tr key={`po-${i}`}><td>Purchase Order</td><td>{po}</td></tr>)}
-                    {product.purchaseRequisitionList?.map((pr, i) => <tr key={`pr-${i}`}><td>Purchase Requisition</td><td>{pr}</td></tr>)}
-                    {product.poAcknowledgementList?.map((pa, i) => <tr key={`pa-${i}`}><td>PO Acknowledgement</td><td>{pa}</td></tr>)}
-                  </tbody>
-                </table>
-              </>
-            )}
-            <h3>Internal & Inbound Supply</h3>
-            <table className="p360-table">
-              <tbody>
-                <DetailRow label="Internal Requisition" value={product.internalRequisition} />
-                <DetailRow label="Transfer Order" value={product.transferOrder} />
-                <DetailRow label="Requested Inbound Shipment" value={product.requestedInboundShipment} />
-                <DetailRow label="Planned Inbound Shipment" value={product.plannedInboundShipment} />
-                <DetailRow label="Intransit Shipments" value={product.intransitShipment} />
-                <DetailRow label="Intransit Receipts" value={product.intransitReceipts} />
-              </tbody>
-            </table>
-          </>
-        );
-      case 'analysis':
-        return (
-          <>
-            <h3>Inventory Health & Status</h3>
-            <table className="p360-table">
-              <tbody>
-                <DetailRow label="Months Supply" value={`${product.monthsOfInventory} months`} />
-                <DetailRow label="Excess" value={`${product.excess} units`} />
-                <DetailRow label="Shortage" value={`${product.shortage} units`} />
-              </tbody>
-            </table>
-            <h3>Safety Stock Analysis</h3>
-            <table className="p360-table">
-              <tbody>
-                <DetailRow label="Safety Stock" value={`${product.safetyStock} units`} />
-                <DetailRow label="On Hand to Safety Stock (%)" value={`${product.onHandToSafetyStockPercent?.toFixed(0)}%`} />
-              </tbody>
-            </table>
-            <h3>Consumption & Demand Trends</h3>
-            <table className="p360-table">
-              <tbody>
-                <DetailRow label="Consumption 3M Avg" value={product.consumption3MAvg} />
-                <DetailRow label="Consumption 12M Avg" value={product.consumption12MAvg} />
-                <DetailRow label="Variance 12M to 3M" value={`${product.variance12MTo3M?.toFixed(1)}%`} />
-              </tbody>
-            </table>
-          </>
-        );
-      case 'transactions':
-        return (
-          <>
-            <h3>Recent Stock Movements</h3>
-            <table className="p360-table">
-              <thead>
-                <tr><th>Date</th><th>Type</th><th>Quantity</th><th>Reference</th><th>Balance</th></tr>
-              </thead>
-              <tbody>
-                {transactions.map((t, i) => (
-                  <tr key={i}>
-                    <td>{t.date}</td>
-                    <td className={t.type === 'IN' ? 'trans-in' : 'trans-out'}>{t.type}</td>
-                    <td>{t.type === 'IN' ? `+${t.quantity}` : `-${t.quantity}`}</td>
-                    <td>{t.reference}</td>
-                    <td>{t.balance}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </>
-        );
-      default:
-        return null;
-    }
-  };
-
   if (loading) return <div className="p360-loading">Loading Product Details...</div>;
   if (error) return <div className="p360-error">Error: {error}</div>;
   if (!product) return <div className="p360-error">Product not found.</div>;
 
+  const isFinishedGoods = product.itemType === 'Finished goods';
+  const isSubAssemblyWithBOM = product.itemType === 'Sub assembly' && product.hasBOM;
+  const isSubAssemblyWithoutBOM = product.itemType === 'Sub assembly' && !product.hasBOM;
+  const isRawMaterial = product.itemType === 'Raw material';
+
+  const DetailRow = ({ label, value }) => (
+    <tr className="detail-row">
+      <td className="detail-label">{label}:</td>
+      <td className="detail-value">{value ?? 'N/A'}</td>
+    </tr>
+  );
+
+  const renderProductInfo = () => (
+    <div className="p360-tab-content">
+      <h3>Product Information</h3>
+      <table className="p360-table">
+        <tbody>
+          <DetailRow label="SKU" value={product.sku} />
+          <DetailRow label="Product Name" value={product.product_name} />
+          <DetailRow label="Item Type" value={product.itemType} />
+          <DetailRow label="Item Status" value={product.itemStatus} />
+          <DetailRow label={isFinishedGoods || isSubAssemblyWithBOM ? "Planner Code" : "Buyer Code"} value={product.plannerCode || product.buyerCode} />
+          <DetailRow label="Organization" value={product.org} />
+          <DetailRow label="UOM" value={product.uom} />
+          <DetailRow label="Location" value={product.location} />
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const renderDemand = () => {
+    if (isFinishedGoods) {
+      return (
+        <div className="p360-tab-content">
+          <h3>Demand</h3>
+          <table className="p360-table">
+            <tbody>
+              <DetailRow label="Sales Orders Qty" value={product.salesOrderQty} />
+              <DetailRow label="Sales Orders" value={product.salesOrderList?.join(', ') || 'None'} />
+              <DetailRow label="Forecast" value={product.forecast} />
+              <DetailRow label="Safety Stock" value={product.safetyStock} />
+              <DetailRow label="Total Demand" value={product.totalDemand} />
+              <DetailRow label="Avg Monthly Demand" value={product.avgMonthlyDemand} />
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+
+    if (isSubAssemblyWithBOM) {
+      return (
+        <div className="p360-tab-content">
+          <h3>Demand</h3>
+          <table className="p360-table">
+            <tbody>
+              <DetailRow label="Forecast" value={product.forecast} />
+              <DetailRow label="Safety Stock" value={product.safetyStock} />
+              <DetailRow label="Total Demand" value={product.totalDemand} />
+              <DetailRow label="Avg Monthly Demand" value={product.avgMonthlyDemand} />
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+
+    if (isSubAssemblyWithoutBOM || isRawMaterial) {
+      return (
+        <div className="p360-tab-content">
+          <h3>Demand</h3>
+          <table className="p360-table">
+            <tbody>
+              <DetailRow label="Dependent Demand" value={product.dependentDemand} />
+              <DetailRow label="Forecast" value={product.forecast} />
+              <DetailRow label="Safety Stock" value={product.safetyStock} />
+              <DetailRow label="Total Demand" value={product.totalDemand} />
+              <DetailRow label="Avg Monthly Demand" value={product.avgMonthlyDemand} />
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+
+    return <div className="p360-tab-content">No demand data for this product type.</div>;
+  };
+
+  const renderSupply = () => (
+    <div className="p360-tab-content">
+      {(isFinishedGoods || isSubAssemblyWithBOM) && (
+        <>
+          <h3>Work Orders</h3>
+          <table className="p360-table">
+            <tbody>
+              <DetailRow label="Work Order" value={product.workOrderList?.join(', ') || 'None'} />
+              <DetailRow label="Required WO Qty" value={product.requiredWoQty} />
+              <DetailRow label="Issued WO Qty" value={product.issuedWoQty} />
+              <DetailRow label="Open WO Qty" value={product.openWoQty} />
+            </tbody>
+          </table>
+        </>
+      )}
+
+      {(isRawMaterial || isSubAssemblyWithoutBOM) && (
+        <>
+          <h3>Purchase Orders</h3>
+          <table className="p360-table">
+            <tbody>
+              <DetailRow label="Open PO Qty" value={product.openPoQty} />
+              <DetailRow label="Purchase Order (PO)" value={product.purchaseOrderList?.join(', ') || 'None'} />
+              <DetailRow label="Purchase Requisition (PR)" value={product.purchaseRequisitionList?.join(', ') || 'None'} />
+              <DetailRow label="PO In Receiving" value={product.poInReceiving} />
+              <DetailRow label="PO Acknowledgement" value={Array.isArray(product.poAcknowledgementList) ? product.poAcknowledgementList.join(', ') : (product.poAcknowledgementList || 'None')} />
+            </tbody>
+          </table>
+
+          <h3>Inbound Flow</h3>
+          <div className="flow-container">
+            <div className="flow-column">
+              <h4>Supplier → Warehouse</h4>
+              <table className="p360-table">
+                <tbody>
+                  <DetailRow label="Requested Inbound Shipment" value={product.requestedInboundShipment} />
+                  <DetailRow label="Planned Inbound Shipment" value={product.plannedInboundShipment} />
+                  <DetailRow label="Intransit Shipment" value={product.intransitShipment} />
+                  <DetailRow label="Intransit Receipts" value={product.intransitReceipts} />
+                </tbody>
+              </table>
+            </div>
+            <div className="flow-column">
+              <h4>Warehouse ↔ Warehouse</h4>
+              <table className="p360-table">
+                <tbody>
+                  <DetailRow label="Internal Requisition" value={product.internalRequisition} />
+                  <DetailRow label="Transfer Order" value={product.transferOrder} />
+                  <DetailRow label="Intransit Shipment" value={product.intransitShipment} />
+                  <DetailRow label="Intransit Receipts" value={product.intransitReceipts} />
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
+
+      {isSubAssemblyWithBOM && (
+        <>
+          <h3>Internal Transfers</h3>
+          <table className="p360-table">
+            <tbody>
+              <DetailRow label="Internal Requisition" value={product.internalRequisition} />
+              <DetailRow label="Intransit Shipment" value={product.intransitShipment} />
+              <DetailRow label="Intransit Receipts" value={product.intransitReceipts} />
+              <DetailRow label="Transfer Order" value={product.transferOrder} />
+            </tbody>
+          </table>
+        </>
+      )}
+      <h3>Inventory Metrics</h3>
+      <table className="p360-table">
+        <tbody>
+          <DetailRow label="On Hand (Total)" value={product.onHandNettable + product.onHandNonNettable || 0} />
+          <DetailRow label="On Hand Nettable" value={product.onHandNettable} />
+          <DetailRow label="Month Supply (Nettable)" value={product.monthsSupplyNettable} />
+          <DetailRow label="On Hand Non-Nettable" value={product.onHandNonNettable} />
+          <DetailRow label="Month Supply (Non-Nettable)" value={product.monthsSupplyNonNettable} />
+          <DetailRow label="ATP (Available to Promise)" value={product.atp} />
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const renderAnalysesHealth = () => (
+    <div className="p360-tab-content">
+      <h3>Analyses & Health</h3>
+      <table className="p360-table">
+        <tbody>
+          <DetailRow label="Excess" value={product.excess} />
+          <DetailRow label="Shortage" value={product.shortage} />
+          <DetailRow label="OH - Expiry" value={product.ohExpiry} />
+          <DetailRow label="On Hand to Safety Stock %" value={`${product.onHandToSafetyStockPercent?.toFixed(0)}%`} />
+          <DetailRow label="Consumption 3M Avg" value={product.consumption3MAvg} />
+          <DetailRow label="Consumption 12M Avg" value={product.consumption12MAvg} />
+          <DetailRow label="Variance 12M to 3M %" value={`${product.variance12MTo3M?.toFixed(1)}%`} />
+          <DetailRow label="Months Supply" value={product.monthsOfInventory} />
+          <DetailRow label="Days in Stock" value={product.daysInStock} />
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const renderTransactions = () => (
+    <div className="p360-tab-content">
+      <h3>Recent Stock Movements</h3>
+      <table className="p360-table transactions-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Quantity</th>
+            <th>Reference</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          {transactions.map((t, i) => (
+            <tr key={i}>
+              <td>{t.date}</td>
+              <td className={t.type === 'IN' ? 'trans-in' : 'trans-out'}>{t.type}</td>
+              <td>{t.type === 'IN' ? `+${t.quantity}` : `-${t.quantity}`}</td>
+              <td>{t.reference}</td>
+              <td>{t.balance}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
   return (
     <div className="product-360-page">
       <div className="p360-header">
-        <Link to="/inventory-hub" className="back-link">← Back to Inventory Hub</Link>
+        <Link to="/inventory-hub" className="back-link">←</Link>
         <div className="header-main-info">
-          <h2>{product.product_name}</h2>
-          <span className="p360-sku">{product.sku}</span>
+          <h2>{product.product_name} - {product.sku}</h2>
+          <p className="item-desc">{product.itemDescription || 'N/A'}</p>
         </div>
       </div>
 
@@ -258,15 +288,19 @@ const Product360 = () => {
       </div>
 
       <nav className="p360-tabs">
-        <button onClick={() => setActiveTab('summary')} className={activeTab === 'summary' ? 'active' : ''}>Summary</button>
+        <button onClick={() => setActiveTab('product-info')} className={activeTab === 'product-info' ? 'active' : ''}>Product Information</button>
         <button onClick={() => setActiveTab('demand')} className={activeTab === 'demand' ? 'active' : ''}>Demand</button>
         <button onClick={() => setActiveTab('supply')} className={activeTab === 'supply' ? 'active' : ''}>Supply</button>
-        <button onClick={() => setActiveTab('analysis')} className={activeTab === 'analysis' ? 'active' : ''}>Analysis & Health</button>
-        {/* <button onClick={() => setActiveTab('transactions')} className={activeTab === 'transactions' ? 'active' : ''}>Transactions</button> */}
+        <button onClick={() => setActiveTab('analyses-health')} className={activeTab === 'analyses-health' ? 'active' : ''}>Analyses & Health</button>
+        <button onClick={() => setActiveTab('transactions')} className={activeTab === 'transactions' ? 'active' : ''}>Transactions</button>
       </nav>
 
-      <main className="p360-tab-content">
-        {renderTabContent()}
+      <main>
+        {activeTab === 'product-info' && renderProductInfo()}
+        {activeTab === 'demand' && renderDemand()}
+        {activeTab === 'supply' && renderSupply()}
+        {activeTab === 'analyses-health' && renderAnalysesHealth()}
+        {activeTab === 'transactions' && renderTransactions()}
       </main>
     </div>
   );

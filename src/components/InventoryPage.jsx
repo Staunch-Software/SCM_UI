@@ -181,8 +181,8 @@ const InventoryPage = () => {
   const updateForecastMonth = async (fromMonth, fromYear, toMonth, toYear) => {
     try {
       setUpdatingForecast(true);
-      //const response = await fetch(`http://127.0.0.1:8000/api/forecast-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`);
-      const response = await fetch(`https://odooerp.staunchtec.com/api/forecast-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`);
+      const response = await fetch(`http://127.0.0.1:8000/api/forecast-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`);
+      // const response = await fetch(`https://odooerp.staunchtec.com/api/forecast-data/${fromYear}/${fromMonth}/${toYear}/${toMonth}`);
 
       if (!response.ok) throw new Error("Failed to fetch forecast data");
       const data = await response.json();  // ✅ Get full data object
