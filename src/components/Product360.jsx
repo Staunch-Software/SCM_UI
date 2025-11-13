@@ -45,8 +45,10 @@ const Product360 = () => {
       try {
         setLoading(true);
         const [detailsRes, transRes] = await Promise.all([
-          fetch(`http://127.0.0.1:8000/api/product-details/${productId}`),
-          fetch(`http://127.0.0.1:8000/api/transactions/${productId}`)
+          // fetch(`http://127.0.0.1:8000/api/product-details/${productId}`),
+          // fetch(`http://127.0.0.1:8000/api/transactions/${productId}`)
+          fetch(`https://odooerp.staunchtec.com/api/product-details/${productId}`),
+          fetch(`https://odooerp.staunchtec.com/api/transactions/${productId}`)
         ]);
         if (!detailsRes.ok) throw new Error('Failed to fetch product details');
         if (!transRes.ok) throw new Error('Failed to fetch transactions');
@@ -55,9 +57,12 @@ const Product360 = () => {
         setProduct(detailsData);
         setTransactions(transData);
         const [soRes, woRes, poRes] = await Promise.all([
-          fetch(`http://127.0.0.1:8000/api/sales-orders-by-product/${productId}`),
-          fetch(`http://127.0.0.1:8000/api/work-orders-by-product/${productId}`),
-          fetch(`http://127.0.0.1:8000/api/purchase-orders-by-product/${productId}`)
+          // fetch(`http://127.0.0.1:8000/api/sales-orders-by-product/${productId}`),
+          // fetch(`http://127.0.0.1:8000/api/work-orders-by-product/${productId}`),
+          // fetch(`http://127.0.0.1:8000/api/purchase-orders-by-product/${productId}`)
+           fetch(`https://odooerp.staunchtec.com/api/sales-orders-by-product/${productId}`),
+          fetch(`https://odooerp.staunchtec.com/api/work-orders-by-product/${productId}`),
+          fetch(`https://odooerp.staunchtec.com/api/purchase-orders-by-product/${productId}`)
         ]);
         const soData = await soRes.json();
         const woData = await woRes.json();
@@ -89,7 +94,8 @@ const Product360 = () => {
   const fetchForecastData = async () => {
     try {
       setForecastLoading(true);
-      const res = await fetch(`http://127.0.0.1:8000/api/forecast-data/${forecastRange.fromYear}/${forecastRange.from}/${forecastRange.toYear}/${forecastRange.to}`);
+      //const res = await fetch(`http://127.0.0.1:8000/api/forecast-data/${forecastRange.fromYear}/${forecastRange.from}/${forecastRange.toYear}/${forecastRange.to}`);
+      const res = await fetch(`https://odooerp.staunchtec.com/api/forecast-data/${forecastRange.fromYear}/${forecastRange.from}/${forecastRange.toYear}/${forecastRange.to}`);
       const data = await res.json();
       const details = data.details[productId] || {};
       const chartData = Object.keys(details).map(key => ({
@@ -107,7 +113,8 @@ const Product360 = () => {
   const fetchSafetyStockData = async () => {
     try {
       setSafetyStockLoading(true);
-      const res = await fetch(`http://127.0.0.1:8000/api/safety-stock-data/${safetyStockRange.fromYear}/${safetyStockRange.from}/${safetyStockRange.toYear}/${safetyStockRange.to}`);
+      //const res = await fetch(`http://127.0.0.1:8000/api/safety-stock-data/${safetyStockRange.fromYear}/${safetyStockRange.from}/${safetyStockRange.toYear}/${safetyStockRange.to}`);
+      const res = await fetch(`https://odooerp.staunchtec.com/api/safety-stock-data/${safetyStockRange.fromYear}/${safetyStockRange.from}/${safetyStockRange.toYear}/${safetyStockRange.to}`);
       const data = await res.json();
       const details = data.details[productId] || {};
       const chartData = Object.keys(details).map(key => ({

@@ -1,5 +1,5 @@
-const API_BASE_URL = 'http://localhost:8000';
-// const API_BASE_URL =  'https://odooerp.staunchtec.com';
+//const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL =  'https://odooerp.staunchtec.com';
 export const sessionApi = {
   async listSessions() {
     const response = await fetch(`${API_BASE_URL}/api/chat-sessions`);
