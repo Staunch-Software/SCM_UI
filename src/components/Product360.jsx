@@ -136,7 +136,7 @@ const Product360 = () => {
   const isRawMaterial = product.itemType === 'Raw material';
 
   const DetailRow = ({ label, value }) => (
-    <tr className="detail-row">
+    <tr className="detail-row animated-row">
       <td className="detail-label">{label}:</td>
       <td className="detail-value">{value ?? 'N/A'}</td>
     </tr>
