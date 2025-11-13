@@ -472,25 +472,49 @@ const Product360 = () => {
         </div>
 
         {showDatePicker && pickerType === 'forecast' && (
-          <div className="date-picker-modal">
-            <div className="date-picker-content">
-              <div className="picker-section">
-                <label>From</label>
-                <select value={currentRange.from} onChange={(e) => handleDateSelect('from', e.target.value)}>
-                  {months.map(m => <option key={m} value={m}>{m}</option>)}
-                </select>
-                <select value={currentRange.fromYear} onChange={(e) => handleDateSelect('fromYear', e.target.value)}>
-                  {[2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
-                </select>
-              </div>
-              <div className="picker-section">
-                <label>To</label>
-                <select value={currentRange.to} onChange={(e) => handleDateSelect('to', e.target.value)}>
-                  {months.map(m => <option key={m} value={m}>{m}</option>)}
-                </select>
-                <select value={currentRange.toYear} onChange={(e) => handleDateSelect('toYear', e.target.value)}>
-                  {[2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
-                </select>
+          <div className="date-picker-modal" onClick={() => setShowDatePicker(false)}>
+            <div className="date-picker-content" onClick={(e) => e.stopPropagation()}>
+              <h3>Select Forecast Range</h3>
+              <div className="year-calendars">
+                {[2025, 2026, 2027].map(year => (
+                  <div key={year} className="year-section">
+                    <div className="year-header">{year}</div>
+                    <div className="months-grid">
+                      {months.map(month => {
+                        const isFrom = forecastRange.from === month && forecastRange.fromYear === String(year);
+                        const isTo = forecastRange.to === month && forecastRange.toYear === String(year);
+                        const isInRange = (
+                          (year > parseInt(forecastRange.fromYear) ||
+                            (year === parseInt(forecastRange.fromYear) && months.indexOf(month) >= months.indexOf(forecastRange.from))) &&
+                          (year < parseInt(forecastRange.toYear) ||
+                            (year === parseInt(forecastRange.toYear) && months.indexOf(month) <= months.indexOf(forecastRange.to)))
+                        );
+
+                        return (
+                          <div
+                            key={month}
+                            className={`month-cell ${isFrom ? 'from' : ''} ${isTo ? 'to' : ''} ${isInRange ? 'in-range' : ''}`}
+                            onClick={() => {
+                              if (!forecastRange.from || (forecastRange.from && forecastRange.to)) {
+                                setForecastRange({ from: month, fromYear: String(year), to: '', toYear: '' });
+                              } else {
+                                const fromDate = new Date(parseInt(forecastRange.fromYear), months.indexOf(forecastRange.from));
+                                const toDate = new Date(year, months.indexOf(month));
+                                if (toDate >= fromDate) {
+                                  setForecastRange(prev => ({ ...prev, to: month, toYear: String(year) }));
+                                } else {
+                                  setForecastRange({ from: month, fromYear: String(year), to: '', toYear: '' });
+                                }
+                              }
+                            }}
+                          >
+                            {month.slice(0, 3)}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
               <button onClick={() => setShowDatePicker(false)} className="picker-close">Done</button>
             </div>
@@ -552,25 +576,49 @@ const Product360 = () => {
         </div>
 
         {showDatePicker && pickerType === 'safety-stock' && (
-          <div className="date-picker-modal">
-            <div className="date-picker-content">
-              <div className="picker-section">
-                <label>From</label>
-                <select value={currentRange.from} onChange={(e) => handleDateSelect('from', e.target.value)}>
-                  {months.map(m => <option key={m} value={m}>{m}</option>)}
-                </select>
-                <select value={currentRange.fromYear} onChange={(e) => handleDateSelect('fromYear', e.target.value)}>
-                  {[2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
-                </select>
-              </div>
-              <div className="picker-section">
-                <label>To</label>
-                <select value={currentRange.to} onChange={(e) => handleDateSelect('to', e.target.value)}>
-                  {months.map(m => <option key={m} value={m}>{m}</option>)}
-                </select>
-                <select value={currentRange.toYear} onChange={(e) => handleDateSelect('toYear', e.target.value)}>
-                  {[2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
-                </select>
+          <div className="date-picker-modal" onClick={() => setShowDatePicker(false)}>
+            <div className="date-picker-content" onClick={(e) => e.stopPropagation()}>
+              <h3>Select Safety Stock Range</h3>
+              <div className="year-calendars">
+                {[2025, 2026, 2027].map(year => (
+                  <div key={year} className="year-section">
+                    <div className="year-header">{year}</div>
+                    <div className="months-grid">
+                      {months.map(month => {
+                        const isFrom = safetyStockRange.from === month && safetyStockRange.fromYear === String(year);
+                        const isTo = safetyStockRange.to === month && safetyStockRange.toYear === String(year);
+                        const isInRange = (
+                          (year > parseInt(safetyStockRange.fromYear) ||
+                            (year === parseInt(safetyStockRange.fromYear) && months.indexOf(month) >= months.indexOf(safetyStockRange.from))) &&
+                          (year < parseInt(safetyStockRange.toYear) ||
+                            (year === parseInt(safetyStockRange.toYear) && months.indexOf(month) <= months.indexOf(safetyStockRange.to)))
+                        );
+
+                        return (
+                          <div
+                            key={month}
+                            className={`month-cell ${isFrom ? 'from' : ''} ${isTo ? 'to' : ''} ${isInRange ? 'in-range' : ''}`}
+                            onClick={() => {
+                              if (!safetyStockRange.from || (safetyStockRange.from && safetyStockRange.to)) {
+                                setSafetyStockRange({ from: month, fromYear: String(year), to: '', toYear: '' });
+                              } else {
+                                const fromDate = new Date(parseInt(safetyStockRange.fromYear), months.indexOf(safetyStockRange.from));
+                                const toDate = new Date(year, months.indexOf(month));
+                                if (toDate >= fromDate) {
+                                  setSafetyStockRange(prev => ({ ...prev, to: month, toYear: String(year) }));
+                                } else {
+                                  setSafetyStockRange({ from: month, fromYear: String(year), to: '', toYear: '' });
+                                }
+                              }
+                            }}
+                          >
+                            {month.slice(0, 3)}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
               <button onClick={() => setShowDatePicker(false)} className="picker-close">Done</button>
             </div>

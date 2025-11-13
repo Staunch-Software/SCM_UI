@@ -290,7 +290,7 @@
 }
 
 .detail-value {
-  color: #111827;
+  color: #6b7280 !important;
   font-weight: 500;
   font-size: 14px;
   text-align: left !important;
@@ -387,36 +387,80 @@
 
 .date-picker-content {
   background: #fff;
-  padding: 32px;
+  padding: 24px;
   border-radius: 16px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  max-width: 500px;
+  max-width: 900px;
   width: 90%;
 }
 
-.picker-section {
+.date-picker-content h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+  text-align: center;
+  color: #111827;
+}
+
+.year-calendars {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
   margin-bottom: 20px;
 }
 
-.picker-section label {
-  display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 8px;
+.year-section {
+  flex: 1;
+  min-width: 200px;
 }
 
-.picker-section select {
-  width: 48%;
-  padding: 10px;
+.year-header {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  text-align: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.months-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.month-cell {
+  padding: 12px 8px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  background: #f9fafb;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
-  font-size: 14px;
-  margin-right: 4%;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.picker-section select:last-child {
-  margin-right: 0;
+.month-cell:hover {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+}
+
+.month-cell.from,
+.month-cell.to {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+  font-weight: 700;
+}
+
+.month-cell.in-range {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1e40af;
 }
 
 .picker-close {

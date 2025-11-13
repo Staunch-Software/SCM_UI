@@ -327,8 +327,7 @@ const InventoryHub = () => {
     const fetchInventory = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/inventory-hub');
-
+        const response = await fetch("https://odooerp.staunchtec.com/api/inventory-hub");
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
