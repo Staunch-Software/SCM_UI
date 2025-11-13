@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Calendar } from 'lucide-react';
+import { Calendar, FileText, TrendingUp, Package, Activity, BarChart3, Shield, Receipt, ChevronDown, ChevronRight, LineChart, Truck } from 'lucide-react';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import '../styles/Product360.css';
 
@@ -24,6 +24,15 @@ const Product360 = () => {
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [pickerType, setPickerType] = useState(null);
+  const [expandedSections, setExpandedSections] = useState({
+    salesOrders: false,
+    workOrders: false,
+    purchaseOrders: false
+  });
+
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
 
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const [salesOrdersData, setSalesOrdersData] = useState([]);
@@ -84,7 +93,7 @@ const Product360 = () => {
       const data = await res.json();
       const details = data.details[productId] || {};
       const chartData = Object.keys(details).map(key => ({
-        month: key,
+        month: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
         value: details[key] || 0
       }));
       setForecastData(chartData);
@@ -102,7 +111,7 @@ const Product360 = () => {
       const data = await res.json();
       const details = data.details[productId] || {};
       const chartData = Object.keys(details).map(key => ({
-        month: key,
+        month: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
         value: details[key] || 0
       }));
       setSafetyStockData(chartData);
@@ -174,20 +183,23 @@ const Product360 = () => {
               <DetailRow label="Avg Monthly Demand" value={product.avgMonthlyDemand} />
             </tbody>
           </table>
-          <h3>Sales orders line</h3>
-          <table className="p360-table">
-            <thead><tr className="animated-row"><th>Orders</th><th>Products</th><th>Order date</th><th>Customers</th></tr></thead>
-            <tbody className="animated-tbody">
-              {salesOrdersData.map((so, i) => (
-                <tr key={i} className="animated-row">
-                  <td>{so.sales_order_id}</td>
-                  <td>{so.product_name}</td>
-                  <td>{so.order_date}</td>
-                  <td>{so.customer_name}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <h3 onClick={() => toggleSection('salesOrders')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            Sales orders line {expandedSections.salesOrders ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+          </h3>
+          {expandedSections.salesOrders && (
+            <table className="p360-table">
+              <thead><tr className="animated-row"><th>Orders</th><th>Quantity</th><th>Order date</th><th>Customers</th></tr></thead>
+              <tbody className="animated-tbody">
+                {salesOrdersData.map((so, i) => (
+                  <tr key={i} className="animated-row">
+                    <td>{so.sales_order_id}</td>
+                    <td>{so.quantity}</td>
+                    <td>{so.order_date}</td>
+                    <td>{so.customer_name}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>)}
         </div>
       );
     }
@@ -241,31 +253,34 @@ const Product360 = () => {
               <DetailRow label="Open WO Qty" value={product.openWoQty} />
             </tbody>
           </table>
-          <h3>Work Orders Lines</h3>
-          <table className="p360-table">
-            <thead>
-              <tr className="animated-row">
-                <th>Orders</th>
-                <th>Planned Orders</th>
-                <th>Quantity</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody className="animated-tbody">
-              {workOrdersData.map((wo, i) => (
-                <tr key={i} className="animated-row">
-                  <td>{wo.mo_id}</td>
-                  <td>{wo.planned_order_id}</td>
-                  <td>{wo.quantity_to_produce}</td>
-                  <td>{wo.start_date}</td>
-                  <td>{wo.end_date}</td>
-                  <td>{wo.status}</td>
+          <h3 onClick={() => toggleSection('workOrders')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            Work Orders Lines {expandedSections.workOrders ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+          </h3>
+          {expandedSections.workOrders && (
+            <table className="p360-table">
+              <thead>
+                <tr className="animated-row">
+                  <th>Orders</th>
+                  <th>Planned Orders</th>
+                  <th>Quantity</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="animated-tbody">
+                {workOrdersData.map((wo, i) => (
+                  <tr key={i} className="animated-row">
+                    <td>{wo.mo_id}</td>
+                    <td>{wo.planned_order_id}</td>
+                    <td>{wo.quantity_to_produce}</td>
+                    <td>{wo.start_date}</td>
+                    <td>{wo.end_date}</td>
+                    <td>{wo.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>)}
         </>
 
       )}
@@ -282,35 +297,38 @@ const Product360 = () => {
               <DetailRow label="PO Acknowledgement" value={Array.isArray(product.poAcknowledgementList) ? product.poAcknowledgementList.join(', ') : (product.poAcknowledgementList || 'None')} />
             </tbody>
           </table>
-          <h3>Purchase Orders Lines</h3>
-          <table className="p360-table">
-            <thead>
-              <tr className="animated-row">
-                <th>Orders</th>
-                <th>Supplier</th>
-                <th>Order Date</th>
-                <th>Delivery Date</th>
-                <th>Quantity</th>
-                <th>Unit Price</th>
-                <th>Total</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody className="animated-tbody">
-              {purchaseOrdersData.map((po, i) => (
-                <tr key={i} className="animated-row">
-                  <td>{po.po_id}</td>
-                  <td>{po.supplier_name}</td>
-                  <td>{po.order_date}</td>
-                  <td>{po.expected_arrival_date}</td>
-                  <td>{po.quantity}</td>
-                  <td>{po.unit_price?.toFixed(2)}</td>
-                  <td>{po.total_amount?.toFixed(2)}</td>
-                  <td>{po.status}</td>
+          <h3 onClick={() => toggleSection('purchaseOrders')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            Purchase Orders Lines {expandedSections.purchaseOrders ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+          </h3>
+          {expandedSections.purchaseOrders && (
+            <table className="p360-table">
+              <thead>
+                <tr className="animated-row">
+                  <th>Orders</th>
+                  <th>Supplier</th>
+                  <th>Order Date</th>
+                  <th>Delivery Date</th>
+                  <th>Quantity</th>
+                  <th>Unit Price</th>
+                  <th>Total</th>
+                  <th>Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="animated-tbody">
+                {purchaseOrdersData.map((po, i) => (
+                  <tr key={i} className="animated-row">
+                    <td>{po.po_id}</td>
+                    <td>{po.supplier_name}</td>
+                    <td>{po.order_date}</td>
+                    <td>{po.expected_arrival_date}</td>
+                    <td>{po.quantity}</td>
+                    <td>{po.unit_price?.toFixed(2)}</td>
+                    <td>{po.total_amount?.toFixed(2)}</td>
+                    <td>{po.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>)}
           <h3>Inbound Flow</h3>
           <div className="flow-container">
             <div className="flow-column">
@@ -405,19 +423,27 @@ const Product360 = () => {
           <tr className="animated-row">
             <th>Date</th>
             <th>Type</th>
+            <th>From</th>
+            <th>To</th>
             <th>Quantity</th>
             <th>Reference</th>
-            <th>Balance</th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody className="animated-tbody">
           {transactions.map((t, i) => (
             <tr key={i} className="animated-row">
               <td>{t.date}</td>
-              <td className={t.type === 'IN' ? 'trans-in' : 'trans-out'}>{t.type}</td>
-              <td>{t.type === 'IN' ? `+${t.quantity}` : `-${t.quantity}`}</td>
+              <td className={t.type === 'IN' ? 'trans-in' : 'trans-out'}>
+                {t.type}
+              </td>
+              <td>{t.from}</td>
+              <td>{t.to}</td>
+              <td className={t.type === 'IN' ? 'trans-in' : 'trans-out'}>
+                {t.type === 'IN' ? `+${t.quantity}` : `-${t.quantity}`}
+              </td>
               <td>{t.reference}</td>
-              <td>{t.balance}</td>
+              <td>{t.status}</td>
             </tr>
           ))}
         </tbody>
@@ -595,48 +621,40 @@ const Product360 = () => {
         </div>
       </div>
 
-      {/* <div className="p360-metrics-strip">
-        <div className="metric-card">
-          <div className="metric-title">On Hand</div>
-          <div className="metric-value">{product.onHand}</div>
+      <div className="page-layout">
+        <div className="dock-container">
+          <nav className="dock-nav">
+            {[
+              { id: 'product-info', icon: <FileText />, label: 'Product Information' },
+              { id: 'demand', icon: <TrendingUp />, label: 'Demand' },
+              { id: 'supply', icon: <Truck />, label: 'Supply' },
+              { id: 'analyses-health', icon: <Activity />, label: 'Analyses & Health' },
+              { id: 'forecast', icon: <LineChart />, label: 'Forecast' },
+              { id: 'safety-stock', icon: <Shield />, label: 'Safety Stock' },
+              { id: 'transactions', icon: <Receipt />, label: 'Transactions' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`dock-item ${activeTab === tab.id ? 'active' : ''}`}
+              >
+                <div className="dock-icon">{tab.icon}</div>
+                <span className="dock-label">{tab.label}</span>
+              </button>
+            ))}
+          </nav>
         </div>
-        <div className="metric-card">
-          <div className="metric-title">ATP</div>
-          <div className="metric-value">{product.atp}</div>
-        </div>
-        <div className="metric-card">
-          <div className="metric-title">Days in Stock</div>
-          <div className="metric-value">{product.daysInStock}</div>
-        </div>
-        <div className="metric-card">
-          <div className="metric-title">Months Supply</div>
-          <div className="metric-value">{product.monthsOfInventory}</div>
-        </div>
-        <div className="metric-card">
-          <div className="metric-title">Total Value</div>
-          <div className="metric-value">${product.totalValue?.toLocaleString()}</div>
-        </div>
-      </div> */}
 
-      <nav className="p360-tabs">
-        <button onClick={() => setActiveTab('product-info')} className={activeTab === 'product-info' ? 'active' : ''}>Product Information</button>
-        <button onClick={() => setActiveTab('demand')} className={activeTab === 'demand' ? 'active' : ''}>Demand</button>
-        <button onClick={() => setActiveTab('supply')} className={activeTab === 'supply' ? 'active' : ''}>Supply</button>
-        <button onClick={() => setActiveTab('analyses-health')} className={activeTab === 'analyses-health' ? 'active' : ''}>Analyses & Health</button>
-        <button onClick={() => setActiveTab('forecast')} className={activeTab === 'forecast' ? 'active' : ''}>Forecast</button>
-        <button onClick={() => setActiveTab('safety-stock')} className={activeTab === 'safety-stock' ? 'active' : ''}>Safety Stock</button>
-        <button onClick={() => setActiveTab('transactions')} className={activeTab === 'transactions' ? 'active' : ''}>Transactions</button>
-      </nav>
-
-      <main>
-        {activeTab === 'product-info' && renderProductInfo()}
-        {activeTab === 'demand' && renderDemand()}
-        {activeTab === 'supply' && renderSupply()}
-        {activeTab === 'analyses-health' && renderAnalysesHealth()}
-        {activeTab === 'forecast' && renderForecast()}
-        {activeTab === 'safety-stock' && renderSafetyStock()}
-        {activeTab === 'transactions' && renderTransactions()}
-      </main>
+        <main className="main-content">
+          {activeTab === 'product-info' && renderProductInfo()}
+          {activeTab === 'demand' && renderDemand()}
+          {activeTab === 'supply' && renderSupply()}
+          {activeTab === 'analyses-health' && renderAnalysesHealth()}
+          {activeTab === 'forecast' && renderForecast()}
+          {activeTab === 'safety-stock' && renderSafetyStock()}
+          {activeTab === 'transactions' && renderTransactions()}
+        </main>
+      </div>
     </div>
   );
 };
