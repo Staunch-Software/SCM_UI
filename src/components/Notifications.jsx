@@ -18,7 +18,7 @@ const Notifications = () => {
   const abortControllerRef = useRef(null);
 
   // In a real application, this session ID would come from your authentication context or user state.
-  const sessionId = 'inventory_dashboard_session';
+  const sessionId = 'system';
 
   const getRelativeTime = (timestamp) => {
     const now = new Date();
