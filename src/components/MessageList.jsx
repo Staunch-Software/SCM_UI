@@ -3,7 +3,7 @@ import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
 import '../styles/MessageList.css';
 
-const MessageList = ({ messages, isTyping }) => {
+const MessageList = ({ messages, isTyping, onOpenDrawer }) => {
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -18,11 +18,15 @@ const MessageList = ({ messages, isTyping }) => {
     <div className="message-list">
       <div className="message-list-content">
         {messages.map((message) => (
-          <MessageBubble key={message.id} message={message} />
+          <MessageBubble
+            key={message.id}
+            message={message}
+            onOpenDrawer={onOpenDrawer}
+          />
         ))}
-        
+
         {isTyping && <TypingIndicator />}
-        
+
         <div ref={messagesEndRef} />
       </div>
     </div>

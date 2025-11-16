@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../styles/PlannedorderPage.css";
+import PurchaseOrderDrawer from "./PurchaseOrderDrawer";
+import WorkOrderDrawer from "./WorkOrderDrawer";
 
 const PlannedOrdersPage = ({ setCurrentPage }) => {
   const [orders, setOrders] = useState([]);
@@ -16,6 +18,10 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
   const [totalOrders, setTotalOrders] = useState(0);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [autoLoad, setAutoLoad] = useState(true);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedMOId, setSelectedMOId] = useState(null);
+  const [moDrawerOpen, setMoDrawerOpen] = useState(false);
 
   const fetchOrders = async (pageNum = 1, reset = false) => {
     try {
@@ -26,8 +32,8 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
       }
       setError(null);
 
-      // const response = await fetch(`http://127.0.0.1:8000/api/planned-orders?page=${pageNum}&limit=100&search=${search}&sort=${sortField}&order=${sortOrder}`);
-      const response = await fetch(`https://odooerp.staunchtec.com/api/planned-orders?page=${pageNum}&limit=100&search=${search}&sort=${sortField}&order=${sortOrder}`);
+      const response = await fetch(`http://127.0.0.1:8000/api/planned-orders?page=${pageNum}&limit=100&search=${search}&sort=${sortField}&order=${sortOrder}`);
+      // const response = await fetch(`https://odooerp.staunchtec.com/api/planned-orders?page=${pageNum}&limit=100&search=${search}&sort=${sortField}&order=${sortOrder}`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -217,7 +223,19 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
           </thead>
           <tbody>
             {filteredOrders.map((o, idx) => (
-              <tr key={o.planned_order_id || idx}>
+              <tr
+                key={o.planned_order_id || idx}
+                onClick={() => {
+                  if (o.item_type === 'Purchase') {
+                    setSelectedOrderId(o.planned_order_id);
+                    setDrawerOpen(true);
+                  } else if (o.item_type === 'Manufacture') {
+                    setSelectedMOId(o.planned_order_id);
+                    setMoDrawerOpen(true);
+                  }
+                }}
+                style={{ cursor: 'pointer' }}
+              >
                 <td>{idx + 1}</td>
                 <td>{o.planned_order_id || "N/A"}</td>
                 <td>{o.item || "N/A"}</td>
@@ -247,6 +265,16 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
           </button>
         </div>
       )} */}
+      <PurchaseOrderDrawer
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        orderId={selectedOrderId}
+      />
+      <WorkOrderDrawer
+        isOpen={moDrawerOpen}
+        onClose={() => setMoDrawerOpen(false)}
+        orderId={selectedMOId}
+      />
     </div>
   );
 };

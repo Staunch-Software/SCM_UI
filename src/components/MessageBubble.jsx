@@ -56,7 +56,7 @@ const repairPythonJSON = (jsonString) => {
     .replace(/'/g, '"'); // Replace single quotes with double quotes if needed
 };
 
-const MessageBubble = ({ message }) => {
+const MessageBubble = ({ message, onOpenDrawer }) => {
   const { type, content, timestamp } = message;
   const isUser = type === 'user';
 
@@ -66,6 +66,20 @@ const MessageBubble = ({ message }) => {
       const parsedContent = JSON.parse(content);
 
       console.log('Parsed content:', parsedContent); // Debug logging
+
+      // Handle drawer opening request
+      if (parsedContent && parsedContent.display_type === 'open_drawer') {
+        const { drawer_type, order_id } = parsedContent;
+        
+        // Trigger drawer opening
+        if (onOpenDrawer) {
+          setTimeout(() => onOpenDrawer(drawer_type, order_id), 100);
+        }
+        
+        // Return friendly message
+        const drawerTypeLabel = drawer_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+        return <p>Opening {drawerTypeLabel} for order <strong>{order_id}</strong>...</p>;
+      }
 
       if (parsedContent && parsedContent.enhanced_supplier_selection_tool_response) {
         const toolResponse = parsedContent.enhanced_supplier_selection_tool_response;

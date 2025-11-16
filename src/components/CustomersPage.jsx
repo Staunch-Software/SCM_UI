@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
 import "../styles/CustomersPage.css";
+import SalesOrderDrawer from "./SalesOrderDrawer";
 
 const CustomersPage = () => {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
-    // fetch("http://127.0.0.1:8000/api/customers")
-    fetch("https://odooerp.staunchtec.com/api/customers")
+    fetch("http://127.0.0.1:8000/api/customers")
+      // fetch("https://odooerp.staunchtec.com/api/customers")
       .then((res) => res.json())
       .then((data) => {
         setCustomers(data);
@@ -39,21 +42,33 @@ const CustomersPage = () => {
               <th>#</th>
               <th>Order Reference</th>
               <th>Customer Name</th>
-              <th>Sales ID</th> 
+              <th>Sales ID</th>
             </tr>
           </thead>
           <tbody>
             {customers.map((c, idx) => (
-              <tr key={idx}>
+              <tr
+                key={idx}
+                onClick={() => {
+                  setSelectedOrderId(c.sales_id || c.order_reference);
+                  setDrawerOpen(true);
+                }}
+                style={{ cursor: 'pointer' }}
+              >
                 <td>{idx + 1}</td>
                 <td>{c.order_reference}</td>
                 <td>{c.customer_name}</td>
-                <td>{c.sales_id || "N/A"}</td> 
+                <td>{c.sales_id || "N/A"}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <SalesOrderDrawer
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        orderId={selectedOrderId}
+      />
     </div>
   );
 };

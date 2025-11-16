@@ -118,3 +118,20 @@
     margin-top: 8px;
   }
 }
+
+/* Drawer Integration Styles */
+.chat-interface.drawer-open .chat-main {
+  transition: margin-right 0.3s ease;
+}
+
+@media (min-width: 769px) {
+  .chat-interface.drawer-open .chat-main {
+    margin-right: 50%;
+  }
+}
+
+@media (max-width: 768px) {
+  .chat-interface.drawer-open .chat-main {
+    margin-right: 0;
+  }
+}
