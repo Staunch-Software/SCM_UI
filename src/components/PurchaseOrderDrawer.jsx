@@ -1,4 +1,3 @@
-// PurchaseOrderDrawer.jsx - REPLACE ENTIRE FILE
 import React, { useState, useEffect } from "react";
 import "../styles/PurchaseOrderDrawer.css";
 import "../styles/SalesOrderModal.css";
@@ -10,7 +9,6 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
   const [showActionsId, setShowActionsId] = useState(null);
   const [isEditable, setIsEditable] = useState(false);
   
-  // Add/Edit modal state
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingLine, setEditingLine] = useState(null);
@@ -19,17 +17,14 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
   
-  // Suppliers state
   const [suppliers, setSuppliers] = useState([]);
   const [loadingSuppliers, setLoadingSuppliers] = useState(false);
   
-  // Editable header fields
   const [editedHeader, setEditedHeader] = useState({
     supplier_id: null,
     expected_arrival_date: ""
   });
   
-  // Form state for line items
   const [formData, setFormData] = useState({
     product_id: null,
     product_name: "",
@@ -42,6 +37,20 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
   const [submitting, setSubmitting] = useState(false);
   const [headerError, setHeaderError] = useState(null);
   const [updatingHeader, setUpdatingHeader] = useState(false);
+
+  // FIX: Close action menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showActionsId && !event.target.closest('.actions-cell')) {
+        setShowActionsId(null);
+      }
+    };
+
+    if (showActionsId) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showActionsId]);
 
   useEffect(() => {
     if (isOpen && orderId) {
@@ -60,7 +69,6 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
       const data = await response.json();
       setOrderData(data);
       
-      // Initialize editable header fields
       setEditedHeader({
         supplier_id: data.supplier_id || null,
         expected_arrival_date: formatDateForInput(data.expected_arrival_date)
@@ -101,7 +109,9 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
   const searchProducts = async (query) => {
     setLoadingProducts(true);
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/products-search?query=${encodeURIComponent(query)}`);
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/products-search?query=${encodeURIComponent(query)}&procurement_type=Buy`
+      );
       if (!response.ok) throw new Error("Failed to search products");
       const data = await response.json();
       setProducts(data.products);
@@ -142,7 +152,7 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
   const handleEditLine = (line) => {
     setEditingLine(line);
     setFormData({
-      product_id: line.product_id || null,
+      product_id: line.product_id,
       product_name: line.product_name,
       sku: line.sku,
       quantity: line.quantity,
@@ -317,11 +327,9 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
 
           {orderData && (
             <>
-              {/* General Information */}
               <div className="info-section">
                 <h3 className="section-title">General Information</h3>
                 <div className="info-grid">
-                  {/* Supplier - Editable */}
                   <div className="info-field">
                     <label className="field-label">Supplier *</label>
                     {isEditable ? (
@@ -351,7 +359,6 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
                     <div className="field-value readonly-field">{formatDateForInput(orderData.order_date) || "N/A"}</div>
                   </div>
                   
-                  {/* Expected Arrival - Editable */}
                   <div className="info-field">
                     <label className="field-label">Expected Arrival *</label>
                     {isEditable ? (
@@ -388,7 +395,6 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
                 </div>
               </div>
 
-              {/* Order Items */}
               <div className="items-section">
                 <div className="items-header">
                   <h3 className="section-title">Order Items</h3>
@@ -475,7 +481,6 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
         </div>
       </div>
 
-      {/* Add/Edit Modal */}
       {(showAddModal || showEditModal) && (
         <div className="modal-overlay" onClick={() => {
           setShowAddModal(false);
@@ -495,7 +500,6 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
             <div className="modal-body">
               {formError && <div className="drawer-error" style={{marginBottom: '1rem'}}>{formError}</div>}
               
-              {/* Product Selection - Only for Add */}
               {showAddModal && (
                 <div className="form-field">
                   <label>Product *</label>
@@ -535,7 +539,6 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
                 </div>
               )}
 
-              {/* Product Name - Read-only for Edit */}
               {showEditModal && (
                 <div className="form-field">
                   <label>Product</label>
@@ -543,13 +546,11 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
                 </div>
               )}
 
-              {/* SKU (Read-only) */}
               <div className="form-field">
                 <label>SKU</label>
                 <div className="field-value readonly-field">{formData.sku || "N/A"}</div>
               </div>
 
-              {/* Quantity - Editable */}
               <div className="form-field">
                 <label>Quantity *</label>
                 <input
@@ -557,12 +558,11 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
                   className="field-value editable-field"
                   value={formData.quantity}
                   onChange={(e) => handleFormChange('quantity', e.target.value)}
-                  min="0.01"
-                  step="0.01"
+                  min="1"
+                  step="1"
                 />
               </div>
 
-              {/* Unit Price - Only editable for Add */}
               <div className="form-field">
                 <label>Unit Price *</label>
                 {showAddModal ? (
@@ -579,7 +579,6 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
                 )}
               </div>
 
-              {/* Total (Calculated) */}
               <div className="form-field">
                 <label>Total Amount</label>
                 <div className="field-value readonly-field">

@@ -1,31 +1,22 @@
-/* PurchaseOrderDrawer.css */
+/* PurchaseOrderDrawer.css - Fixed Version */
 
-/* Overlay */
-/* .drawer-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1001;
-  pointer-events: auto;
-} */
-
-/* Drawer Container */
+/* Drawer Container - FIXED: Position below navbar */
 .drawer-container {
   position: fixed;
   right: 0;
-  top: 0;
-  height: 100%;
+  top: 70px; /* Below navbar */
+  height: calc(100vh - 70px); /* Full height minus navbar */
   width: 100%;
   max-width: 960px;
   background-color: #ffffff;
-  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
-  z-index: 1002;
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.12);
+  z-index: 999; /* Below navbar (1000) */
   pointer-events: auto;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   transform: translateX(100%);
-  transition: transform 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .drawer-container.open {
@@ -36,35 +27,39 @@
 .drawer-header {
   position: sticky;
   top: 0;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-  padding: 1.5rem;
+  background-color: #2d3748;
+  border-bottom: 1px solid #4a5568;
+  padding: 1.25rem 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .drawer-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1a202c;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #ffffff;
   margin: 0;
+  letter-spacing: -0.025em;
 }
 
 .drawer-close-btn {
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: #4a5568;
+  color: #e2e8f0;
   cursor: pointer;
   padding: 0.5rem;
-  border-radius: 4px;
-  transition: background-color 0.2s;
+  border-radius: 6px;
+  transition: all 0.2s;
+  line-height: 1;
 }
 
 .drawer-close-btn:hover {
-  background-color: #f7fafc;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
 }
 
 /* Content */
@@ -72,20 +67,41 @@
   flex: 1;
   padding: 1.5rem;
   overflow-y: auto;
+  background: #f7fafc;
+}
+
+.drawer-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.drawer-content::-webkit-scrollbar-track {
+  background: #f7fafc;
+}
+
+.drawer-content::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+.drawer-content::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
 }
 
 .drawer-loading,
 .drawer-error {
   text-align: center;
   padding: 2rem;
-  font-size: 1rem;
+  font-size: 0.875rem;
   color: #718096;
+  background: #ffffff;
+  border-radius: 8px;
+  margin-bottom: 1rem;
 }
 
 .drawer-error {
-  background-color: #fed7d7;
+  background-color: #fee;
   color: #c53030;
-  border-radius: 8px;
+  border: 1px solid #feb2b2;
 }
 
 /* Info Section */
@@ -94,59 +110,46 @@
 }
 
 .section-title {
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #2d3748;
   margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.chevron-icon {
-  font-size: 0.875rem;
-  color: #718096;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e2e8f0;
 }
 
 .info-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-  background-color: #f7fafc;
+  gap: 1rem;
+  background-color: #ffffff;
   padding: 1.5rem;
   border-radius: 8px;
-  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .info-field {
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
 }
 
 .field-label {
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 0.8125rem;
+  font-weight: 600;
   color: #4a5568;
-  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
 }
 
 .field-value {
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 4px;
+  border-radius: 6px;
   padding: 0.75rem;
   font-size: 0.875rem;
   color: #2d3748;
-}
-
-.info-notes {
-  background-color: #f7fafc;
-  padding: 0 1.5rem 1.5rem;
-  border-radius: 8px;
-}
-
-.notes-text {
-  min-height: 60px;
+  transition: all 0.2s;
 }
 
 /* Items Section */
@@ -165,25 +168,29 @@
   background-color: #2d3748;
   color: #ffffff;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .add-item-btn:hover {
   background-color: #4a5568;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
 
-/* Items Table */
+/* Items Table - FIXED: Overflow handling */
 .items-table-container {
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible; /* Changed from hidden */
   margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .items-table {
@@ -197,11 +204,13 @@
 
 .items-table th {
   text-align: left;
-  padding: 0.75rem 1rem;
-  font-size: 0.875rem;
+  padding: 0.875rem 1rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: #4a5568;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 2px solid #e2e8f0;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
 }
 
 .items-table td {
@@ -209,6 +218,10 @@
   font-size: 0.875rem;
   color: #2d3748;
   border-bottom: 1px solid #f1f5f9;
+}
+
+.items-table tbody tr {
+  transition: background-color 0.15s;
 }
 
 .items-table tbody tr:hover {
@@ -219,43 +232,42 @@
   border-bottom: none;
 }
 
-.row-radio {
-  cursor: pointer;
-  width: 16px;
-  height: 16px;
-}
-
-/* Actions Cell */
+/* Actions Cell - FIXED: Menu positioning */
 .actions-cell {
   position: relative;
 }
 
 .actions-btn {
   background: none;
-  border: none;
+  border: 1px solid #e2e8f0;
   font-size: 1.25rem;
-  color: #4a5568;
+  color: #718096;
   cursor: pointer;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .actions-btn:hover {
   background-color: #f7fafc;
+  border-color: #cbd5e0;
+  color: #2d3748;
 }
 
 .actions-menu {
   position: absolute;
   right: 0;
-  top: 100%;
+  bottom: calc(100% + 4px); /* Appear ABOVE the row */
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  z-index: 20;
-  min-width: 200px;
-  margin-top: 0.25rem;
+  border-radius: 8px;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 160px;
+  overflow: hidden;
 }
 
 .action-item {
@@ -268,26 +280,29 @@
   font-size: 0.875rem;
   color: #2d3748;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.15s;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.action-item:last-child {
+  border-bottom: none;
 }
 
 .action-item:hover {
   background-color: #f7fafc;
 }
 
-.action-item:first-child {
-  border-radius: 6px 6px 0 0;
-}
-
-.action-item:last-child {
-  border-radius: 0 0 6px 6px;
+.action-item:last-child:hover {
+  background: #fee2e2;
+  color: #dc2626;
 }
 
 /* Pagination Info */
 .pagination-info {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   color: #718096;
-  padding: 0.5rem 0;
+  padding: 0.75rem 0;
+  text-align: center;
 }
 
 /* Footer */
@@ -300,12 +315,13 @@
   display: flex;
   justify-content: flex-start;
   gap: 1rem;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .footer-btn {
   padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
@@ -320,6 +336,7 @@
 
 .cancel-btn:hover {
   background-color: #f7fafc;
+  border-color: #cbd5e0;
 }
 
 .update-btn {
@@ -329,6 +346,55 @@
 
 .update-btn:hover {
   background-color: #4a5568;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.update-btn:disabled {
+  background-color: #a0aec0;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.update-btn:disabled:hover {
+  background-color: #a0aec0;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Field States */
+.readonly-field {
+  background-color: #edf2f7;
+  border: 1px solid #e2e8f0;
+  color: #4a5568;
+  cursor: not-allowed;
+}
+
+.editable-field {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  color: #2d3748;
+  width: 100%;
+  transition: all 0.2s;
+}
+
+.editable-field:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.editable-field:hover:not(:disabled) {
+  border-color: #a0aec0;
+}
+
+.disabled-field {
+  background-color: #edf2f7;
+  color: #718096;
+  cursor: not-allowed;
 }
 
 /* Responsive */
@@ -349,51 +415,4 @@
   .items-table {
     min-width: 600px;
   }
-}
-
-/* Read-only fields (gray background) */
-.readonly-field {
-  background-color: #edf2f7;
-  border: 1px solid #e2e8f0;
-  color: #2d3748;
-}
-
-/* Editable Fields (white background) */
-.editable-field {
-  background-color: #ffffff;
-  border: 1px solid #cbd5e0;
-  border-radius: 4px;
-  padding: 0.75rem;
-  font-size: 0.875rem;
-  color: #2d3748;
-  width: 100%;
-  transition: border-color 0.2s;
-}
-
-.editable-field:focus {
-  outline: none;
-  border-color: #4299e1;
-  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
-}
-
-.editable-field:hover:not(:disabled) {
-  border-color: #a0aec0;
-}
-
-/* Disabled Field Style (when status is "done") */
-.disabled-field {
-  background-color: #edf2f7;
-  color: #718096;
-  cursor: not-allowed;
-}
-
-/* Disabled Update Button */
-.update-btn:disabled {
-  background-color: #a0aec0;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.update-btn:disabled:hover {
-  background-color: #a0aec0;
 }

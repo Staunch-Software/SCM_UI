@@ -1,4 +1,3 @@
-// SalesOrderDrawer.jsx - REPLACE ENTIRE FILE
 import React, { useState, useEffect } from "react";
 import "../styles/PurchaseOrderDrawer.css";
 import "../styles/SalesOrderModal.css";
@@ -10,7 +9,6 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
   const [showActionsId, setShowActionsId] = useState(null);
   const [isEditable, setIsEditable] = useState(false);
   
-  // Add/Edit modal state
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingLine, setEditingLine] = useState(null);
@@ -19,7 +17,6 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
   
-  // Form state
   const [formData, setFormData] = useState({
     product_id: null,
     product_name: "",
@@ -30,6 +27,20 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
   
   const [formError, setFormError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // FIX: Close action menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showActionsId && !event.target.closest('.actions-cell')) {
+        setShowActionsId(null);
+      }
+    };
+
+    if (showActionsId) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showActionsId]);
 
   useEffect(() => {
     if (isOpen && orderId) {
@@ -256,7 +267,6 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
 
           {orderData && (
             <>
-              {/* General Information */}
               <div className="info-section">
                 <h3 className="section-title">General Information</h3>
                 <div className="info-grid">
@@ -287,7 +297,6 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
                 </div>
               </div>
 
-              {/* Order Lines */}
               <div className="items-section">
                 <div className="items-header">
                   <h3 className="section-title">Order Lines</h3>
@@ -365,7 +374,6 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
         </div>
       </div>
 
-      {/* Add/Edit Modal */}
       {(showAddModal || showEditModal) && (
         <div className="modal-overlay" onClick={() => {
           setShowAddModal(false);
@@ -385,7 +393,6 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
             <div className="modal-body">
               {formError && <div className="drawer-error" style={{marginBottom: '1rem'}}>{formError}</div>}
               
-              {/* Product Selection */}
               <div className="form-field">
                 <label>Product *</label>
                 {showProductSearch ? (
@@ -423,13 +430,11 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
                 )}
               </div>
 
-              {/* SKU (Read-only) */}
               <div className="form-field">
                 <label>SKU</label>
                 <div className="field-value readonly-field">{formData.sku || "N/A"}</div>
               </div>
 
-              {/* Quantity */}
               <div className="form-field">
                 <label>Quantity *</label>
                 <input
@@ -442,7 +447,6 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
                 />
               </div>
 
-              {/* Unit Price */}
               <div className="form-field">
                 <label>Unit Price *</label>
                 <input
@@ -455,7 +459,6 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
                 />
               </div>
 
-              {/* Total (Calculated) */}
               <div className="form-field">
                 <label>Total Amount</label>
                 <div className="field-value readonly-field">

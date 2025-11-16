@@ -1,4 +1,3 @@
-// WorkOrderDrawer.jsx - REPLACE ENTIRE FILE
 import React, { useState, useEffect } from "react";
 import "../styles/PurchaseOrderDrawer.css";
 
@@ -8,7 +7,6 @@ const WorkOrderDrawer = ({ isOpen, onClose, orderId }) => {
   const [error, setError] = useState(null);
   const [showActionsId, setShowActionsId] = useState(null);
   
-  // Edit state
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({
     quantity_to_produce: "",
@@ -17,6 +15,20 @@ const WorkOrderDrawer = ({ isOpen, onClose, orderId }) => {
   });
   const [updateError, setUpdateError] = useState(null);
   const [updating, setUpdating] = useState(false);
+
+  // FIX: Close action menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showActionsId && !event.target.closest('.actions-cell')) {
+        setShowActionsId(null);
+      }
+    };
+
+    if (showActionsId) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showActionsId]);
 
   useEffect(() => {
     if (isOpen && orderId) {
@@ -35,7 +47,6 @@ const WorkOrderDrawer = ({ isOpen, onClose, orderId }) => {
       const data = await response.json();
       setOrderData(data);
       
-      // Initialize edit data
       setEditedData({
         quantity_to_produce: data.quantity_to_produce || "",
         start_date: formatDateForInput(data.start_date),
@@ -50,7 +61,6 @@ const WorkOrderDrawer = ({ isOpen, onClose, orderId }) => {
 
   const formatDateForInput = (dateStr) => {
     if (!dateStr) return "";
-    // "2025-10-31 01:00:00" -> "2025-10-31"
     return dateStr.split(" ")[0];
   };
 
@@ -105,7 +115,6 @@ const WorkOrderDrawer = ({ isOpen, onClose, orderId }) => {
         throw new Error(errorData.detail || "Failed to update work order");
       }
 
-      // Success - close drawer
       onClose();
     } catch (err) {
       setUpdateError(err.message);
@@ -137,7 +146,6 @@ const WorkOrderDrawer = ({ isOpen, onClose, orderId }) => {
 
           {orderData && (
             <>
-              {/* General Information */}
               <div className="info-section">
                 <h3 className="section-title">General Information</h3>
                 <div className="info-grid">
@@ -154,7 +162,6 @@ const WorkOrderDrawer = ({ isOpen, onClose, orderId }) => {
                     <div className="field-value readonly-field">{orderData.product_name || "N/A"}</div>
                   </div>
                   
-                  {/* EDITABLE: Quantity to Produce */}
                   <div className="info-field">
                     <label className="field-label">Quantity to Produce *</label>
                     {isStatusDone ? (
@@ -171,7 +178,6 @@ const WorkOrderDrawer = ({ isOpen, onClose, orderId }) => {
                     )}
                   </div>
                   
-                  {/* EDITABLE: Start Date */}
                   <div className="info-field">
                     <label className="field-label">Start Date *</label>
                     {isStatusDone ? (
@@ -186,7 +192,6 @@ const WorkOrderDrawer = ({ isOpen, onClose, orderId }) => {
                     )}
                   </div>
                   
-                  {/* EDITABLE: End Date */}
                   <div className="info-field">
                     <label className="field-label">End Date *</label>
                     {isStatusDone ? (
@@ -203,16 +208,15 @@ const WorkOrderDrawer = ({ isOpen, onClose, orderId }) => {
                   
                   <div className="info-field">
                     <label className="field-label">Status</label>
-                    <div className="field-value">{orderData.status || "N/A"}</div>
+                    <div className="field-value readonly-field">{orderData.status || "N/A"}</div>
                   </div>
                   <div className="info-field">
                     <label className="field-label">Created At</label>
-                    <div className="field-value">{formatDateForDisplay(orderData.created_at)}</div>
+                    <div className="field-value readonly-field">{formatDateForDisplay(orderData.created_at)}</div>
                   </div>
                 </div>
               </div>
 
-              {/* Order Lines - Components from BOM */}
               <div className="items-section">
                 <div className="items-header">
                   <h3 className="section-title">Required Components (BOM)</h3>
