@@ -7,6 +7,7 @@ import WorkOrderDrawer from './WorkOrderDrawer';
 import SalesOrderDrawer from './SalesOrderDrawer';
 import { useChatStore } from '../stores/chatStore';
 import '../styles/ChatInterface.css';
+import '../styles/ChatDrawer.css';
 import { useEffect } from 'react';
 
 const ChatInterface = () => {

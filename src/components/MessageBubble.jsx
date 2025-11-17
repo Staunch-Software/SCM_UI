@@ -70,15 +70,17 @@ const MessageBubble = ({ message, onOpenDrawer }) => {
       // Handle drawer opening request
       if (parsedContent && parsedContent.display_type === 'open_drawer') {
         const { drawer_type, order_id } = parsedContent;
-        
-        // Trigger drawer opening
-        if (onOpenDrawer) {
+        const drawerTypeLabel = drawer_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+        // Trigger drawer opening only once per message
+        const messageKey = `${message.id}_drawer`;
+        if (onOpenDrawer && !window.drawerOpened?.[messageKey]) {
+          if (!window.drawerOpened) window.drawerOpened = {};
+          window.drawerOpened[messageKey] = true;
           setTimeout(() => onOpenDrawer(drawer_type, order_id), 100);
         }
-        
-        // Return friendly message
-        const drawerTypeLabel = drawer_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-        return <p>Opening {drawerTypeLabel} for order <strong>{order_id}</strong>...</p>;
+
+        return <p>Opened {drawerTypeLabel} for order <strong>{order_id}</strong>.</p>;
       }
 
       if (parsedContent && parsedContent.enhanced_supplier_selection_tool_response) {
@@ -133,11 +135,11 @@ const MessageBubble = ({ message, onOpenDrawer }) => {
 
       if (content.includes('"display_type"') && (content.includes('True') || content.includes('False'))) {
         console.log('Detected Python-style JSON, repairing...');
-        
+
         try {
           const repairedJSON = repairPythonJSON(content);
           const repairedContent = JSON.parse(repairedJSON);
-          
+
           if (repairedContent && repairedContent.display_type === 'table') {
             console.log('Successfully repaired and rendering table');
             return (
@@ -147,12 +149,12 @@ const MessageBubble = ({ message, onOpenDrawer }) => {
               </>
             );
           }
-          
+
           if (repairedContent && repairedContent.display_type === 'multiple_tables') {
             console.log('Successfully repaired and rendering multiple tables');
             return <MultipleTablesDisplay orderTables={repairedContent.order_tables} />;
           }
-          
+
         } catch (repairError) {
           console.log('Could not repair Python JSON:', repairError);
         }
@@ -181,18 +183,18 @@ const MessageBubble = ({ message, onOpenDrawer }) => {
           }
         }
       }
-      
+
       // Fallback to extracting clean JSON
       if (content.includes('"display_type": "table"')) {
         console.log('Attempting to extract clean JSON...');
-        
+
         const jsonStart = content.indexOf('{"display_type"');
         const jsonEnd = content.lastIndexOf('}') + 1;
-        
+
         if (jsonStart >= 0 && jsonEnd > jsonStart) {
           let cleanedContent = content.substring(jsonStart, jsonEnd);
           cleanedContent = repairPythonJSON(cleanedContent);
-          
+
           try {
             const extractedContent = JSON.parse(cleanedContent);
             if (extractedContent.display_type === 'table') {
@@ -209,7 +211,7 @@ const MessageBubble = ({ message, onOpenDrawer }) => {
           }
         }
       }
-      
+
       return <p>{content}</p>;
     }
   };

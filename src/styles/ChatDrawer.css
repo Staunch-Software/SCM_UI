@@ -1,0 +1,152 @@
+/* ChatDrawer.css - Chat-specific drawer overrides */
+
+/* Only apply when drawer is opened from chat interface */
+.chat-interface .drawer-container.open {
+  top: -10px !important; /* Match navbar height exactly */
+  height: calc(100vh - 70px) !important;
+  box-shadow: none !important; /* Remove shadow in chat */
+}
+
+/* Reduce header height in chat */
+.chat-interface .drawer-header {
+  padding: 0.75rem 1.5rem;
+      height: 59px;
+}
+
+.chat-interface .drawer-title {
+  font-size: 1.125rem;
+}
+
+/* Restructure General Information for Sales Order in chat */
+.chat-interface .info-section .info-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* Sales Order specific layout */
+.chat-interface .sales-order-info .info-grid {
+  display: grid;
+  grid-template-areas:
+    "so-id customer"
+    "order-date delivery"
+    "status last-update";
+  gap: 1rem;
+}
+
+.chat-interface .sales-order-info .info-field:nth-child(1) {
+  grid-area: so-id;
+}
+
+.chat-interface .sales-order-info .info-field:nth-child(2) {
+  grid-area: customer;
+}
+
+.chat-interface .sales-order-info .info-field:nth-child(3) {
+  grid-area: order-date;
+}
+
+.chat-interface .sales-order-info .info-field:nth-child(4) {
+  grid-area: delivery;
+}
+
+.chat-interface .sales-order-info .info-field:nth-child(5) {
+  grid-area: status;
+}
+
+.chat-interface .sales-order-info .info-field:nth-child(6) {
+  grid-area: last-update;
+}
+
+/* Purchase Order specific layout */
+.chat-interface .purchase-order-info .info-grid {
+  display: grid;
+  grid-template-areas:
+    "supplier po-id"
+    "order-date expected"
+    "status actual"
+    "created approved";
+  gap: 1rem;
+}
+
+.chat-interface .purchase-order-info .info-field:nth-child(1) {
+  grid-area: supplier;
+}
+
+.chat-interface .purchase-order-info .info-field:nth-child(2) {
+  grid-area: po-id;
+}
+
+.chat-interface .purchase-order-info .info-field:nth-child(3) {
+  grid-area: order-date;
+}
+
+.chat-interface .purchase-order-info .info-field:nth-child(4) {
+  grid-area: expected;
+}
+
+.chat-interface .purchase-order-info .info-field:nth-child(5) {
+  grid-area: status;
+}
+
+.chat-interface .purchase-order-info .info-field:nth-child(6) {
+  grid-area: actual;
+}
+
+.chat-interface .purchase-order-info .info-field:nth-child(7) {
+  grid-area: created;
+}
+
+.chat-interface .purchase-order-info .info-field:nth-child(8) {
+  grid-area: approved;
+}
+
+/* Work Order specific layout */
+.chat-interface .work-order-info .info-grid {
+  display: grid;
+  grid-template-areas:
+    "mo-id planned"
+    "product quantity"
+    "start-date end-date"
+    "status created";
+  gap: 1rem;
+}
+
+.chat-interface .work-order-info .info-field:nth-child(1) {
+  grid-area: mo-id;
+}
+
+.chat-interface .work-order-info .info-field:nth-child(2) {
+  grid-area: planned;
+}
+
+.chat-interface .work-order-info .info-field:nth-child(3) {
+  grid-area: product;
+}
+
+.chat-interface .work-order-info .info-field:nth-child(4) {
+  grid-area: quantity;
+}
+
+.chat-interface .work-order-info .info-field:nth-child(5) {
+  grid-area: start-date;
+}
+
+.chat-interface .work-order-info .info-field:nth-child(6) {
+  grid-area: end-date;
+}
+
+.chat-interface .work-order-info .info-field:nth-child(7) {
+  grid-area: status;
+}
+
+.chat-interface .work-order-info .info-field:nth-child(8) {
+  grid-area: created;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .chat-interface .drawer-container.open {
+    top: 60px;
+    height: calc(100vh - 60px);
+  }
+}

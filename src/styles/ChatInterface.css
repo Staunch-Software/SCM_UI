@@ -1,4 +1,4 @@
-/* ChatInterface.css - VendorsPage Theme Integration */
+/* ChatInterface.css - 2 Column Layout with Drawer */
 
 .chat-interface {
   display: flex;
@@ -12,6 +12,42 @@
   line-height: 1.5;
   overflow: hidden;
   padding-top: 80px;
+}
+
+/* Default: Normal horizontal layout */
+.chat-interface:not(.drawer-open) {
+  flex-direction: row;
+}
+
+/* When drawer opens: 2 column layout */
+.chat-interface.drawer-open {
+  display: grid;
+  grid-template-columns: 30% 70%;
+  grid-template-rows: 100%;
+  gap: 0;
+}
+
+.chat-interface.drawer-open .chat-history-sidebar {
+  display: none;
+}
+
+.chat-interface.drawer-open .chat-main {
+  grid-column: 1;
+  grid-row: 1;
+  height: 100%;
+  margin-top: 0;
+  overflow: hidden;
+}
+
+/* Column 2: Full height drawer */
+.chat-interface.drawer-open .drawer-container.open {
+  grid-column: 2;
+  grid-row: 1;
+  height: calc(100vh - 80px);
+  position: relative;
+  top: 0;
+  transform: translateX(0);
+  max-width: 100%;
 }
 
 .chat-main {
@@ -64,6 +100,10 @@
   .chat-title {
     font-size: 1.05rem;
   }
+
+  .chat-interface.drawer-open {
+    grid-template-columns: 1fr 55%;
+  }
 }
 
 /* Tablets */
@@ -74,6 +114,30 @@
     height: auto;
     padding-top: 60px;
     overflow-y: auto;
+  }
+
+  .chat-interface.drawer-open {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chat-interface.drawer-open .chat-history-sidebar {
+    height: auto;
+    max-height: 30vh;
+  }
+
+  .chat-interface.drawer-open .chat-main {
+    height: auto;
+    flex: 1;
+  }
+
+  .chat-interface.drawer-open .drawer-container {
+    position: fixed;
+    top: 60px;
+    right: 0;
+    width: 100%;
+    height: calc(100vh - 60px);
+    z-index: 1000;
   }
 
   .chat-main {
@@ -117,21 +181,9 @@
     flex: none;
     margin-top: 8px;
   }
-}
 
-/* Drawer Integration Styles */
-.chat-interface.drawer-open .chat-main {
-  transition: margin-right 0.3s ease;
-}
-
-@media (min-width: 769px) {
-  .chat-interface.drawer-open .chat-main {
-    margin-right: 50%;
-  }
-}
-
-@media (max-width: 768px) {
-  .chat-interface.drawer-open .chat-main {
-    margin-right: 0;
+  .chat-interface.drawer-open .drawer-container {
+    top: 50px;
+    height: calc(100vh - 50px);
   }
 }
