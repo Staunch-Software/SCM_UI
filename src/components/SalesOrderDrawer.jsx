@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { ChevronDown, Package, Wrench, ShoppingCart } from "lucide-react";
 import "../styles/PurchaseOrderDrawer.css";
 import "../styles/SalesOrderModal.css";
 
@@ -8,7 +9,7 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
   const [error, setError] = useState(null);
   const [showActionsId, setShowActionsId] = useState(null);
   const [isEditable, setIsEditable] = useState(false);
-  
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingLine, setEditingLine] = useState(null);
@@ -16,7 +17,7 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
   const [productSearch, setProductSearch] = useState("");
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     product_id: null,
     product_name: "",
@@ -24,9 +25,35 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
     quantity: 1,
     unit_price: 0
   });
-  
+
   const [formError, setFormError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState("materials"); // New
+  const [relatedOrders, setRelatedOrders] = useState(null); // New
+  const [expandedMaterials, setExpandedMaterials] = useState({});
+  const [expandedWorkOrders, setExpandedWorkOrders] = useState({});
+  const [expandedPurchaseOrders, setExpandedPurchaseOrders] = useState({});
+
+  const toggleMaterialGroup = (idx) => {
+    setExpandedMaterials(prev => ({
+      ...prev,
+      [idx]: !prev[idx]
+    }));
+  };
+
+  const toggleWorkOrder = (idx) => {
+    setExpandedWorkOrders(prev => ({
+      ...prev,
+      [idx]: !prev[idx]
+    }));
+  };
+
+  const togglePurchaseOrder = (idx) => {
+    setExpandedPurchaseOrders(prev => ({
+      ...prev,
+      [idx]: !prev[idx]
+    }));
+  };
 
   // FIX: Close action menu on outside click
   useEffect(() => {
@@ -46,6 +73,7 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
     if (isOpen && orderId) {
       fetchOrderDetails();
       checkEditability();
+      fetchRelatedOrders();
     }
   }, [isOpen, orderId]);
 
@@ -73,6 +101,18 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
     } catch (err) {
       console.error("Error checking editability:", err);
       setIsEditable(false);
+    }
+  };
+
+  const fetchRelatedOrders = async () => {
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/api/sales-order-related-orders/${orderId}`);
+      if (!response.ok) throw new Error("Failed to fetch related orders");
+      const data = await response.json();
+      setRelatedOrders(data);
+    } catch (err) {
+      console.error("Error fetching related orders:", err);
+      setRelatedOrders({ materials: [], work_orders: [], purchase_orders: [] });
     }
   };
 
@@ -160,10 +200,10 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
 
   const handleSubmitAdd = async () => {
     if (!validateForm()) return;
-    
+
     setSubmitting(true);
     setFormError(null);
-    
+
     try {
       const response = await fetch(`http://127.0.0.1:8000/api/sales-order-line?so_id=${encodeURIComponent(orderId)}`, {
         method: "POST",
@@ -174,12 +214,12 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
           unit_price: parseFloat(formData.unit_price)
         })
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail || "Failed to add line");
       }
-      
+
       setShowAddModal(false);
       await fetchOrderDetails();
     } catch (err) {
@@ -191,10 +231,10 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
 
   const handleSubmitEdit = async () => {
     if (!validateForm()) return;
-    
+
     setSubmitting(true);
     setFormError(null);
-    
+
     try {
       const response = await fetch(`http://127.0.0.1:8000/api/sales-order-line/${editingLine.so_item_id}`, {
         method: "PATCH",
@@ -205,12 +245,12 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
           unit_price: parseFloat(formData.unit_price)
         })
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail || "Failed to update line");
       }
-      
+
       setShowEditModal(false);
       await fetchOrderDetails();
     } catch (err) {
@@ -222,19 +262,19 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
 
   const handleDeleteLine = async (lineId) => {
     if (!window.confirm("Are you sure you want to delete this line?")) return;
-    
+
     setShowActionsId(null);
-    
+
     try {
       const response = await fetch(`http://127.0.0.1:8000/api/sales-order-line/${lineId}`, {
         method: "DELETE"
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail || "Failed to delete line");
       }
-      
+
       await fetchOrderDetails();
     } catch (err) {
       alert(`Error: ${err.message}`);
@@ -352,7 +392,7 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>
+                          <td colSpan="6" className="no-items-message">
                             No line items found
                           </td>
                         </tr>
@@ -365,6 +405,201 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
                   Page 1 of 1 ({orderData.line_items?.length || 0} total items)
                 </div>
               </div>
+              {/* NEW SECTION: Related Orders */}
+              {relatedOrders && (
+                <div className="related-orders-section">
+                  <h3 className="section-title">Related Orders</h3>
+
+                  {/* Tabs */}
+                  <div className="tabs-container">
+                    <button
+                      className={`tab-btn ${activeTab === 'materials' ? 'active' : ''}`}
+                      onClick={() => setActiveTab('materials')}
+                    >
+                      <Package size={16} />
+                      Materials ({relatedOrders.materials?.length || 0})
+                    </button>
+                    <button
+                      className={`tab-btn ${activeTab === 'work_orders' ? 'active' : ''}`}
+                      onClick={() => setActiveTab('work_orders')}
+                    >
+                      <Wrench size={16} />
+                      Work Orders ({relatedOrders.work_orders?.length || 0})
+                    </button>
+                    <button
+                      className={`tab-btn ${activeTab === 'purchase_orders' ? 'active' : ''}`}
+                      onClick={() => setActiveTab('purchase_orders')}
+                    >
+                      <ShoppingCart size={16} />
+                      Purchase Orders ({relatedOrders.purchase_orders?.length || 0})
+                    </button>
+                  </div>
+
+                  {/* Tab Content */}
+                  <div className="tab-content">
+                    {/* Materials Tab */}
+                    {activeTab === 'materials' && (
+                      <div className="materials-content">
+                        {relatedOrders.materials && relatedOrders.materials.length > 0 ? (
+                          relatedOrders.materials.map((supplier, idx) => (
+                            <div key={idx} className="collapsible-card">
+                              <h4 className="collapsible-header" onClick={() => toggleMaterialGroup(idx)}>
+                                <span>{supplier.product_name}</span>
+                                <ChevronDown
+                                  size={20}
+                                  className={`collapsible-chevron ${expandedMaterials[idx] ? 'expanded' : ''}`}
+                                />
+                              </h4>
+                              {expandedMaterials[idx] && (
+                                <table className="items-table">
+                                  <thead>
+                                    <tr>
+                                      <th>SKU</th>
+                                      <th>Item</th>
+                                      <th>Quantity</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {supplier.items.map((item, itemIdx) => (
+                                      <tr key={itemIdx}>
+                                        <td>{item.sku}</td>
+                                        <td>{item.product_name}</td>
+                                        <td>{item.quantity}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="no-items-message">
+                            No materials found
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Work Orders Tab */}
+                    {activeTab === 'work_orders' && (
+                      <div className="work-orders-content">
+                        {relatedOrders.work_orders && relatedOrders.work_orders.length > 0 ? (
+                          relatedOrders.work_orders.map((mo, idx) => (
+                            <div key={idx} className="collapsible-card">
+                              <h4 className="collapsible-header" onClick={() => toggleWorkOrder(idx)}>
+                                <span>{mo.mo_id} - {mo.product_name}</span>
+                                <ChevronDown
+                                  size={20}
+                                  className={`collapsible-chevron ${expandedWorkOrders[idx] ? 'expanded' : ''}`}
+                                />
+                              </h4>
+
+                              {expandedWorkOrders[idx] && (
+                                <>
+                                  <div className="work-order-details-grid">
+                                    <div>
+                                      <div className="detail-item-label">SKU</div>
+                                      <div className="detail-item-value">{mo.sku}</div>
+                                    </div>
+                                    <div>
+                                      <div className="detail-item-label">Quantity</div>
+                                      <div className="detail-item-value">{mo.quantity}</div>
+                                    </div>
+                                    <div>
+                                      <div className="detail-item-label">Due Date</div>
+                                      <div className="detail-item-value">{mo.due_date || 'N/A'}</div>
+                                    </div>
+                                  </div>
+
+                                  {mo.bom_components && mo.bom_components.length > 0 && (
+                                    <div>
+                                      <h5 className="components-title">
+                                        Components Required
+                                      </h5>
+                                      <table className="items-table">
+                                        <thead>
+                                          <tr>
+                                            <th>SKU</th>
+                                            <th>Component</th>
+                                            <th>Required Qty</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {mo.bom_components.map((comp, compIdx) => (
+                                            <tr key={compIdx}>
+                                              <td>{comp.sku}</td>
+                                              <td>{comp.product_name}</td>
+                                              <td>{comp.quantity_required}</td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="no-items-message">
+                            No work orders found
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Purchase Orders Tab */}
+                    {activeTab === 'purchase_orders' && (
+                      <div className="purchase-orders-content">
+                        {relatedOrders.purchase_orders && relatedOrders.purchase_orders.length > 0 ? (
+                          relatedOrders.purchase_orders.map((supplier, idx) => (
+                            <div key={idx} className="collapsible-card">
+                              <h4 className="collapsible-header" onClick={() => togglePurchaseOrder(idx)}>
+                                <span>{supplier.supplier_name}</span>
+                                <ChevronDown
+                                  size={20}
+                                  className={`collapsible-chevron ${expandedPurchaseOrders[idx] ? 'expanded' : ''}`}
+                                />
+                              </h4>
+
+                              {expandedPurchaseOrders[idx] && (
+                                <table className="items-table">
+                                  <thead>
+                                    <tr>
+                                      <th>Item</th>
+                                      <th>SKU</th>
+                                      <th>Quantity</th>
+                                      <th>Order Date</th>
+                                      <th>Delivery Date</th>
+                                      <th>Lead Time</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {supplier.items.map((item, itemIdx) => (
+                                      <tr key={itemIdx}>
+                                        <td>{item.product_name}</td>
+                                        <td>{item.sku}</td>
+                                        <td>{item.quantity}</td>
+                                        <td>{item.order_date || 'N/A'}</td>
+                                        <td>{item.delivery_date || 'N/A'}</td>
+                                        <td>{item.lead_time}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="no-items-message">
+                            No purchase orders found
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -389,10 +624,10 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
                 setShowProductSearch(false);
               }}>✕</button>
             </div>
-            
+
             <div className="modal-body">
-              {formError && <div className="drawer-error" style={{marginBottom: '1rem'}}>{formError}</div>}
-              
+              {formError && <div className="drawer-error modal-error">{formError}</div>}
+
               <div className="form-field">
                 <label>Product *</label>
                 {showProductSearch ? (
@@ -405,18 +640,16 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
                       onChange={(e) => setProductSearch(e.target.value)}
                       autoFocus
                     />
-                    {loadingProducts && <div style={{padding: '1rem', textAlign: 'center'}}>Loading...</div>}
-                    <div style={{maxHeight: '200px', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '4px', marginTop: '0.5rem'}}>
+                    {loadingProducts && <div className="product-search-loading">Loading...</div>}
+                    <div className="product-search-results">
                       {products.map(p => (
                         <div
                           key={p.product_id}
-                          style={{padding: '0.75rem', cursor: 'pointer', borderBottom: '1px solid #f1f5f9'}}
+                          className="product-search-item"
                           onClick={() => handleProductSelect(p)}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = '#f7fafc'}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                         >
-                          <div style={{fontWeight: 600}}>{p.product_name}</div>
-                          <div style={{fontSize: '0.875rem', color: '#718096'}}>
+                          <div className="product-search-item-name">{p.product_name}</div>
+                          <div className="product-search-item-details">
                             {p.sku} • ${p.unit_price.toFixed(2)} • Stock: {p.stock}
                           </div>
                         </div>
@@ -424,7 +657,7 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
                     </div>
                   </div>
                 ) : (
-                  <div className="field-value" style={{cursor: 'pointer'}} onClick={() => setShowProductSearch(true)}>
+                  <div className="field-value product-select-placeholder" onClick={() => setShowProductSearch(true)}>
                     {formData.product_name || "Click to select product"}
                   </div>
                 )}
@@ -468,8 +701,8 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
             </div>
 
             <div className="modal-footer">
-              <button 
-                className="footer-btn cancel-btn" 
+              <button
+                className="footer-btn cancel-btn"
                 onClick={() => {
                   setShowAddModal(false);
                   setShowEditModal(false);
@@ -478,8 +711,8 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
               >
                 Cancel
               </button>
-              <button 
-                className="footer-btn update-btn" 
+              <button
+                className="footer-btn update-btn"
                 onClick={showAddModal ? handleSubmitAdd : handleSubmitEdit}
                 disabled={submitting}
               >
