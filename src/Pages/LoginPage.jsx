@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // <-- IMPORT THE CUSTOM HOOK
-import { authAPI } from '../services/userService'; // Keep for forgot password
+import { useAuth } from '../context/AuthContext';
+import { authAPI } from '../services/userService';
 import '../styles/LoginPage.css';
 import { Eye, EyeClosed } from 'lucide-react';
 
@@ -24,7 +24,7 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
-  const { login } = useAuth(); // <-- GET THE LOGIN FUNCTION FROM THE CONTEXT
+  const { login } = useAuth();
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -36,10 +36,8 @@ const LoginPage = () => {
       return;
     }
     try {
-      // This now calls the login function from our AuthContext.
-      // This function handles the API call AND updates the global state.
       await login(username, password);
-      navigate('/', { replace: true }); // Navigate only after state is successfully updated
+      navigate('/', { replace: true });
     } catch (err) {
       console.error('Login failed:', err);
       setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
@@ -89,6 +87,7 @@ const LoginPage = () => {
             <div className={`input-wrapper ${focusedField === 'email' ? 'focused' : ''}`}>
               <input
                 type="email"
+                name="email" // Good practice to have name attribute
                 value={forgotPasswordEmail}
                 onChange={(e) => setForgotPasswordEmail(e.target.value)}
                 onFocus={() => setFocusedField('email')}
@@ -97,6 +96,7 @@ const LoginPage = () => {
                 placeholder="Your Email Address"
                 disabled={isLoading}
                 required
+                autoComplete="email"
               />
               <div className="input-glow"></div>
             </div>
@@ -141,19 +141,22 @@ const LoginPage = () => {
           <div className={`input-wrapper ${focusedField === 'username' ? 'focused' : ''}`}>
             <input
               type="text"
+              name="username" // <-- ADDED THIS LINE
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               onFocus={() => setFocusedField('username')}
               onBlur={() => setFocusedField(null)}
               className="input-field"
-              placeholder="Username"
+              placeholder="Username (Your Email)" // <-- UPDATED PLACEHOLDER
               disabled={isLoading}
+              autoComplete="username" // <-- ADDED THIS LINE
             />
             <div className="input-glow"></div>
           </div>
           <div className={`input-wrapper ${focusedField === 'password' ? 'focused' : ''}`}>
             <input
               type={showPassword ? "text" : "password"}
+              name="password" // <-- ADDED THIS LINE
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onFocus={() => setFocusedField('password')}
@@ -161,6 +164,7 @@ const LoginPage = () => {
               className="input-field"
               placeholder="Password"
               disabled={isLoading}
+              autoComplete="current-password" // <-- ADDED THIS LINE
             />
             <div className="input-glow"></div>
             <button
