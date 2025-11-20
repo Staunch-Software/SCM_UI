@@ -267,7 +267,7 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
 
           {orderData && (
             <>
-              <div className="info-section">
+              <div className="info-section sales-order-info">
                 <h3 className="section-title">General Information</h3>
                 <div className="info-grid">
                   <div className="info-field">

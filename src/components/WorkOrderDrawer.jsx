@@ -146,7 +146,7 @@ const WorkOrderDrawer = ({ isOpen, onClose, orderId }) => {
 
           {orderData && (
             <>
-              <div className="info-section">
+              <div className="info-section work-order-info">
                 <h3 className="section-title">General Information</h3>
                 <div className="info-grid">
                   <div className="info-field">
@@ -239,7 +239,7 @@ const WorkOrderDrawer = ({ isOpen, onClose, orderId }) => {
                             <td>{item.sku}</td>
                             <td>{item.product_name}</td>
                             <td>{item.quantity.toFixed(2)}</td>
-                            <td>
+                            {/* <td>
                               <div className="actions-cell">
                                 <button
                                   className="actions-btn"
@@ -254,7 +254,7 @@ const WorkOrderDrawer = ({ isOpen, onClose, orderId }) => {
                                   </div>
                                 )}
                               </div>
-                            </td>
+                            </td> */}
                           </tr>
                         ))
                       ) : (
