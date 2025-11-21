@@ -1,5 +1,4 @@
 // src/context/AuthContext.jsx
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { authAPI } from '../services/userService';
 import apiClient from '../services/apiclient';
@@ -16,6 +15,7 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('accessToken');
     const currentUser = authAPI.getCurrentUser();
     const currentTenant = authAPI.getCurrentTenant();
+    
     if (token && currentUser && currentTenant) {
       apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(currentUser);
@@ -42,11 +42,25 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
   };
 
+  // --- FIX: Robust LocalStorage Update ---
   const completeOnboarding = () => {
-    if (tenant) {
-      const updatedTenant = { ...tenant, onboarding_complete: true };
+    // We use the current state or fetch from LS if state is stale
+    const currentTenant = tenant || authAPI.getCurrentTenant();
+    const currentUser = user || authAPI.getCurrentUser();
+
+    if (currentTenant && currentUser) {
+      const updatedTenant = { ...currentTenant, onboarding_status: 'completed' };
+      const updatedUser = { ...currentUser, onboarding_completed: true };
+
+      // 1. Update State
       setTenant(updatedTenant);
+      setUser(updatedUser);
+
+      // 2. Update Local Storage (Critical for page reload)
       localStorage.setItem('currentTenant', JSON.stringify(updatedTenant));
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+      
+      console.log("AuthContext: Onboarding marked complete in LocalStorage");
     }
   };
 
