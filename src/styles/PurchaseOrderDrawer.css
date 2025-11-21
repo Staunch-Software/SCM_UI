@@ -232,6 +232,12 @@
   border-bottom: none;
 }
 
+.no-items-message {
+  text-align: center;
+  padding: 2rem;
+  color: #718096;
+}
+
 /* Actions Cell - FIXED: Menu positioning */
 .actions-cell {
   position: relative;
@@ -304,6 +310,100 @@
   padding: 0.75rem 0;
   text-align: center;
 }
+
+/* Related Orders Section */
+.related-orders-section {
+  margin-top: 2rem;
+}
+
+.tabs-container {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 1.5rem;
+  background-color: #fff;
+  padding: 1rem 1rem 0;
+  border-radius: 8px 8px 0 0;
+}
+
+.tab-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  background: transparent;
+  color: #718096;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 3px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tab-btn.active {
+  background: #2d3748;
+  color: #fff;
+  border-bottom-color: #2d3748;
+}
+
+.collapsible-card {
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.collapsible-header {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background-color: #f7fafc;
+  border-radius: 6px;
+}
+
+.collapsible-chevron {
+  transition: transform 0.2s;
+}
+
+.collapsible-chevron.expanded {
+  transform: rotate(180deg);
+}
+
+.work-order-details-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.detail-item-label {
+  font-size: 0.75rem;
+  color: #718096;
+  margin-bottom: 0.25rem;
+}
+
+.detail-item-value {
+  font-weight: 600;
+}
+
+.components-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 0.75rem;
+}
+
 
 /* Footer */
 .drawer-footer {

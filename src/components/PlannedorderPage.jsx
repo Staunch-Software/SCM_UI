@@ -175,6 +175,20 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
             ←
           </button>
           <h1 className="title"> PO/MO Orders</h1>
+          <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
+            <button
+              className="add-item-btn"
+              onClick={() => { setSelectedOrderId(null); setDrawerOpen(true); }}
+            >
+              + New PO
+            </button>
+            <button
+              className="add-item-btn"
+              onClick={() => { setSelectedMOId(null); setMoDrawerOpen(true); }}
+            >
+              + New MO
+            </button>
+          </div>
         </div>
 
         <div className="controls">
@@ -262,12 +276,18 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
 
       <PurchaseOrderDrawer
         isOpen={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        onClose={() => {
+          setDrawerOpen(false);
+          fetchOrders(1, true); // Refresh list after closing
+        }}
         orderId={selectedOrderId}
       />
       <WorkOrderDrawer
         isOpen={moDrawerOpen}
-        onClose={() => setMoDrawerOpen(false)}
+        onClose={() => {
+          setMoDrawerOpen(false);
+          fetchOrders(1, true); // Refresh list after closing
+        }}
         orderId={selectedMOId}
       />
     </div>
