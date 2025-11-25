@@ -41,7 +41,7 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
       }
       setError(null);
 
-      const response = await apiClient.get(`/api/planned-orders?page=${pageNum}&limit=100&search=${search}&sort=${sortField}&order=${sortOrder}`);
+      const response = await apiClient.get(`/api/planned-orders?page=${pageNum}&limit=100&search=${search}&sort=${sortField}&order=${sortOrder}&item_type=${filterType}`);
       const data = response.data;
 
       console.log("Fetched orders:", data);
@@ -69,7 +69,7 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
 
   useEffect(() => {
     fetchOrders(1, true);
-  }, []);
+  }, [search, filterType, sortField, sortOrder]);
 
   useEffect(() => {
     if (!autoLoad || !hasNextPage || loadingMore) return;
@@ -90,20 +90,6 @@ const PlannedOrdersPage = ({ setCurrentPage }) => {
   };
 
   const filteredOrders = orders
-    .filter((o) => {
-      const matchesSearch =
-        (o.planned_order_id
-          ?.toString()
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-          o.item?.toLowerCase().includes(search.toLowerCase())) ??
-        false;
-
-      const matchesFilter =
-        filterType === "all" ? true : o.item_type === filterType;
-
-      return matchesSearch && matchesFilter;
-    })
     .sort((a, b) => {
       const valA = a[sortField]?.toString().toLowerCase() ?? "";
       const valB = b[sortField]?.toString().toLowerCase() ?? "";

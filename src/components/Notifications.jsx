@@ -72,35 +72,35 @@ const Notifications = () => {
   }, [sessionId, isOpen, fetchNotifications]);
 
   // Polling for new notifications every 30 seconds
-  useEffect(() => {
-    if (!sessionId) return;
+  // useEffect(() => {
+  //   if (!sessionId) return;
 
-    const pollNotifications = async () => {
-      try {
-        const data = await notificationApi.getNotifications(sessionId, 50, false);
-        const mappedNotifications = data.notifications.map((n) => ({
-          id: n.id,
-          title: n.title,
-          subtitle: n.message,
-          time: getRelativeTime(n.created_at),
-          isRead: n.is_read,
-          severity: n.severity,
-          type: n.type,
-          action: n.metadata?.action
-        }));
-        setNotifications(mappedNotifications);
-        setUnreadCount(data.unread_count);
-      } catch (err) {
-        console.error('Polling error:', err);
-      }
-    };
+  //   const pollNotifications = async () => {
+  //     try {
+  //       const data = await notificationApi.getNotifications(sessionId, 50, false);
+  //       const mappedNotifications = data.notifications.map((n) => ({
+  //         id: n.id,
+  //         title: n.title,
+  //         subtitle: n.message,
+  //         time: getRelativeTime(n.created_at),
+  //         isRead: n.is_read,
+  //         severity: n.severity,
+  //         type: n.type,
+  //         action: n.metadata?.action
+  //       }));
+  //       setNotifications(mappedNotifications);
+  //       setUnreadCount(data.unread_count);
+  //     } catch (err) {
+  //       console.error('Polling error:', err);
+  //     }
+  //   };
 
-    // Poll immediately and then every 30 seconds
-    pollNotifications();
-    const intervalId = setInterval(pollNotifications, 30000);
+  //   // Poll immediately and then every 30 seconds
+  //   pollNotifications();
+  //   const intervalId = setInterval(pollNotifications, 30000);
 
-    return () => clearInterval(intervalId);
-  }, [sessionId]);
+  //   return () => clearInterval(intervalId);
+  // }, [sessionId]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {

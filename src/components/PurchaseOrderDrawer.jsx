@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../styles/PurchaseOrderDrawer.css";
 import "../styles/SalesOrderModal.css";
+import apiClient from "../services/apiclient";
 
 const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
   const [orderData, setOrderData] = useState(null);
@@ -24,7 +25,7 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
     supplier_id: null,
     expected_arrival_date: ""
   });
-  
+
   const [formData, setFormData] = useState({
     product_id: null,
     product_name: "",
@@ -74,14 +75,12 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/purchase-order-details/${orderId}`);
-      if (!response.ok) throw new Error("Failed to fetch order details");
-      const data = await response.json();
-      setOrderData(data);
+      const { data } = await apiClient.get(`/api/purchase-order-details/${orderId}`);
 
+      setOrderData(data);
       setEditedHeader({
         supplier_id: data.supplier_id || null,
-        expected_arrival_date: formatDateForInput(data.expected_arrival_date)
+        expected_arrival_date: formatDateForInput(data.expected_arrival_date),
       });
     } catch (err) {
       setError(err.message);
@@ -90,11 +89,10 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
     }
   };
 
+
   const checkEditability = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/purchase-order-editable/${orderId}`);
-      if (!response.ok) throw new Error("Failed to check editability");
-      const data = await response.json();
+      const { data } = await apiClient.get(`/api/purchase-order-editable/${orderId}`);
       setIsEditable(data.editable);
     } catch (err) {
       console.error("Error checking editability:", err);
@@ -105,9 +103,7 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
   const fetchSuppliers = async () => {
     setLoadingSuppliers(true);
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/suppliers-approved`);
-      if (!response.ok) throw new Error("Failed to fetch suppliers");
-      const data = await response.json();
+      const { data } = await apiClient.get(`/api/suppliers-approved`);
       setSuppliers(data.suppliers);
     } catch (err) {
       console.error("Error fetching suppliers:", err);
@@ -119,11 +115,9 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
   const searchProducts = async (query) => {
     setLoadingProducts(true);
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/products-search?query=${encodeURIComponent(query)}&procurement_type=Buy`
+      const { data } = await apiClient.get(
+        `/api/products-search?query=${encodeURIComponent(query)}&procurement_type=Buy`
       );
-      if (!response.ok) throw new Error("Failed to search products");
-      const data = await response.json();
       setProducts(data.products);
     } catch (err) {
       console.error("Error searching products:", err);
@@ -212,20 +206,19 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
     setFormError(null);
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/purchase-order-line?po_id=${encodeURIComponent(orderId)}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      await apiClient.post(
+        `/api/purchase-order-line?po_id=${encodeURIComponent(orderId)}`,
+        {
           product_id: formData.product_id,
           quantity: parseFloat(formData.quantity),
           unit_price: parseFloat(formData.unit_price)
-        })
-      });
+        }
+      );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to add line");
-      }
+      // if (!response.ok) {
+      //   const errorData = await response.json();
+      //   throw new Error(errorData.detail || "Failed to add line");
+      // }
 
       setShowAddModal(false);
       await fetchOrderDetails();
@@ -243,18 +236,15 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
     setFormError(null);
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/purchase-order-line/${editingLine.po_item_id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          quantity: parseFloat(formData.quantity)
-        })
+      const response = await apiClient.patch(`/api/purchase-order-line/${editingLine.po_item_id}`, {
+        quantity: parseFloat(formData.quantity)
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to update line");
-      }
+
+      // if (!response.ok) {
+      //   const errorData = await response.json();
+      //   throw new Error(errorData.detail || "Failed to update line");
+      // }
 
       setShowEditModal(false);
       await fetchOrderDetails();
@@ -271,14 +261,12 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
     setShowActionsId(null);
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/purchase-order-line/${lineId}`, {
-        method: "DELETE"
-      });
+      const response = await apiClient.delete(`/api/purchase-order-line/${lineId}`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to delete line");
-      }
+      // if (!response.ok) {
+      //   const errorData = await response.json();
+      //   throw new Error(errorData.detail || "Failed to delete line");
+      // }
 
       await fetchOrderDetails();
     } catch (err) {
@@ -291,16 +279,12 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
     setHeaderError(null);
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/purchase-order-header/${orderId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editedHeader)
-      });
+      const response = await apiClient.patch(`/api/purchase-order-header/${orderId}`, editedHeader);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to update purchase order");
-      }
+      // if (!response.ok) {
+      //   const errorData = await response.json();
+      //   throw new Error(errorData.detail || "Failed to update purchase order");
+      // }
 
       onClose();
     } catch (err) {
@@ -324,16 +308,12 @@ const PurchaseOrderDrawer = ({ isOpen, onClose, orderId }) => {
     setHeaderError(null);
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/purchase-order`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editedHeader)
-      });
+      const response = await apiClient.post(`/api/purchase-order`, editedHeader);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to create purchase order");
-      }
+      // if (!response.ok) {
+      //   const errorData = await response.json();
+      //   throw new Error(errorData.detail || "Failed to create purchase order");
+      // }
 
       onClose();
       // Trigger parent refresh if callback exists
