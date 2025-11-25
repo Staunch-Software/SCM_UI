@@ -1,0 +1,86 @@
+/* src/styles/SyncingPage.css */
+.sync-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  padding: 2rem;
+}
+
+.sync-card {
+  background: white;
+  width: 100%;
+  max-width: 600px;
+  padding: 2.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.sync-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.icon-wrapper {
+  display: inline-flex;
+  padding: 1rem;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+}
+
+.icon-wrapper.active { background: #e0e7ff; color: #4f46e5; }
+.icon-wrapper.success { background: #dcfce7; color: #16a34a; }
+.icon-wrapper.error { background: #fee2e2; color: #dc2626; }
+
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+h1 { font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0 0 0.5rem 0; }
+.subtitle { color: #64748b; font-size: 0.95rem; margin: 0; }
+
+/* Progress Bar */
+.progress-section { margin-bottom: 2rem; }
+.progress-label { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-weight: 600; color: #334155; }
+.progress-track { height: 12px; background: #e2e8f0; border-radius: 6px; overflow: hidden; }
+.progress-fill { height: 100%; background: #4f46e5; transition: width 0.5s ease; }
+.progress-fill.failed { background: #dc2626; }
+
+/* Grid Details */
+.details-grid {
+  display: grid;
+  gap: 1rem;
+  background: #f1f5f9;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+}
+
+.detail-item { background: white; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #e2e8f0; }
+.detail-header { display: flex; justify-content: space-between; font-size: 0.875rem; margin-bottom: 0.5rem; }
+.model-name { font-weight: 500; color: #334155; }
+.model-counts { color: #64748b; font-family: monospace; }
+
+.mini-progress-track { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+.mini-progress-fill { height: 100%; background: #3b82f6; transition: width 0.5s ease; }
+
+.waiting-message { text-align: center; color: #94a3b8; font-style: italic; font-size: 0.9rem; }
+
+/* Actions */
+.action-area { margin-top: 2rem; text-align: center; }
+.error-text { color: #dc2626; font-size: 0.9rem; margin-bottom: 1rem; }
+.resume-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.resume-button:hover { background: #4338ca; }
+.resume-button:disabled { opacity: 0.7; cursor: not-allowed; }

@@ -47,7 +47,6 @@ const EnhancedDashboard = () => {
   const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
-    // NEW AND CORRECTED CODE
     const fetchDashboardData = async () => {
       try {
         const [
@@ -62,24 +61,33 @@ const EnhancedDashboard = () => {
           apiClient.get("/api/order-type-summary"),
         ]);
 
-        // With Axios, the data is in the .data property
-        const metricsData = metricsRes.data;
-        const vendorsData = vendorsRes.data;
-        const manufacturingSummaryData = manufacturingRes.data;
-        const orderSummaryData = orderSummaryRes.data;
+        // --- FIX: Handle nulls from backend (No ERP case) ---
+        const metricsData = metricsRes.data || {};
+        const vendorsData = vendorsRes.data || [];
+        const manufacturingSummaryData = manufacturingRes.data || [];
+        const orderSummaryData = orderSummaryRes.data || {};
 
-        setMetrics(metricsData);
+        setMetrics({
+          totalRevenue: metricsData.totalRevenue || 0,
+          totalUnitsSold: metricsData.totalUnitsSold || 0,
+          totalComponentSpend: metricsData.totalComponentSpend || 0,
+          newOrders: metricsData.newOrders || 0,
+          supplierCount: metricsData.supplierCount || 0,
+        });
+
         setVendors(vendorsData);
         setManufacturingDataRaw(manufacturingSummaryData);
         processManufacturingData(manufacturingSummaryData, 3);
+
         setCurrentOrdersCount({
-          manufacture: orderSummaryData.manufacture_count,
-          purchase: orderSummaryData.purchase_count,
+          manufacture: orderSummaryData.manufacture_count || 0,
+          purchase: orderSummaryData.purchase_count || 0,
         });
 
         setLoading(false);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
+        // Even on error, stop loading so the page renders (empty)
         setLoading(false);
       }
     };
@@ -94,11 +102,19 @@ const EnhancedDashboard = () => {
       } else if (filterType === "custom" && startDate && endDate) {
         processManufacturingDataByDate(manufacturingDataRaw, startDate, endDate);
       }
+    } else {
+      // Clear chart if no data
+      setManufacturingData([]);
     }
-  }, [monthRange, filterType, startDate, endDate]);
+  }, [monthRange, filterType, startDate, endDate, manufacturingDataRaw]);
 
-  // ✅ PRESET FILTER (3, 6, 12 months)
+  //  PRESET FILTER (3, 6, 12 months)
   const processManufacturingData = (orders, range) => {
+    if (!orders || orders.length === 0) {
+      setManufacturingData([]);
+      return;
+    }
+
     const monthlyData = {};
     const now = new Date();
 
@@ -142,8 +158,10 @@ const EnhancedDashboard = () => {
     setManufacturingData(sortedData);
   };
 
-  // ✅ CUSTOM RANGE FILTER (Date picker)
+  // CUSTOM RANGE FILTER (Date picker)
   const processManufacturingDataByDate = (orders, start, end) => {
+    if (!orders || orders.length === 0) return;
+
     const monthlyData = {};
     const startD = new Date(start);
     const endD = new Date(end);
@@ -203,7 +221,9 @@ const EnhancedDashboard = () => {
     { name: "Purchase", value: currentOrdersCount.purchase, color: "#10B981" },
   ];
 
+  // --- FIX: Handle null/undefined values safely ---
   const formatNumber = (num) => {
+    if (num === null || num === undefined || isNaN(num)) return "0";
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
     return num.toString();
@@ -320,7 +340,7 @@ const EnhancedDashboard = () => {
         </div>
         <br></br>
 
-        {/* 🧱 Manufacturing Bar Chart */}
+        {/*  Manufacturing Bar Chart */}
         <div className="chart-container" style={{ maxWidth: "100%", overflow: "hidden" }}>
           <div className="chart-header">
             <Factory size={24} color="#3b82f6" className="chart-icon" />
@@ -358,7 +378,7 @@ const EnhancedDashboard = () => {
           )}
         </div>
 
-        {/* 🥧 Current Orders Pie Chart */}
+        {/*  Current Orders Pie Chart */}
         <div className="chart-container">
           <div className="chart-header">
             <Package size={24} color="#8b5cf6" className="chart-icon" />
@@ -384,25 +404,29 @@ const EnhancedDashboard = () => {
             <Users size={24} color="#10b981" className="chart-icon" />
             <h3 className="chart-title">Supplier Performance</h3>
           </div>
-          <div className="supplier-list">
-            {supplierPerformance.map((supplier, index) => (
-              <div key={index} className="supplier-item">
-                <div className="supplier-info">
-                  <div className="supplier-name">{supplier.name}</div>
-                  <div className="supplier-orders">{supplier.orders} orders</div>
-                </div>
-                <div className="supplier-performance">
-                  <div className="performance-bar">
-                    <div
-                      className={`performance-fill ${getPerformanceClass(supplier.performance)}`}
-                      style={{ width: `${supplier.performance}%` }}
-                    />
+          {vendors.length > 0 ? (
+            <div className="supplier-list">
+              {supplierPerformance.map((supplier, index) => (
+                <div key={index} className="supplier-item">
+                  <div className="supplier-info">
+                    <div className="supplier-name">{supplier.name}</div>
+                    <div className="supplier-orders">{supplier.orders} orders</div>
                   </div>
-                  <span className="performance-text">{supplier.performance}%</span>
+                  <div className="supplier-performance">
+                    <div className="performance-bar">
+                      <div
+                        className={`performance-fill ${getPerformanceClass(supplier.performance)}`}
+                        style={{ width: `${supplier.performance}%` }}
+                      />
+                    </div>
+                    <span className="performance-text">{supplier.performance}%</span>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-gray-500 text-center p-8">No supplier data available</div>
+          )}
         </div>
       </div>
     </div>

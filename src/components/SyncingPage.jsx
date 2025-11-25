@@ -1,72 +1,92 @@
 // src/components/SyncingPage.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import apiClient from '../services/apiclient';
-import '../styles/OnboardingPage.css'; // Reuse styles
+import '../styles/SyncingPage.css';
 
 const SyncingPage = () => {
   const navigate = useNavigate();
-  const [status, setStatus] = useState('syncing');
-  const [error, setError] = useState('');
+  const { completeOnboarding } = useAuth();
+  const [jobStatus, setJobStatus] = useState('INITIALIZING');
+  const [details, setDetails] = useState({});
+  const [overallProgress, setOverallProgress] = useState(0);
 
   useEffect(() => {
-    const pollStatus = async () => {
+    const pollProgress = async () => {
       try {
-        const response = await apiClient.get('/api/onboarding/sync-status');
-        const currentStatus = response.data.status;
-        setStatus(currentStatus);
+        const response = await apiClient.get('/api/sync/progress');
+        const data = response.data;
 
-        if (currentStatus === 'completed') {
-          // Success! Navigate to the dashboard.
-          navigate('/dashboard', { replace: true });
-        } else if (currentStatus === 'failed') {
-          setError('Data synchronization failed. Please contact support.');
+        setJobStatus(data.status || 'INITIALIZING');
+        setDetails(data.details || {});
+
+        if (data.details) {
+          const models = Object.values(data.details);
+          if (models.length > 0) {
+            const total = models.reduce((acc, curr) => acc + (curr.percent || 0), 0);
+            setOverallProgress(Math.round(total / models.length));
+          }
+        }
+
+        // --- FIX: Redirect Logic ---
+        if (data.status === 'COMPLETED') {
+           // 1. Update Local Storage immediately
+           completeOnboarding();
+           
+           // 2. Force Hard Redirect
+           // Using window.location.href instead of navigate() ensures a full page reload.
+           // This forces AuthContext to re-read the 'completed' status from LocalStorage,
+           // bypassing any stale state in the React Router guards.
+           console.log("Sync Complete. Redirecting...");
+           setTimeout(() => {
+               window.location.href = '/dashboard'; 
+           }, 500);
         }
       } catch (err) {
-        setError('Could not retrieve sync status. Please refresh the page.');
+        console.error("Sync poll failed", err);
       }
     };
 
-    // Poll every 5 seconds
-    const intervalId = setInterval(pollStatus, 5000);
+    const intervalId = setInterval(pollProgress, 2000);
+    pollProgress();
 
-    // Initial check
-    pollStatus();
-
-    // Cleanup interval on component unmount
     return () => clearInterval(intervalId);
-  }, [navigate]);
+  }, [navigate, completeOnboarding]);
 
   return (
-    <div className="onboarding-container">
-      <div className="onboarding-card">
-        <h1>Preparing Your Workspace</h1>
-        <p>We're syncing data from your ERP. This may take several minutes.</p>
-        
-        <div style={{ margin: '2rem 0' }}>
-          {/* A simple spinner */}
-          <div className="spinner"></div>
+    <div className="sync-container">
+      <div className="sync-card">
+        <div className="sync-header">
+          <h1>Preparing Your Workspace</h1>
+          <p>We are syncing your ERP data in distributed batches.</p>
         </div>
 
-        <p style={{ color: '#64748b' }}>Please keep this page open. You will be redirected automatically when the sync is complete.</p>
-        
-        {error && <p className="onboarding-error" style={{ marginTop: '1rem' }}>{error}</p>}
+        <div className="progress-section">
+          <div className="progress-label">
+            <span>Overall Progress</span>
+            <span>{overallProgress}%</span>
+          </div>
+          <div className="progress-track">
+            <div className="progress-fill" style={{ width: `${overallProgress}%` }}></div>
+          </div>
+        </div>
+
+        <div className="details-grid">
+          {Object.entries(details).map(([name, stats]) => (
+            <div key={name} className="detail-item">
+              <div className="detail-header">
+                <span className="model-name">{name}</span>
+                <span className="model-counts">{stats.counts}</span>
+              </div>
+              <div className="mini-progress-track">
+                <div className="mini-progress-fill" style={{ width: `${stats.percent}%` }}></div>
+              </div>
+            </div>
+          ))}
+          {Object.keys(details).length === 0 && <p className="waiting-message">Initializing workers...</p>}
+        </div>
       </div>
-      <style>{`
-        .spinner {
-          border: 4px solid rgba(0, 0, 0, 0.1);
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-          border-left-color: #2563eb;
-          margin: 0 auto;
-          animation: spin 1s ease infinite;
-        }
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 };

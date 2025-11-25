@@ -6,13 +6,24 @@ import apiClient from '../services/apiclient';
 import '../styles/OnboardingPage.css';
 
 const OnboardingPage = () => {
-  const { tenant } = useAuth();
+  const { tenant, completeOnboarding } = useAuth();
   const navigate = useNavigate();
+  
   const [erpType, setErpType] = useState('odoo');
-  const [erpUrl, setErpUrl] = useState('');
-  const [erpDb, setErpDb] = useState('');
-  const [erpUsername, setErpUsername] = useState('');
-  const [erpPassword, setErpPassword] = useState('');
+  
+  // Odoo State
+  const [odooUrl, setOdooUrl] = useState('');
+  const [odooDb, setOdooDb] = useState('');
+  const [odooUser, setOdooUser] = useState('');
+  const [odooPass, setOdooPass] = useState('');
+
+  // Oracle State
+  const [oracleHost, setOracleHost] = useState('');
+  const [oraclePort, setOraclePort] = useState('1521');
+  const [oracleService, setOracleService] = useState('');
+  const [oracleUser, setOracleUser] = useState('');
+  const [oraclePass, setOraclePass] = useState('');
+  
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -21,37 +32,56 @@ const OnboardingPage = () => {
     setIsLoading(true);
     setError('');
 
+    let credentials = {};
+
+    if (erpType === 'odoo') {
+      credentials = {
+        odoo_url: odooUrl,
+        odoo_db: odooDb,
+        odoo_username: odooUser,
+        odoo_password: odooPass,
+      };
+    } else if (erpType === 'oracle') {
+      credentials = {
+        oracle_host: oracleHost,
+        oracle_port: oraclePort,
+        oracle_service: oracleService,
+        oracle_user: oracleUser,
+        oracle_password: oraclePass
+      };
+    }
+
     const payload = {
       erp_type: erpType,
-      erp_credentials: {
-        odoo_url: erpUrl,
-        odoo_db: erpDb,
-        odoo_username: erpUsername,
-        odoo_password: erpPassword,
-      },
+      erp_credentials: credentials,
     };
 
     try {
       await apiClient.post(`/api/onboarding/${tenant.tenant_id}/configure-erp`, payload);
-      // On success, navigate to the syncing page
-      navigate('/syncing-data', { replace: true });
+      
+      if (erpType === 'none') {
+        // Immediate completion for No ERP
+        completeOnboarding();
+        window.location.href = '/dashboard';
+      } else {
+        // Go to sync page for Odoo/Oracle
+        navigate('/syncing-data', { replace: true });
+      }
     } catch (err) {
       console.error("ERP Configuration failed:", err);
-      setError(err.response?.data?.detail || "Failed to connect to ERP. Please check credentials.");
+      setError(err.response?.data?.detail || "Failed to connect. Please check credentials.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!tenant) {
-    return <div>Loading tenant information...</div>;
-  }
+  if (!tenant) return <div>Loading...</div>;
 
   return (
     <div className="onboarding-container">
       <div className="onboarding-card">
         <h1>Welcome, {tenant.tenant_name}!</h1>
-        <p>Let's connect your ERP system to get started.</p>
+        <p>Connect your ERP system to get started.</p>
         
         <form onSubmit={handleSubmit} className="onboarding-form">
           {error && <p className="onboarding-error">{error}</p>}
@@ -60,31 +90,68 @@ const OnboardingPage = () => {
             <label htmlFor="erpType">ERP System</label>
             <select id="erpType" value={erpType} onChange={(e) => setErpType(e.target.value)}>
               <option value="odoo">Odoo</option>
+              <option value="oracle">Oracle ERP</option>
+              <option value="none">No ERP (Start Empty)</option>
             </select>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="erpUrl">Odoo URL</label>
-            <input id="erpUrl" type="text" value={erpUrl} onChange={(e) => setErpUrl(e.target.value)} placeholder="e.g., https://mycompany.odoo.com" required />
-          </div>
+          {/* ODOO FIELDS */}
+          {erpType === 'odoo' && (
+            <>
+              <div className="form-group">
+                <label>Odoo URL</label>
+                <input type="text" value={odooUrl} onChange={(e) => setOdooUrl(e.target.value)} placeholder="https://mycompany.odoo.com" required />
+              </div>
+              <div className="form-group">
+                <label>Database Name</label>
+                <input type="text" value={odooDb} onChange={(e) => setOdooDb(e.target.value)} placeholder="mycompany-db" required />
+              </div>
+              <div className="form-group">
+                <label>Username</label>
+                <input type="text" value={odooUser} onChange={(e) => setOdooUser(e.target.value)} required />
+              </div>
+              <div className="form-group">
+                <label>Password / API Key</label>
+                <input type="password" value={odooPass} onChange={(e) => setOdooPass(e.target.value)} required />
+              </div>
+            </>
+          )}
 
-          <div className="form-group">
-            <label htmlFor="erpDb">Odoo Database Name</label>
-            <input id="erpDb" type="text" value={erpDb} onChange={(e) => setErpDb(e.target.value)} placeholder="e.g., mycompany-db" required />
-          </div>
+          {/* ORACLE FIELDS */}
+          {erpType === 'oracle' && (
+            <>
+              <div className="form-group">
+                <label>Host</label>
+                <input type="text" value={oracleHost} onChange={(e) => setOracleHost(e.target.value)} placeholder="erp.oracle.com" required />
+              </div>
+              <div className="form-group">
+                <label>Port</label>
+                <input type="text" value={oraclePort} onChange={(e) => setOraclePort(e.target.value)} required />
+              </div>
+              <div className="form-group">
+                <label>Service Name / SID</label>
+                <input type="text" value={oracleService} onChange={(e) => setOracleService(e.target.value)} placeholder="ORCL" required />
+              </div>
+              <div className="form-group">
+                <label>DB Username</label>
+                <input type="text" value={oracleUser} onChange={(e) => setOracleUser(e.target.value)} required />
+              </div>
+              <div className="form-group">
+                <label>DB Password</label>
+                <input type="password" value={oraclePass} onChange={(e) => setOraclePass(e.target.value)} required />
+              </div>
+            </>
+          )}
 
-          <div className="form-group">
-            <label htmlFor="erpUsername">Odoo Username</label>
-            <input id="erpUsername" type="text" value={erpUsername} onChange={(e) => setErpUsername(e.target.value)} placeholder="Your Odoo login email" required />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="erpPassword">Odoo Password / API Key</label>
-            <input id="erpPassword" type="password" value={erpPassword} onChange={(e) => setErpPassword(e.target.value)} required />
-          </div>
+          {/* NO ERP MESSAGE */}
+          {erpType === 'none' && (
+            <div className="info-message">
+              <p>You are choosing to start with an empty workspace. You can manually input data later.</p>
+            </div>
+          )}
 
           <button type="submit" className="onboarding-button" disabled={isLoading}>
-            {isLoading ? 'Connecting...' : 'Connect and Start Sync'}
+            {isLoading ? 'Processing...' : (erpType === 'none' ? 'Enter Dashboard' : 'Connect & Sync')}
           </button>
         </form>
       </div>
