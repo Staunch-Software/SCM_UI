@@ -96,8 +96,8 @@ const Notifications = () => {
   //   };
 
     // Poll immediately and then every 30 seconds
-    pollNotifications();
-    const intervalId = setInterval(pollNotifications, 30000);
+    // pollNotifications();
+    // const intervalId = setInterval(pollNotifications, 30000);
 
   //   return () => clearInterval(intervalId);
   // }, [sessionId]);
