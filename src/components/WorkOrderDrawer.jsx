@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../styles/PurchaseOrderDrawer.css";
+import apiClient from "../services/apiclient";
 
 const WorkOrderDrawer = ({ isOpen, onClose, orderId }) => {
   const [orderData, setOrderData] = useState(null);
@@ -58,9 +59,7 @@ const WorkOrderDrawer = ({ isOpen, onClose, orderId }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/work-order-details?mo_id=${encodeURIComponent(orderId)}`);
-      if (!response.ok) throw new Error("Failed to fetch work order details");
-      const data = await response.json();
+      const { data } = await apiClient.get(`/api/work-order-details?mo_id=${encodeURIComponent(orderId)}`);
       setOrderData(data);
 
       setEditedData({
@@ -78,9 +77,7 @@ const WorkOrderDrawer = ({ isOpen, onClose, orderId }) => {
   const fetchProducts = async () => {
     setLoadingProducts(true);
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/products-search?procurement_type=Make`);
-      if (!response.ok) throw new Error("Failed to fetch products");
-      const data = await response.json();
+      const { data } = await apiClient.get(`/api/products-search?procurement_type=Make`);
       setProducts(data.products);
     } catch (err) {
       console.error("Error fetching products:", err);
@@ -133,13 +130,7 @@ const WorkOrderDrawer = ({ isOpen, onClose, orderId }) => {
     setUpdateError(null);
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/work-order-details?mo_id=${encodeURIComponent(orderId)}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(editedData)
-      });
+      const response = await apiClient.patch(`/api/work-order-details?mo_id=${encodeURIComponent(orderId)}`, editedData);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -165,16 +156,13 @@ const WorkOrderDrawer = ({ isOpen, onClose, orderId }) => {
     setUpdateError(null);
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/manufacturing-order`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editedData)
-      });
+      await apiClient.post(`/api/manufacturing-order`, editedData);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to create work order");
-      }
+
+      // if (!response.ok) {
+      //   const errorData = await response.json();
+      //   throw new Error(errorData.detail || "Failed to create work order");
+      // }
 
       onClose();
     } catch (err) {

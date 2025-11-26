@@ -272,8 +272,8 @@ const Product360 = () => {
                     <td>{wo.mo_id}</td>
                     <td>{wo.planned_order_id}</td>
                     <td>{wo.quantity_to_produce}</td>
-                    <td>{wo.start_date}</td>
-                    <td>{wo.end_date}</td>
+                    <td>{wo.start_date ? new Date(wo.start_date).toLocaleDateString('en-GB') : 'N/A'}</td>
+                    <td>{wo.end_date ? new Date(wo.end_date).toLocaleDateString('en-GB') : 'N/A'}</td>
                     <td>{wo.status}</td>
                   </tr>
                 ))}
@@ -317,8 +317,8 @@ const Product360 = () => {
                   <tr key={i} className="animated-row">
                     <td>{po.po_id}</td>
                     <td>{po.supplier_name}</td>
-                    <td>{po.order_date}</td>
-                    <td>{po.expected_arrival_date}</td>
+                    <td>{po.order_date ? new Date(po.order_date).toLocaleDateString('en-GB') : 'N/A'}</td>
+                    <td>{po.expected_arrival_date ? new Date(po.expected_arrival_date).toLocaleDateString('en-GB') : 'N/A'}</td>
                     <td>{po.quantity}</td>
                     <td>{po.unit_price?.toFixed(2)}</td>
                     <td>{po.total_amount?.toFixed(2)}</td>

@@ -18,6 +18,7 @@ export const useChatStore = create((set, get) => ({
   sessionId: null,
   sessionTitle: "SCM Assistant",
   isTyping: false,
+  abortController: null,
 
   // Actions
   addMessage: (message) => {
@@ -26,37 +27,36 @@ export const useChatStore = create((set, get) => ({
 
   abortController: null,
 
-    sendMessage: async (content) => {
+  sendMessage: async (content) => {
     if (!content.trim()) return;
 
     // Add user message to the UI immediately
     const userMessage = createMessage(content, 'user');
+    
+    // Visual indicator for the user that a file was attached
+    if (fileName) {
+        userMessage.content += `\n\n📄 [Attached: ${fileName}]`;
+    }
+    
     get().addMessage(userMessage);
+
     const controller = new AbortController();
     set({ isTyping: true, abortController: controller });
 
      const messageContent = content;
     try {
-      // --- FIX START ---
-      // Retrieve the token from storage (adjust 'token' key if needed)
-      const token = localStorage.getItem('accessToken');
-      //console.log("DEBUG TOKEN:", token);
-      
       const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` // <--- ADDED THIS LINE
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: messageContent,
-          session_id: get().sessionId, 
+          session_id: get().sessionId, // Use the session_id from the store
         }),
          signal: controller.signal,
       });
-      // --- FIX END ---
       
        if (controller.signal.aborted) {
+        // throw new DOMException('Aborted', 'AbortError');
         console.log('Aborted after fetch');
         return; 
       }
@@ -69,9 +69,6 @@ export const useChatStore = create((set, get) => ({
          console.log('Aborted after JSON parse');
         return; // Exit immediately
       }
-       
-      // const userMessage = createMessage(messageContent, 'user');
-      // get().addMessage(userMessage);
 
       // If this is the first real message, save the new session_id
       if (!get().sessionId) {
@@ -81,7 +78,9 @@ export const useChatStore = create((set, get) => ({
       // Add the agent's response
       const aiMessage = createMessage(data.response, 'assistant');
       get().addMessage(aiMessage);
-      if (get().messages.length === 3) { // Welcome + User + AI response
+
+      // Fetch session title if it's the start of a conversation
+      if (get().messages.length <= 3) { 
         try {
           const sessionListResponse = await fetch(`${API_BASE_URL}/api/chat-sessions`);
           const sessionsList = await sessionListResponse.json();
@@ -100,15 +99,10 @@ export const useChatStore = create((set, get) => ({
 
     } catch (error) {
       if (error.name === 'AbortError') {
-        // const userMessage = createMessage(messageContent, 'user');
-        // get().addMessage(userMessage);
         const stopMessage = createMessage('User interrupted the generation process.', 'assistant');
         get().addMessage(stopMessage);
         console.log('Request aborted - stop message shown');
       } else {
-        // On real error, add user message + error message
-        // const userMessage = createMessage(messageContent, 'user');
-        // get().addMessage(userMessage);
         console.error('Error sending message:', error);
         const errorMessage = createMessage('Sorry, I encountered an error. Please try again.', 'assistant');
         get().addMessage(errorMessage);
@@ -121,7 +115,6 @@ export const useChatStore = create((set, get) => ({
   stopGeneration: () => {
     console.log('Stop clicked!'); 
     const { abortController } = get();
-    console.log('Controller:', abortController); 
     if (abortController) {
       abortController.abort();
     }
@@ -145,7 +138,6 @@ export const useChatStore = create((set, get) => ({
       // Convert conversation history to message format
       const formattedMessages = data.messages.flatMap(conv => {
         const timestamp = new Date(conv.timestamp);
-        console.log('Original timestamp:', conv.timestamp, 'Parsed:', timestamp);
         return [
           createMessage(conv.user, 'user', timestamp),
           createMessage(conv.assistant, 'assistant', timestamp)
@@ -179,12 +171,6 @@ export const useChatStore = create((set, get) => ({
       isTyping: false
     });
   },
-
-  //   // Keep existing clearMessages for compatibility
-  //   clearMessages: () => {
-  //     get().createNewSession();
-  //   },
-  // }));
 
   clearMessages: () => {
     set({

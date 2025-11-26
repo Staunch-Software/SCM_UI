@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ChevronDown, Package, Wrench, ShoppingCart } from "lucide-react";
 import "../styles/PurchaseOrderDrawer.css";
 import "../styles/SalesOrderModal.css";
+import apiClient from "../services/apiclient";
 
 const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
   const [orderData, setOrderData] = useState(null);
@@ -81,9 +82,7 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/sales-order-details/${orderId}`);
-      if (!response.ok) throw new Error("Failed to fetch sales order details");
-      const data = await response.json();
+      const { data } = await apiClient.get(`/api/sales-order-details/${orderId}`);
       setOrderData(data);
     } catch (err) {
       setError(err.message);
@@ -94,9 +93,7 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
 
   const checkEditability = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/sales-order-editable/${orderId}`);
-      if (!response.ok) throw new Error("Failed to check editability");
-      const data = await response.json();
+      const { data } = await apiClient.get(`/api/sales-order-editable/${orderId}`);
       setIsEditable(data.editable);
     } catch (err) {
       console.error("Error checking editability:", err);
@@ -106,9 +103,7 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
 
   const fetchRelatedOrders = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/sales-order-related-orders/${orderId}`);
-      if (!response.ok) throw new Error("Failed to fetch related orders");
-      const data = await response.json();
+      const { data } = await apiClient.get(`/api/sales-order-related-orders/${orderId}`);
       setRelatedOrders(data);
     } catch (err) {
       console.error("Error fetching related orders:", err);
@@ -119,9 +114,7 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
   const searchProducts = async (query) => {
     setLoadingProducts(true);
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/products-search?query=${encodeURIComponent(query)}`);
-      if (!response.ok) throw new Error("Failed to search products");
-      const data = await response.json();
+      const { data } = await apiClient.get(`/api/products-search?query=${query}`);
       setProducts(data.products);
     } catch (err) {
       console.error("Error searching products:", err);
@@ -205,20 +198,16 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
     setFormError(null);
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/sales-order-line?so_id=${encodeURIComponent(orderId)}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          product_id: formData.product_id,
-          quantity: parseFloat(formData.quantity),
-          unit_price: parseFloat(formData.unit_price)
-        })
+      await apiClient.post(`/api/sales-order-line?so_id=${orderId}`, {
+        product_id: formData.product_id,
+        quantity: parseFloat(formData.quantity),
+        unit_price: parseFloat(formData.unit_price),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to add line");
-      }
+      // if (!response.ok) {
+      //   const errorData = await response.json();
+      //   throw new Error(errorData.detail || "Failed to add line");
+      // }
 
       setShowAddModal(false);
       await fetchOrderDetails();
@@ -236,20 +225,11 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
     setFormError(null);
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/sales-order-line/${editingLine.so_item_id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          product_id: formData.product_id,
-          quantity: parseFloat(formData.quantity),
-          unit_price: parseFloat(formData.unit_price)
-        })
+      await apiClient.patch(`/api/sales-order-line/${editingLine.so_item_id}`, {
+        product_id: formData.product_id,
+        quantity: parseFloat(formData.quantity),
+        unit_price: parseFloat(formData.unit_price),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to update line");
-      }
 
       setShowEditModal(false);
       await fetchOrderDetails();
@@ -266,15 +246,12 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
     setShowActionsId(null);
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/sales-order-line/${lineId}`, {
-        method: "DELETE"
-      });
+      const response = await apiClient.delete(`/api/sales-order-line/${lineId}`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to delete line");
-      }
-
+      // if (!response.ok) {
+      //   const errorData = await response.json();
+      //   throw new Error(errorData.detail || "Failed to delete line");
+      // }
       await fetchOrderDetails();
     } catch (err) {
       alert(`Error: ${err.message}`);
@@ -441,10 +418,10 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
                     {activeTab === 'materials' && (
                       <div className="materials-content">
                         {relatedOrders.materials && relatedOrders.materials.length > 0 ? (
-                          relatedOrders.materials.map((supplier, idx) => (
+                          relatedOrders.materials.map((material, idx) => (
                             <div key={idx} className="collapsible-card">
                               <h4 className="collapsible-header" onClick={() => toggleMaterialGroup(idx)}>
-                                <span>{supplier.product_name}</span>
+                                <span>{material.product_name}</span>
                                 <ChevronDown
                                   size={20}
                                   className={`collapsible-chevron ${expandedMaterials[idx] ? 'expanded' : ''}`}
@@ -455,18 +432,26 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
                                   <thead>
                                     <tr>
                                       <th>SKU</th>
-                                      <th>Item</th>
+                                      <th>Component</th>
                                       <th>Quantity</th>
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {supplier.items.map((item, itemIdx) => (
-                                      <tr key={itemIdx}>
-                                        <td>{item.sku}</td>
-                                        <td>{item.product_name}</td>
-                                        <td>{item.quantity}</td>
+                                    {material.components && material.components.length > 0 ? (
+                                      material.components.map((comp, compIdx) => (
+                                        <tr key={compIdx}>
+                                          <td>{comp.sku}</td>
+                                          <td>{comp.component}</td>
+                                          <td>{comp.quantity}</td>
+                                        </tr>
+                                      ))
+                                    ) : (
+                                      <tr>
+                                        <td colSpan="3" className="no-items-message">
+                                          No components found
+                                        </td>
                                       </tr>
-                                    ))}
+                                    )}
                                   </tbody>
                                 </table>
                               )}
