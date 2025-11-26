@@ -23,7 +23,8 @@ const LoginPage = lazy(() => import('./Pages/LoginPage'));
 const ResetPasswordPage = lazy(() => import('./Pages/ResetPasswordPage'));
 const OnboardingPage = lazy(() => import('./components/OnboardingPage'));
 const SyncingPage = lazy(() => import('./components/SyncingPage'));
-
+const DataImportPage = lazy(() => import('./components/DataImportPage'));
+const MonitoringDashboard = lazy(() => import('./components/MonitoringDashboard'));
 // --- Styles ---
 import './App.css';
 
@@ -90,6 +91,8 @@ const App = () => {
                 <Route path="vendors" element={<VendorsPage />} />
                 <Route path="vendor-metrics" element={<VendorMetricsPage />} />
                 <Route path="user-management" element={<UserManagement />} />
+                <Route path="import-data" element={<DataImportPage />} />
+                <Route path="monitoring" element={<MonitoringDashboard />} />
               </Route>
             </Route>
             

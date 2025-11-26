@@ -1,3 +1,4 @@
+//chatstore
 import { create } from 'zustand';
 import { createMessage } from '../utils/messageHelpers'; // Assuming you have this helper
 
@@ -25,7 +26,7 @@ export const useChatStore = create((set, get) => ({
 
   abortController: null,
 
-  sendMessage: async (content) => {
+    sendMessage: async (content) => {
     if (!content.trim()) return;
 
     // Add user message to the UI immediately
@@ -36,18 +37,26 @@ export const useChatStore = create((set, get) => ({
 
      const messageContent = content;
     try {
+      // --- FIX START ---
+      // Retrieve the token from storage (adjust 'token' key if needed)
+      const token = localStorage.getItem('accessToken');
+      //console.log("DEBUG TOKEN:", token);
+      
       const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` // <--- ADDED THIS LINE
+        },
         body: JSON.stringify({
           message: messageContent,
-          session_id: get().sessionId, // Use the session_id from the store
+          session_id: get().sessionId, 
         }),
          signal: controller.signal,
       });
+      // --- FIX END ---
       
        if (controller.signal.aborted) {
-        // throw new DOMException('Aborted', 'AbortError');
         console.log('Aborted after fetch');
         return; 
       }

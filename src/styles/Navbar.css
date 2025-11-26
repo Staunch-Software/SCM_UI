@@ -116,6 +116,25 @@
   color: #ffffff;
 }
 
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: #a0aec0;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
 /* Responsive design */
 @media (max-width: 1024px) {
   .navbar-content {

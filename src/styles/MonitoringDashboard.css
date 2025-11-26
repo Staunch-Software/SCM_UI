@@ -1,0 +1,337 @@
+/* src/styles/MonitoringDashboard.css */
+.monitoring-dashboard {
+  padding: 2rem;
+  max-width: 1600px;
+  margin: 0 auto;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+.monitoring-dashboard h1 {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: #1e293b;
+}
+
+/* Metrics Grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-left: 4px solid;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.metric-card.blue { border-color: #3b82f6; }
+.metric-card.green { border-color: #10b981; }
+.metric-card.purple { border-color: #8b5cf6; }
+.metric-card.red { border-color: #ef4444; }
+
+.metric-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.metric-card.blue .metric-icon { background: #dbeafe; color: #3b82f6; }
+.metric-card.green .metric-icon { background: #d1fae5; color: #10b981; }
+.metric-card.purple .metric-icon { background: #ede9fe; color: #8b5cf6; }
+.metric-card.red .metric-icon { background: #fee2e2; color: #ef4444; }
+
+.metric-content h3 {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0 0 0.5rem 0;
+  font-weight: 500;
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1;
+}
+
+.metric-subtitle {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+}
+
+/* Monitoring Sections */
+.monitoring-section {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.monitoring-section h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Call Rate Chart */
+.call-rate-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 200px;
+  padding: 1rem 0;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.chart-bar-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  position: relative;
+}
+
+.chart-bar {
+  width: 100%;
+  background: #10b981;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.3s ease;
+  min-height: 2px;
+}
+
+.chart-label {
+  font-size: 0.65rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.chart-summary {
+  margin-top: 1rem;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.chart-summary strong {
+  color: #1e293b;
+  font-size: 1.1rem;
+}
+
+/* Workers Grid */
+.workers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.worker-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #f8fafc;
+}
+
+.worker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.worker-name {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.95rem;
+}
+
+.worker-status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.worker-status.healthy {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.worker-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Failed Batches Table */
+.failed-batches-table {
+  overflow-x: auto;
+}
+
+.failed-batches-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.failed-batches-table th {
+  background: #f1f5f9;
+  padding: 0.75rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.failed-batches-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.875rem;
+  color: #334155;
+}
+
+.error-cell {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: help;
+  color: #dc2626;
+}
+
+.no-failures {
+  text-align: center;
+  padding: 2rem;
+  color: #10b981;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+/* Checkpoint Summary */
+.checkpoint-summary {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.checkpoint-stat {
+  text-align: center;
+  padding: 1rem;
+  border-radius: 8px;
+  min-width: 120px;
+}
+
+.checkpoint-stat.pending { background: #fef3c7; }
+.checkpoint-stat.queued { background: #dbeafe; }
+.checkpoint-stat.processing { background: #e0e7ff; }
+.checkpoint-stat.completed { background: #d1fae5; }
+.checkpoint-stat.failed { background: #fee2e2; }
+
+.checkpoint-label {
+  display: block;
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.checkpoint-value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Dashboard Footer */
+.dashboard-footer {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.auto-refresh {
+  margin-top: 0.5rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* Loading State */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.25rem;
+  color: #64748b;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .workers-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .call-rate-chart {
+    height: 150px;
+  }
+
+  .chart-label {
+    font-size: 0.5rem;
+  }
+
+  .checkpoint-summary {
+    flex-direction: column;
+  }
+}
