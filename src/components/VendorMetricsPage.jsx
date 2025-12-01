@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import GaugeChart from "react-gauge-chart";
+import GaugeComponent from "react-gauge-component";
 import "../styles/VendorMetricsPage.css";
 import apiClient from "../services/apiclient";
 
@@ -118,112 +118,114 @@ const VendorMetricsPage = ({ setCurrentPage }) => {
   const getIsoClass = value => (value ? "score-high" : "score-low");
 
   const renderGauge = (value, min = 0, max = 1, label = "") => {
-    if (value == null || value === "N/A") // Use == null to check for null and undefined
-      return <p className="radial-value">N/A</p>;
+  if (value == null) return <p className="radial-value">N/A</p>;
 
-    let val = parseFloat(value);
+  let val = parseFloat(value);
 
-    if (label === "ISO 9001 Certified") {
-      return (
-        <div className="radial-meter-container">
-          <GaugeChart
-            id={`iso-meter-${Math.random()}`}
-            nrOfLevels={2}
-            arcsLength={[0.5, 0.5]}
-            colors={["#FF4E50", "#4CAF50"]}
-            percent={value ? 1 : 0}
-            arcWidth={0.3}
-            cornerRadius={0}
-            needleColor={value ? "#4CAF50" : "#FF4E50"}
-            needleBaseColor="#333"
-            hideText={true}
-            style={{ width: "160px", height: "100px" }}
-          />
-        </div>
-      );
-    }
+  // ISO 9001 — simple two-color gauge
+  if (label === "ISO 9001 Certified") {
+    return (
+      <div className="radial-meter-container">
+        <GaugeComponent
+          value={value ? 100 : 0}
+          minValue={0}
+          maxValue={100}
+          type="semicircle"
+          arc={{
+            colorArray: ["#FF4E50", "#4CAF50"],
+            subArcs: [{ limit: 50 }, { limit: 100 }],
+            width: 0.3
+          }}
+          pointer={{
+            color: value ? "#4CAF50" : "#FF4E50"
+          }}
+          labels={{ hideMinMax: true, hideValue: true }}
+          style={{ width: "160px", height: "100px" }}
+        />
+      </div>
+    );
+  }
 
-    if (
-      label === "Responsiveness" ||
-      label === "Supply Chain Disruptions" ||
-      label === "Years of Partnership"
-    ) {
-      let needleColor = "#4CAF50";
-      let percentValue = 0;
-      let arcsLength = [0.33, 0.33, 0.34];
-      let colors = [];
-
-      if (label === "Responsiveness") {
-        if (val <= 3) needleColor = "#4CAF50";
-        else if (val <= 7) needleColor = "#F9D423";
-        else needleColor = "#FF4E50";
-        percentValue = Math.min(val / 10, 1);
-        colors = ["#4CAF50", "#F9D423", "#FF4E50"];
-      }
-
-      else if (label === "Supply Chain Disruptions") {
-        if (val <= 4) needleColor = "#4CAF50";
-        else if (val <= 8) needleColor = "#F9D423";
-        else needleColor = "#FF4E50";
-        percentValue = Math.min(val / 12, 1);
-        colors = ["#4CAF50", "#F9D423", "#FF4E50"];
-      }
-
-      
-      else if (label === "Years of Partnership") {
-        if (val >= 5) needleColor = "#4CAF50";
-        else if (val >= 2) needleColor = "#F9D423";
-        else needleColor = "#FF4E50";
-        percentValue = Math.min(val / 10, 1);
-        colors = ["#FF4E50", "#F9D423", "#4CAF50"];
-      }
-
-      return (
-        <div className="radial-meter-container">
-          <GaugeChart
-            id={`radial-meter-${Math.random()}`}
-            nrOfLevels={100}
-            arcsLength={arcsLength}
-            colors={colors}
-            percent={percentValue}
-            arcWidth={0.3}
-            cornerRadius={0}
-            animate={true}
-            needleColor={needleColor}
-            needleBaseColor="#333"
-            hideText={true}
-            style={{ width: "160px", height: "100px" }}
-          />
-        </div>
-      );
-    }
-
+  // RESPONSIVENESS / DISRUPTIONS / YEARS (Special logic)
+  if (
+    label === "Responsiveness" ||
+    label === "Supply Chain Disruptions" ||
+    label === "Years of Partnership"
+  ) {
     let needleColor = "#4CAF50";
-    let valNorm = Math.min(Math.max(val, 0), 1);
-    if (valNorm < 0.4) needleColor = "#FF4E50";
-    else if (valNorm < 0.75) needleColor = "#F9D423";
+    let percentValue = 0;
+    let colors = [];
 
-    const colorClass = getPercentageClass(valNorm);
+    if (label === "Responsiveness") {
+      percentValue = Math.min(val / 10, 1) * 100;
+      colors = ["#4CAF50", "#F9D423", "#FF4E50"];
+      if (val > 7) needleColor = "#FF4E50";
+      else if (val > 3) needleColor = "#F9D423";
+    }
+
+    if (label === "Supply Chain Disruptions") {
+      percentValue = Math.min(val / 12, 1) * 100;
+      colors = ["#4CAF50", "#F9D423", "#FF4E50"];
+      if (val > 8) needleColor = "#FF4E50";
+      else if (val > 4) needleColor = "#F9D423";
+    }
+
+    if (label === "Years of Partnership") {
+      percentValue = Math.min(val / 10, 1) * 100;
+      colors = ["#FF4E50", "#F9D423", "#4CAF50"];
+      if (val < 2) needleColor = "#FF4E50";
+      else if (val < 5) needleColor = "#F9D423";
+    }
 
     return (
       <div className="radial-meter-container">
-        <GaugeChart
-          id={`radial-meter-${Math.random()}`}
-          nrOfLevels={100}
-          arcsLength={[0.4, 0.35, 0.25]}
-          colors={["#FF4E50", "#F9D423", "#4CAF50"]}
-          percent={valNorm}
-          arcWidth={0.3}
-          cornerRadius={0}
-          needleColor={needleColor}
-          needleBaseColor="#333"
-          hideText={true}
+        <GaugeComponent
+          value={percentValue}
+          minValue={0}
+          maxValue={100}
+          type="semicircle"
+          arc={{
+            colorArray: colors,
+            subArcs: [{ limit: 33 }, { limit: 66 }, { limit: 100 }],
+            width: 0.3
+          }}
+          pointer={{ color: needleColor }}
+          labels={{ hideMinMax: true, hideValue: true }}
           style={{ width: "160px", height: "100px" }}
         />
-        <p className={`radial-value ${colorClass}`}>{(valNorm * 100).toFixed(1)}%</p>
       </div>
     );
-  };
+  }
+
+  // DEFAULT % METRICS
+  let percentValue = Math.min(Math.max(val, 0), 1) * 100;
+  let needleColor = "#4CAF50"; // green default
+  if (percentValue < 40) needleColor = "#FF4E50"; // red
+  else if (percentValue < 75) needleColor = "#F9D423"; // yellow
+
+  const colorClass = getPercentageClass(percentValue / 100);
+
+  return (
+    <div className="radial-meter-container">
+      <GaugeComponent
+        value={percentValue}
+        minValue={0}
+        maxValue={100}
+        type="semicircle"
+        arc={{
+          colorArray: ["#FF4E50", "#F9D423", "#4CAF50"],
+          subArcs: [{ limit: 40 }, { limit: 75 }, { limit: 100 }],
+          width: 0.3
+        }}
+        pointer={{ color: needleColor }}
+        labels={{ hideMinMax: true, hideValue: true }}
+        style={{ width: "160px", height: "100px" }}
+      />
+      <p className={`radial-value ${colorClass}`}>{percentValue.toFixed(1)}%</p>
+    </div>
+  );
+};
+
 
   return (
     <div className="vendor-metrics-page">

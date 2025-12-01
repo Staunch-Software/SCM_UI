@@ -2,6 +2,8 @@ import React from 'react';
 import { Bot, User } from 'lucide-react';
 import { formatTime } from '../utils/dateHelpers';
 import '../styles/MessageBubble.css';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 // Helper component to render the table
 const DataTable = ({ tableData }) => {
@@ -61,15 +63,27 @@ const MessageBubble = ({ message, onOpenDrawer }) => {
   const isUser = type === 'user';
 
   const renderAssistantMessage = () => {
-    // First, try to parse the content as JSON
-    try {
-      const parsedContent = JSON.parse(content);
+    // 1. Clean up Markdown code blocks if the AI added them
+    let cleanedContent = content.trim();
+    if (cleanedContent.startsWith('```')) {
+        cleanedContent = cleanedContent
+            .replace(/^```json\s*/, '')
+            .replace(/^```\s*/, '')
+            .replace(/\s*```$/, '')
+            .trim();
+    }
 
-      console.log('Parsed content:', parsedContent); // Debug logging
+    try {
+      const parsedContent = JSON.parse(cleanedContent);
 
       // Handle drawer opening request
       if (parsedContent && parsedContent.display_type === 'open_drawer') {
-        const { drawer_type, order_id } = parsedContent;
+        
+        // --- THIS IS THE MISSING LINE YOU NEED TO FIX ---
+        // You must extract 'message' and rename it to 'drawerMessage'
+        const { drawer_type, order_id, message: drawerMessage } = parsedContent;
+        // ------------------------------------------------
+
         const drawerTypeLabel = drawer_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
 
         // Trigger drawer opening only once per message
@@ -78,6 +92,15 @@ const MessageBubble = ({ message, onOpenDrawer }) => {
           if (!window.drawerOpened) window.drawerOpened = {};
           window.drawerOpened[messageKey] = true;
           setTimeout(() => onOpenDrawer(drawer_type, order_id), 100);
+        }
+
+        // Now this variable exists, so it won't crash
+        if (drawerMessage) {
+            return (
+                <div className="markdown-content">
+                    <ReactMarkdown>{drawerMessage}</ReactMarkdown>
+                </div>
+            );
         }
 
         return <p>Opened {drawerTypeLabel} for order <strong>{order_id}</strong>.</p>;
@@ -124,11 +147,21 @@ const MessageBubble = ({ message, onOpenDrawer }) => {
 
       // Handle other structured JSON responses (like simple errors or summaries)
       if (parsedContent && (parsedContent.result || parsedContent.error || parsedContent.summary)) {
-        return <p>{parsedContent.result || parsedContent.error || parsedContent.summary}</p>;
+        return (
+          <div className="markdown-content">
+            <ReactMarkdown>
+              {parsedContent.result || parsedContent.error || parsedContent.summary}
+            </ReactMarkdown>
+          </div>
+        );
       }
 
       // If it's valid JSON but not a recognized structure, display as text
-      return <p>{content}</p>;
+      return (
+        <div className="markdown-content">
+          <ReactMarkdown>{content}</ReactMarkdown>
+        </div>
+      );
 
     } catch (e) {
       console.log('JSON parse failed, treating as plain text:', e); // Debug logging
@@ -143,10 +176,9 @@ const MessageBubble = ({ message, onOpenDrawer }) => {
           if (repairedContent && repairedContent.display_type === 'table') {
             console.log('Successfully repaired and rendering table');
             return (
-              <>
-                {repairedContent.title && <p>{repairedContent.title}</p>}
-                <DataTable tableData={repairedContent} />
-              </>
+              <div className="markdown-content">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+              </div>
             );
           }
 
@@ -212,7 +244,11 @@ const MessageBubble = ({ message, onOpenDrawer }) => {
         }
       }
 
-      return <p>{content}</p>;
+      return (
+        <div className="markdown-content">
+          <ReactMarkdown>{content}</ReactMarkdown>
+        </div>
+      );
     }
   };
 

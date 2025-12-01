@@ -220,3 +220,15 @@
     margin: 10px 0;
   }
 }
+
+/* Add this to the bottom of MessageBubble.css */
+
+.markdown-content p {
+  margin: 0; /* Removes extra spacing from markdown paragraphs */
+  white-space: pre-wrap;
+}
+
+.markdown-content strong {
+  font-weight: 700;
+  color: #2d3748; /* Ensures bold text is dark and readable */
+}

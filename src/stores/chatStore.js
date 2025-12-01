@@ -62,7 +62,19 @@ export const useChatStore = create((set, get) => ({
         return; 
       }
 
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          // Try to parse the backend error message (e.g., "Token limit exceeded")
+          const errorData = await response.json();
+          // FastAPI usually sends errors in the 'detail' field
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        } catch (e) {
+          // If response isn't JSON, stick with the generic status message
+          console.log("Could not parse error JSON", e);
+        }
+        throw new Error(errorMessage);
+      }
 
       const data = await response.json();
 
@@ -111,7 +123,8 @@ export const useChatStore = create((set, get) => ({
         // const userMessage = createMessage(messageContent, 'user');
         // get().addMessage(userMessage);
         console.error('Error sending message:', error);
-        const errorMessage = createMessage('Sorry, I encountered an error. Please try again.', 'assistant');
+        const specificError = error.message || 'Sorry, I encountered an error. Please try again.';
+        const errorMessage = createMessage(specificError, 'assistant');
         get().addMessage(errorMessage);
       }
     } finally {
