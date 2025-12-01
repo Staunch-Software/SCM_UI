@@ -55,38 +55,77 @@ const repairPythonJSON = (jsonString) => {
     .replace(/\bTrue\b/g, 'true')
     .replace(/\bFalse\b/g, 'false')
     .replace(/\bNone\b/g, 'null')
-    .replace(/'/g, '"'); // Replace single quotes with double quotes if needed
+    .replace(/'/g, '"'); 
 };
 
 const MessageBubble = ({ message, onOpenDrawer }) => {
   const { type, content, timestamp } = message;
   const isUser = type === 'user';
 
-  const renderAssistantMessage = () => {
-    // 1. Clean up Markdown code blocks if the AI added them
-    let cleanedContent = content.trim();
-    if (cleanedContent.startsWith('```')) {
-        cleanedContent = cleanedContent
-            .replace(/^```json\s*/, '')
-            .replace(/^```\s*/, '')
-            .replace(/\s*```$/, '')
-            .trim();
+  // --- UPDATED: AGGRESSIVE JSON PARSER ---
+  const tryParseJSON = (text) => {
+    if (!text) return null;
+    
+    // 1. Clean Markdown code blocks
+    let cleaned = text.trim();
+    if (cleaned.startsWith('```')) {
+      cleaned = cleaned
+        .replace(/^```(?:json)?\s*/i, '') // Case insensitive match for json
+        .replace(/^```\s*/, '')
+        .replace(/\s*```$/, '')
+        .trim();
     }
 
-    try {
-      const parsedContent = JSON.parse(cleanedContent);
+    // 2. Helper to safely parse
+    const safeParse = (str) => {
+      try {
+        return JSON.parse(str);
+      } catch (e) {
+        // Common LLM Error: Newlines inside strings break JSON.parse
+        // Attempt to escape newlines that are NOT part of the JSON structure
+        try {
+            // This is a heuristic: replace literal newlines with \n
+            const sanitized = str.replace(/\n/g, "\\n");
+            return JSON.parse(sanitized);
+        } catch (e2) {
+            return null;
+        }
+      }
+    };
 
-      // Handle drawer opening request
-      if (parsedContent && parsedContent.display_type === 'open_drawer') {
-        
-        // --- THIS IS THE MISSING LINE YOU NEED TO FIX ---
-        // You must extract 'message' and rename it to 'drawerMessage'
+    // 3. Try direct parse
+    let result = safeParse(cleaned);
+    if (result) return result;
+
+    // 4. Try extracting JSON object { ... }
+    const firstOpen = text.indexOf('{');
+    const lastClose = text.lastIndexOf('}');
+
+    if (firstOpen !== -1 && lastClose > firstOpen) {
+      const candidate = text.substring(firstOpen, lastClose + 1);
+      result = safeParse(candidate);
+      if (result) return result;
+
+      // 5. Try repairing Python syntax on the candidate
+      try {
+        return JSON.parse(repairPythonJSON(candidate));
+      } catch (e3) {
+        return null;
+      }
+    }
+    return null;
+  };
+
+  const renderAssistantMessage = () => {
+    const parsedContent = tryParseJSON(content);
+
+    if (parsedContent && typeof parsedContent === 'object') {
+      
+      // 1. Handle Open Drawer
+      if (parsedContent.display_type === 'open_drawer') {
         const { drawer_type, order_id, message: drawerMessage } = parsedContent;
-        // ------------------------------------------------
+        const drawerTypeLabel = drawer_type?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Order';
 
-        const drawerTypeLabel = drawer_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-
-        // Trigger drawer opening only once per message
         const messageKey = `${message.id}_drawer`;
         if (onOpenDrawer && !window.drawerOpened?.[messageKey]) {
           if (!window.drawerOpened) window.drawerOpened = {};
@@ -94,23 +133,19 @@ const MessageBubble = ({ message, onOpenDrawer }) => {
           setTimeout(() => onOpenDrawer(drawer_type, order_id), 100);
         }
 
-        // Now this variable exists, so it won't crash
         if (drawerMessage) {
-            return (
-                <div className="markdown-content">
-                    <ReactMarkdown>{drawerMessage}</ReactMarkdown>
-                </div>
-            );
+          return (
+            <div className="markdown-content">
+              <ReactMarkdown>{drawerMessage}</ReactMarkdown>
+            </div>
+          );
         }
-
         return <p>Opened {drawerTypeLabel} for order <strong>{order_id}</strong>.</p>;
       }
 
-      if (parsedContent && parsedContent.enhanced_supplier_selection_tool_response) {
+      // 2. Handle Enhanced Supplier Tool Response
+      if (parsedContent.enhanced_supplier_selection_tool_response) {
         const toolResponse = parsedContent.enhanced_supplier_selection_tool_response;
-        console.log('Found nested tool response:', toolResponse);
-
-        // Handle nested table response
         if (toolResponse.display_type === 'table') {
           return (
             <>
@@ -119,34 +154,41 @@ const MessageBubble = ({ message, onOpenDrawer }) => {
             </>
           );
         }
-
-        // Handle nested multiple tables
         if (toolResponse.display_type === 'multiple_tables') {
           return <MultipleTablesDisplay orderTables={toolResponse.order_tables} />;
         }
       }
 
-      if (parsedContent && parsedContent.display_type === 'multiple_tables') {
-        console.log('Rendering multiple tables:', parsedContent);
+      // 3. Handle Multiple Tables
+      if (parsedContent.display_type === 'multiple_tables') {
         return <MultipleTablesDisplay orderTables={parsedContent.order_tables} />;
       }
 
-      // Check for table display type
-      if (parsedContent && parsedContent.display_type === 'table') {
-        console.log('Rendering table with data:', parsedContent); // Debug logging
+      // 4. Handle Standard Table
+      if (parsedContent.display_type === 'table') {
         return (
           <>
-            {/* The title now comes directly from our data package */}
-            {parsedContent.title && <p>{parsedContent.title}</p>}
+            {/* Render Summary */}
+            {parsedContent.summary && (
+              <div className="markdown-content" style={{ marginBottom: '12px' }}>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {parsedContent.summary}
+                </ReactMarkdown>
+              </div>
+            )}
 
-            {/* We pass the whole object to DataTable, which has the headers and rows */}
+            {parsedContent.title && (
+              <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                {parsedContent.title}
+              </p>
+            )}
             <DataTable tableData={parsedContent} />
           </>
         );
       }
 
-      // Handle other structured JSON responses (like simple errors or summaries)
-      if (parsedContent && (parsedContent.result || parsedContent.error || parsedContent.summary)) {
+      // 5. Handle Simple JSON Results/Errors
+      if (parsedContent.result || parsedContent.error || parsedContent.summary) {
         return (
           <div className="markdown-content">
             <ReactMarkdown>
@@ -155,101 +197,14 @@ const MessageBubble = ({ message, onOpenDrawer }) => {
           </div>
         );
       }
-
-      // If it's valid JSON but not a recognized structure, display as text
-      return (
-        <div className="markdown-content">
-          <ReactMarkdown>{content}</ReactMarkdown>
-        </div>
-      );
-
-    } catch (e) {
-      console.log('JSON parse failed, treating as plain text:', e); // Debug logging
-
-      if (content.includes('"display_type"') && (content.includes('True') || content.includes('False'))) {
-        console.log('Detected Python-style JSON, repairing...');
-
-        try {
-          const repairedJSON = repairPythonJSON(content);
-          const repairedContent = JSON.parse(repairedJSON);
-
-          if (repairedContent && repairedContent.display_type === 'table') {
-            console.log('Successfully repaired and rendering table');
-            return (
-              <div className="markdown-content">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-              </div>
-            );
-          }
-
-          if (repairedContent && repairedContent.display_type === 'multiple_tables') {
-            console.log('Successfully repaired and rendering multiple tables');
-            return <MultipleTablesDisplay orderTables={repairedContent.order_tables} />;
-          }
-
-        } catch (repairError) {
-          console.log('Could not repair Python JSON:', repairError);
-        }
-      }
-
-      if (content.includes('"display_type": "multiple_tables"') && content.includes('"order_tables"')) {
-        console.log('Detected malformed multiple tables JSON, attempting to fix...');
-
-        let cleanedContent = content.trim();
-        const jsonStart = cleanedContent.indexOf('{"scenario"') !== -1 ?
-          cleanedContent.indexOf('{"scenario"') :
-          cleanedContent.indexOf('{"display_type"');
-        const jsonEnd = cleanedContent.lastIndexOf('}') + 1;
-
-        if (jsonStart >= 0 && jsonEnd > jsonStart) {
-          cleanedContent = repairPythonJSON(cleanedContent.substring(jsonStart, jsonEnd));
-
-          try {
-            const repairedContent = JSON.parse(cleanedContent);
-            if (repairedContent.display_type === 'multiple_tables') {
-              console.log('Successfully repaired multiple tables JSON');
-              return <MultipleTablesDisplay orderTables={repairedContent.order_tables} />;
-            }
-          } catch (repairError) {
-            console.log('Could not repair multiple tables JSON:', repairError);
-          }
-        }
-      }
-
-      // Fallback to extracting clean JSON
-      if (content.includes('"display_type": "table"')) {
-        console.log('Attempting to extract clean JSON...');
-
-        const jsonStart = content.indexOf('{"display_type"');
-        const jsonEnd = content.lastIndexOf('}') + 1;
-
-        if (jsonStart >= 0 && jsonEnd > jsonStart) {
-          let cleanedContent = content.substring(jsonStart, jsonEnd);
-          cleanedContent = repairPythonJSON(cleanedContent);
-
-          try {
-            const extractedContent = JSON.parse(cleanedContent);
-            if (extractedContent.display_type === 'table') {
-              console.log('Successfully extracted and repaired JSON table');
-              return (
-                <>
-                  {extractedContent.title && <p>{extractedContent.title}</p>}
-                  <DataTable tableData={extractedContent} />
-                </>
-              );
-            }
-          } catch (extractError) {
-            console.log('Could not extract clean JSON:', extractError);
-          }
-        }
-      }
-
-      return (
-        <div className="markdown-content">
-          <ReactMarkdown>{content}</ReactMarkdown>
-        </div>
-      );
     }
+
+    // Fallback: Render as Markdown
+    return (
+      <div className="markdown-content">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+      </div>
+    );
   };
 
   return (
