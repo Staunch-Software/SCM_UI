@@ -383,11 +383,10 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
                 </div>
               </div>
               {/* NEW SECTION: Related Orders */}
-              {relatedOrders && (
+              {/* {relatedOrders && (
                 <div className="related-orders-section">
                   <h3 className="section-title">Related Orders</h3>
 
-                  {/* Tabs */}
                   <div className="tabs-container">
                     <button
                       className={`tab-btn ${activeTab === 'materials' ? 'active' : ''}`}
@@ -412,9 +411,7 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
                     </button>
                   </div>
 
-                  {/* Tab Content */}
                   <div className="tab-content">
-                    {/* Materials Tab */}
                     {activeTab === 'materials' && (
                       <div className="materials-content">
                         {relatedOrders.materials && relatedOrders.materials.length > 0 ? (
@@ -465,7 +462,6 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
                       </div>
                     )}
 
-                    {/* Work Orders Tab */}
                     {activeTab === 'work_orders' && (
                       <div className="work-orders-content">
                         {relatedOrders.work_orders && relatedOrders.work_orders.length > 0 ? (
@@ -533,7 +529,6 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
                       </div>
                     )}
 
-                    {/* Purchase Orders Tab */}
                     {activeTab === 'purchase_orders' && (
                       <div className="purchase-orders-content">
                         {relatedOrders.purchase_orders && relatedOrders.purchase_orders.length > 0 ? (
@@ -584,7 +579,7 @@ const SalesOrderDrawer = ({ isOpen, onClose, orderId }) => {
                     )}
                   </div>
                 </div>
-              )}
+              )} */}
             </>
           )}
         </div>
