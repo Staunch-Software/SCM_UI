@@ -5,6 +5,23 @@ import '../styles/MessageBubble.css';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+// --- HELPER: Smart Row Lookup ---
+// Solves the issue where Headers are "PLANNED ORDER ID" but data keys are "planned_order_id"
+const getRowValue = (row, header) => {
+  // 1. Try Direct Match
+  if (row[header] !== undefined) return row[header];
+
+  // 2. Try Normalized Match (Ignore case, spaces -> underscores)
+  // Example: Header "PLANNED ORDER ID" -> "planned_order_id"
+  const normalize = (str) => str.toLowerCase().replace(/\s+/g, '_');
+  const normalizedHeader = normalize(header);
+
+  const matchingKey = Object.keys(row).find(key => normalize(key) === normalizedHeader);
+  
+  // 3. Return match or empty string
+  return matchingKey ? row[matchingKey] : '';
+};
+
 // Helper component to render the table
 const DataTable = ({ tableData }) => {
   if (!tableData || !tableData.headers || !tableData.rows) {
@@ -15,13 +32,23 @@ const DataTable = ({ tableData }) => {
       <table>
         <thead>
           <tr>
-            {tableData.headers.map(header => <th key={header}>{header.replace(/_/g, ' ')}</th>)}
+            {tableData.headers.map(header => (
+              <th key={header}>
+                {/* Ensure header is readable (remove underscores if raw key is passed) */}
+                {header.replace(/_/g, ' ').toUpperCase()}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
           {tableData.rows.map((row, index) => (
             <tr key={index}>
-              {tableData.headers.map(header => <td key={header}>{row[header]}</td>)}
+              {tableData.headers.map(header => (
+                <td key={header}>
+                  {/* Use Smart Lookup here */}
+                  {getRowValue(row, header)}
+                </td>
+              ))}
             </tr>
           ))}
         </tbody>
@@ -62,7 +89,7 @@ const MessageBubble = ({ message, onOpenDrawer }) => {
   const { type, content, timestamp } = message;
   const isUser = type === 'user';
 
-  // --- UPDATED: AGGRESSIVE JSON PARSER ---
+  // --- AGGRESSIVE JSON PARSER ---
   const tryParseJSON = (text) => {
     if (!text) return null;
     
@@ -70,7 +97,7 @@ const MessageBubble = ({ message, onOpenDrawer }) => {
     let cleaned = text.trim();
     if (cleaned.startsWith('```')) {
       cleaned = cleaned
-        .replace(/^```(?:json)?\s*/i, '') // Case insensitive match for json
+        .replace(/^```(?:json)?\s*/i, '')
         .replace(/^```\s*/, '')
         .replace(/\s*```$/, '')
         .trim();
@@ -81,10 +108,7 @@ const MessageBubble = ({ message, onOpenDrawer }) => {
       try {
         return JSON.parse(str);
       } catch (e) {
-        // Common LLM Error: Newlines inside strings break JSON.parse
-        // Attempt to escape newlines that are NOT part of the JSON structure
         try {
-            // This is a heuristic: replace literal newlines with \n
             const sanitized = str.replace(/\n/g, "\\n");
             return JSON.parse(sanitized);
         } catch (e2) {
@@ -106,7 +130,7 @@ const MessageBubble = ({ message, onOpenDrawer }) => {
       result = safeParse(candidate);
       if (result) return result;
 
-      // 5. Try repairing Python syntax on the candidate
+      // 5. Try repairing Python syntax
       try {
         return JSON.parse(repairPythonJSON(candidate));
       } catch (e3) {
@@ -187,7 +211,18 @@ const MessageBubble = ({ message, onOpenDrawer }) => {
         );
       }
 
-      // 5. Handle Simple JSON Results/Errors
+      // 5. Handle Simple Text Message
+      if (parsedContent.display_type === 'text') {
+        return (
+          <div className="markdown-content">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {parsedContent.message}
+            </ReactMarkdown>
+          </div>
+        );
+      }
+
+      // 6. Handle Simple JSON Results/Errors
       if (parsedContent.result || parsedContent.error || parsedContent.summary) {
         return (
           <div className="markdown-content">
