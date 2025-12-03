@@ -85,6 +85,66 @@ const repairPythonJSON = (jsonString) => {
     .replace(/'/g, '"'); 
 };
 
+// New Component: Replenishment Status Card
+const ReplenishmentStatusCard = ({ data }) => {
+  if (!data || !data.metrics) return null;
+  const { metrics } = data;
+
+  return (
+    <div style={{ 
+      border: '1px solid #e0e0e0', 
+      borderRadius: '8px', 
+      padding: '16px', 
+      backgroundColor: '#f9fafb',
+      maxWidth: '500px',
+      marginTop: '10px'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+        <div style={{ 
+          width: '10px', height: '10px', borderRadius: '50%', 
+          backgroundColor: '#10b981', marginRight: '8px' 
+        }}></div>
+        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>
+          {data.product_name} Status: <span style={{ color: '#10b981' }}>Healthy</span>
+        </h3>
+      </div>
+
+      <p style={{ fontSize: '14px', color: '#666', marginBottom: '16px' }}>
+        {data.summary}
+      </p>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        {/* Demand Section */}
+        <div style={{ background: '#fff', padding: '10px', borderRadius: '6px', border: '1px solid #eee' }}>
+          <div style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase' }}>Total Demand</div>
+          <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#ef4444' }}>{metrics.total_demand}</div>
+          <div style={{ fontSize: '11px', color: '#666' }}>Source: {metrics.demand_source}</div>
+        </div>
+
+        {/* Supply Section */}
+        <div style={{ background: '#fff', padding: '10px', borderRadius: '6px', border: '1px solid #eee' }}>
+          <div style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase' }}>Total Supply</div>
+          <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#3b82f6' }}>{metrics.total_supply}</div>
+          <div style={{ fontSize: '11px', color: '#666' }}>
+            Inv: {metrics.inventory} | POs: {metrics.open_po}
+          </div>
+        </div>
+      </div>
+
+      {/* Balance Bar */}
+      <div style={{ marginTop: '16px', background: '#fff', padding: '10px', borderRadius: '6px', border: '1px solid #eee' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+          <span style={{ fontSize: '12px', fontWeight: '600' }}>Net Balance</span>
+          <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#10b981' }}>+{metrics.net_balance}</span>
+        </div>
+        <div style={{ fontSize: '11px', color: '#666' }}>
+          Target Safety Stock: <strong>{metrics.safety_stock}</strong>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const MessageBubble = ({ message, onOpenDrawer }) => {
   const { type, content, timestamp } = message;
   const isUser = type === 'user';
@@ -231,6 +291,10 @@ const MessageBubble = ({ message, onOpenDrawer }) => {
             </ReactMarkdown>
           </div>
         );
+      }
+
+       if (parsedContent.display_type === 'replenishment_status') {
+        return <ReplenishmentStatusCard data={parsedContent} />;
       }
     }
 
