@@ -232,3 +232,13 @@
   font-weight: 700;
   color: #2d3748; /* Ensures bold text is dark and readable */
 }
+
+.markdown-content ul,
+.markdown-content ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.markdown-content li {
+  margin: 0.25rem 0;
+}
